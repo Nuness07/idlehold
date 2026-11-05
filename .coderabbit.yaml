@@ -1,0 +1,51 @@
+# yaml-language-server: $schema=https://coderabbit.ai/integrations/schema.v2.json
+# CodeRabbit configuration. Settings here override the CodeRabbit web UI for this repository.
+
+language: en-US
+
+reviews:
+  # "chill" keeps comments to real issues instead of nitpicks.
+  profile: chill
+  request_changes_workflow: false
+
+  # Keep the PR summary and walkthrough (useful for the human reviewer), drop the extras.
+  high_level_summary: true
+  collapse_walkthrough: true
+  changed_files_summary: true
+  sequence_diagrams: false
+  estimate_code_review_effort: false
+  suggested_labels: false
+  suggested_reviewers: false
+  poem: false
+  in_progress_fortune: false
+
+  auto_review:
+    enabled: true
+    drafts: false
+
+  path_filters:
+    - "!**/bin/**"
+    - "!**/obj/**"
+
+  path_instructions:
+    - path: "src/IdleHold.Engine/**"
+      instructions: >-
+        Pure game rules. Flag any dependency on ASP.NET Core, databases, I/O, the real clock
+        or unseeded randomness, any in-place mutation of GameState, and any time calculation
+        that loops once per cycle.
+    - path: "src/IdleHold.Api/**"
+      instructions: >-
+        Flag direct use of DateTime.Now/UtcNow (use the injected TimeProvider), client input
+        used without validation, and engine types returned directly instead of DTOs.
+    - path: "tests/**"
+      instructions: >-
+        Tests must be deterministic: no real clock, no real waiting, no shared state between tests.
+
+knowledge_base:
+  code_guidelines:
+    enabled: true
+    filePatterns:
+      - "AGENTS.md"
+
+chat:
+  auto_reply: true
