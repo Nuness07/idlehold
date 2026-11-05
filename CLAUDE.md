@@ -25,6 +25,7 @@ Browser idle game (genre inspiration: Melvor Idle — skills, progression, resou
 
 ## Design pillars
 
+- **The village is the core.** The player manages a small village rebuilt after the old one was attacked; skills feed the village, and unlockable villagers take on work. Game design ideas, their status and the proposed order live in `docs/game-design.md`. Ideas there are not decisions until marked "Decided"; do not implement them before discussing with the project owner.
 - **Reward active play.** The game is idle, but being present has to be genuinely worth it. This must not be just "actions take less time": the idea is decisions, events and interaction that make sense for someone who is playing. The mechanic is not defined yet; do not implement it before discussing it with the project owner.
 
 ## Roadmap (high level)
