@@ -1,4 +1,5 @@
-import { itemLabel } from '../../content/labels'
+import { PixelSprite } from '../../components/PixelSprite'
+import { itemLabel, itemSprite } from '../../content/labels'
 import { formatCount } from '../../lib/format'
 
 interface StoresProps {
@@ -20,18 +21,24 @@ export function Stores({ inventory, freshItemId }: StoresProps) {
         <p className="text-muted">Nothing stored yet. Start an action and the stores fill up, even while you are away.</p>
       ) : (
         <ul className="grid gap-x-10 sm:grid-cols-2 xl:grid-cols-1">
-          {entries.map(([itemId, count]) => (
-            <li key={itemId} className="flex items-baseline justify-between gap-4 border-t border-rule py-3">
-              <span className="text-[16px]">{itemLabel(itemId)}</span>
-              <span
-                className={`text-xl font-extrabold tabular-nums transition-colors duration-700 ${
-                  itemId === freshItemId ? 'text-verdigris' : 'text-ink'
-                }`}
-              >
-                {formatCount(count)}
-              </span>
-            </li>
-          ))}
+          {entries.map(([itemId, count]) => {
+            const sprite = itemSprite(itemId)
+            return (
+              <li key={itemId} className="flex items-center justify-between gap-4 border-t border-rule py-2">
+                <span className="flex items-center gap-3 text-[16px]">
+                  {sprite && <PixelSprite src={sprite} width={32} height={32} />}
+                  {itemLabel(itemId)}
+                </span>
+                <span
+                  className={`text-xl font-extrabold tabular-nums transition-colors duration-700 ${
+                    itemId === freshItemId ? 'text-verdigris' : 'text-ink'
+                  }`}
+                >
+                  {formatCount(count)}
+                </span>
+              </li>
+            )
+          })}
         </ul>
       )}
     </section>

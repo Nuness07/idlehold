@@ -1,5 +1,6 @@
 import type { ActiveAction, GameAction } from '../../api/client'
 import { Button } from '../../components/Button'
+import { PixelSprite } from '../../components/PixelSprite'
 import { actionLabel, itemLabel } from '../../content/labels'
 import { formatDuration } from '../../lib/format'
 import { useCycleProgress } from './useCycleProgress'
@@ -30,7 +31,11 @@ export function WorkingAction({ active, action, receivedAt, onCycleComplete, onS
   return (
     <section aria-labelledby="working-title" className="rounded-md border border-rule bg-white px-6 py-6 shadow-[0_1px_2px_rgb(27_23_18_/_0.06),0_8px_24px_-12px_rgb(27_23_18_/_0.18)]">
       <div className="flex flex-wrap items-center gap-4">
-        <label.Icon aria-hidden className="size-8 text-ink" strokeWidth={1.75} />
+        {label.sprite ? (
+          <PixelSprite src={label.sprite} width={32} height={32} scale={2} />
+        ) : (
+          <label.Icon aria-hidden className="size-8 text-ink" strokeWidth={1.75} />
+        )}
         <h2 id="working-title" className="text-3xl leading-none font-extrabold">
           {label.verb}
         </h2>

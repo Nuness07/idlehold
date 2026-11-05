@@ -20,6 +20,8 @@
   --color-ochre-wash: #f3e6c8;
   --color-verdigris: #2f6b58;
   --color-danger: #9b2c23;
+  /* Dark backing behind a framed pixel-art emblem, so dark wood reads on any paint. */
+  --color-frame-well: #2a221b;
 
   --font-sans: 'Alegreya Sans', ui-sans-serif, system-ui, sans-serif;
   --font-gothic: 'Grenze Gotisch', 'Alegreya Sans', serif;

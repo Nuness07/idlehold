@@ -1,5 +1,6 @@
 import type { Skill } from '../../api/client'
 import { tradeLabel } from '../../content/labels'
+import { TradeEmblem } from './TradeEmblem'
 
 interface TradeRailProps {
   trades: { skillId: string; skill: Skill; working: boolean }[]
@@ -26,13 +27,17 @@ export function TradeRail({ trades, selected }: TradeRailProps) {
                   isSelected ? 'border-ink/30 bg-white' : 'border-transparent'
                 }`}
               >
-                <span
-                  aria-hidden
-                  className="grid size-8 place-items-center rounded text-oxblood-ink"
-                  style={{ backgroundColor: trade.paint }}
-                >
-                  <trade.Icon className="size-[18px]" strokeWidth={2} />
-                </span>
+                {trade.emblem ? (
+                  <TradeEmblem trade={trade} scale={1} fallbackClassName="size-[18px]" />
+                ) : (
+                  <span
+                    aria-hidden
+                    className="grid size-8 place-items-center rounded text-oxblood-ink"
+                    style={{ backgroundColor: trade.paint }}
+                  >
+                    <trade.Icon className="size-[18px]" strokeWidth={2} />
+                  </span>
+                )}
                 <span>{trade.name}</span>
                 {working && (
                   <span aria-label="working" className="size-2 rounded-full bg-ochre" />
