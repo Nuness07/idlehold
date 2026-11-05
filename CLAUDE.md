@@ -27,7 +27,7 @@ Jogo idle de navegador (inspiração de gênero: Melvor Idle — skills, progres
 - `src/IdleHold.Engine`: regras puras do jogo (`GameEngine`, `GameState`, `GameContent`, `Experience`). Não pode depender de web, banco ou I/O.
 - `src/IdleHold.Api`: API ASP.NET Core (Minimal APIs) que referencia o Engine. Nunca o contrário.
   - `Players/`: `PlayerService` (alcança o "agora" com `Tick`, aplica o comando e salva), `IPlayerStore` + `InMemoryPlayerStore`, endpoints e DTOs.
-  - Endpoints: `GET /content`, `POST /players`, `GET /players/{id}`, `POST /players/{id}/action`, `DELETE /players/{id}/action`.
+  - Endpoints: `GET /health`, `GET /content`, `POST /players`, `GET /players/{id}`, `POST /players/{id}/action`, `DELETE /players/{id}/action`.
   - O horário vem sempre do `TimeProvider` injetado. Nunca usar `DateTime.Now` direto.
 - `tests/IdleHold.Engine.Tests`: xUnit, testes do motor.
 - `tests/IdleHold.Api.Tests`: testes de integração com `WebApplicationFactory` e `FakeTimeProvider` (`ApiFactory`).
