@@ -2,7 +2,7 @@ import { useQueryClient } from '@tanstack/react-query'
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import type { Skill } from './api/client'
 import { Button } from './components/Button'
-import { actionLabel, itemLabel } from './content/labels'
+import { actionLabel, itemCount } from './content/labels'
 import { ActionList } from './features/actions/ActionList'
 import { WorkingAction } from './features/actions/WorkingAction'
 import { playerQueryKey, useContent, usePlayer, useStartAction, useStopAction } from './features/player/queries'
@@ -29,6 +29,8 @@ export default function App() {
   const [away, setAway] = useState<AwaySummary | null>(null)
   const [swingKey, setSwingKey] = useState(0)
   const [freshItemId, setFreshItemId] = useState<string>()
+  /** The trade the player chose to look at; until they choose, the screen follows the working trade. */
+  const [viewedSkillId, setViewedSkillId] = useState<string>()
   const summarized = useRef(false)
   const lastTotals = useRef<{ xp: number; levels: number } | null>(null)
 
@@ -36,7 +38,7 @@ export default function App() {
   const skillIds = useMemo(() => [...new Set(actions.map((action) => action.skillId))], [actions])
   const activeAction = player?.activeAction ?? null
   const activeDefinition = actions.find((action) => action.id === activeAction?.actionId)
-  const selectedSkillId = activeDefinition?.skillId ?? skillIds[0]
+  const selectedSkillId = viewedSkillId ?? activeDefinition?.skillId ?? skillIds[0]
 
   // First load: tell the player what happened while they were away, then keep the record current.
   useEffect(() => {
@@ -73,7 +75,7 @@ export default function App() {
       return
     }
     const count = player.inventory[activeDefinition.outputItemId] ?? 0
-    document.title = `${formatCount(count)} ${itemLabel(activeDefinition.outputItemId).toLowerCase()}s · ${actionLabel(activeDefinition.id).verb} · IdleHold`
+    document.title = `${formatCount(count)} ${itemCount(activeDefinition.outputItemId, count)} · ${actionLabel(activeDefinition.id).verb} · IdleHold`
   }, [player, activeDefinition])
 
   const refreshPlayer = useCallback(
@@ -117,6 +119,7 @@ export default function App() {
         <aside className="border-b border-rule bg-limewash lg:row-span-2 lg:border-r lg:border-b-0 xl:row-span-1">
           <TradeRail
             selected={selectedSkillId}
+            onSelect={setViewedSkillId}
             trades={skillIds.map((skillId) => ({
               skillId,
               skill: skillOf(skillId),

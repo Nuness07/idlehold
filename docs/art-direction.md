@@ -65,6 +65,8 @@ Tool: PixelLab, `create_image_pro` (one call returns 64 candidates at 32x32 for
 
 ## Open points
 
+- Fishing and Mining have no sprites yet: their emblems, actions (perch, pike, stone, copper) and items (perch, pike, stone, copper ore) fall back to Lucide line icons until they are generated against the style base.
+
 - The sprites are not palette-locked yet (the base uses about 160 colours). A fixed
   palette derived from the UI tokens can be passed to `create_image_pro` (`palette`) once
   the set grows.

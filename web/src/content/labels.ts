@@ -1,4 +1,4 @@
-import { Axe, TreeDeciduous, TreePine, type LucideIcon } from 'lucide-react'
+import { Axe, Fish, FishSymbol, Gem, Mountain, Pickaxe, TreeDeciduous, TreePine, type LucideIcon } from 'lucide-react'
 import birchTree from '../assets/actions/birch-tree.png'
 import pineTree from '../assets/actions/pine-tree.png'
 import woodcuttingEmblem from '../assets/emblems/woodcutting.png'
@@ -32,6 +32,8 @@ interface ActionLabel {
 
 interface ItemLabel {
   name: string
+  /** Lower-case plural for counts ("9 pine logs"). Defaults to the name plus "s". */
+  plural?: string
   /** URL of the item's 32x32 pixel-art sprite. */
   sprite?: string
 }
@@ -43,16 +45,34 @@ const trades: Record<string, TradeLabel> = {
     Icon: Axe,
     emblem: woodcuttingEmblem,
   },
+  fishing: {
+    name: 'Fishing',
+    paint: 'var(--color-lake)',
+    Icon: Fish,
+  },
+  mining: {
+    name: 'Mining',
+    paint: 'var(--color-slate)',
+    Icon: Pickaxe,
+  },
 }
 
 const actions: Record<string, ActionLabel> = {
   'cut-pine': { name: 'Pine', verb: 'Cutting pine', Icon: TreePine, sprite: pineTree },
   'cut-birch': { name: 'Birch', verb: 'Cutting birch', Icon: TreeDeciduous, sprite: birchTree },
+  'catch-perch': { name: 'Perch', verb: 'Catching perch', Icon: Fish },
+  'catch-pike': { name: 'Pike', verb: 'Catching pike', Icon: FishSymbol },
+  'mine-stone': { name: 'Stone', verb: 'Mining stone', Icon: Mountain },
+  'mine-copper': { name: 'Copper', verb: 'Mining copper', Icon: Gem },
 }
 
 const items: Record<string, ItemLabel> = {
   'pine-log': { name: 'Pine log', sprite: pineLog },
   'birch-log': { name: 'Birch log', sprite: birchLog },
+  perch: { name: 'Perch', plural: 'perch' },
+  pike: { name: 'Pike', plural: 'pike' },
+  stone: { name: 'Stone', plural: 'stone' },
+  'copper-ore': { name: 'Copper ore', plural: 'copper ore' },
 }
 
 function humanize(id: string): string {
@@ -76,6 +96,12 @@ export function actionLabel(actionId: string): ActionLabel {
 
 export function itemLabel(itemId: string): string {
   return items[itemId]?.name ?? humanize(itemId)
+}
+
+/** "1 pine log", "9 pine logs", "9 perch". */
+export function itemCount(itemId: string, count: number): string {
+  const singular = itemLabel(itemId).toLowerCase()
+  return count === 1 ? singular : (items[itemId]?.plural ?? `${singular}s`)
 }
 
 export function itemSprite(itemId: string): string | undefined {

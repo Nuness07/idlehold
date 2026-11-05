@@ -1,6 +1,6 @@
 import { X } from 'lucide-react'
 import type { ReactNode } from 'react'
-import { itemLabel, tradeLabel } from '../../content/labels'
+import { itemCount, tradeLabel } from '../../content/labels'
 import { formatCount, formatDuration } from '../../lib/format'
 import type { AwaySummary } from './awaySummary'
 
@@ -21,7 +21,7 @@ export function SinceYouLeft({ summary, onDismiss }: SinceYouLeftProps) {
   const gains: ReactNode[] = [
     ...summary.items.map((item) => (
       <span key={item.itemId}>
-        <strong className="font-extrabold">{formatCount(item.gained)}</strong> {itemLabel(item.itemId).toLowerCase()}s
+        <strong className="font-extrabold">{formatCount(item.gained)}</strong> {itemCount(item.itemId, item.gained)}
       </span>
     )),
     ...summary.levels.map((skill) => (
