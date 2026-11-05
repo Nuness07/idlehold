@@ -10,6 +10,19 @@ Jogo idle de navegador (inspiração de gênero: Melvor Idle — skills, progres
 - Comunicação em **português**. Código, nomes, commits e docs públicas em **inglês**.
 - Commits e PRs não levam linhas de coautoria nem atribuição de IA.
 
+## Fluxo de trabalho (Git e PRs)
+
+A `main` é protegida pelo ruleset "Protect main" no GitHub. Não aceita push direto, force push nem deleção.
+
+1. Criar uma branch a partir da `main` atualizada (`feat/...`, `fix/...`, `docs/...`, `chore/...`, `ci/...`).
+2. Commits em Conventional Commits, sem coautoria.
+3. Abrir o PR com `gh pr create` (descrição com o quê / por quê / como testar).
+4. Comentar `@coderabbitai review` no PR. O repositório tem menos de 10 estrelas, então o CodeRabbit não revisa sozinho, e o status "CodeRabbit" é obrigatório para o merge.
+5. O Codex revisa automaticamente ao abrir o PR (reação 👀 e depois 👍 ou comentários).
+6. Ler os comentários dos dois revisores e corrigir no mesmo PR. Todas as conversas precisam estar resolvidas para o merge.
+7. O check "Build and test" (GitHub Actions) precisa estar verde.
+8. O merge é feito pelo dono do projeto.
+
 ## Pilares de design
 
 - **Recompensar quem está jogando.** O jogo é idle, mas estar presente precisa valer a pena de verdade. Isso não deve ser só "a ação demora menos": a ideia é ter decisões, eventos e interação que façam sentido para quem está jogando. A mecânica ainda não foi definida; não implementar antes de discutir com o usuário.
