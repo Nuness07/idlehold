@@ -1,7 +1,17 @@
 import { Axe, Fish, FishSymbol, Gem, Mountain, Pickaxe, TreeDeciduous, TreePine, type LucideIcon } from 'lucide-react'
 import birchTree from '../assets/actions/birch-tree.png'
 import pineTree from '../assets/actions/pine-tree.png'
+import copperDeposit from '../assets/actions/copper.png'
+import perchSpot from '../assets/actions/perch.png'
+import pikeSpot from '../assets/actions/pike.png'
+import stoneOutcrop from '../assets/actions/stone.png'
+import fishingEmblem from '../assets/emblems/fishing.png'
+import miningEmblem from '../assets/emblems/mining.png'
 import woodcuttingEmblem from '../assets/emblems/woodcutting.png'
+import copperOre from '../assets/items/copper-ore.png'
+import perchItem from '../assets/items/perch.png'
+import pikeItem from '../assets/items/pike.png'
+import stoneBlock from '../assets/items/stone.png'
 import birchLog from '../assets/items/birch-log.png'
 import pineLog from '../assets/items/pine-log.png'
 
@@ -49,30 +59,32 @@ const trades: Record<string, TradeLabel> = {
     name: 'Fishing',
     paint: 'var(--color-lake)',
     Icon: Fish,
+    emblem: fishingEmblem,
   },
   mining: {
     name: 'Mining',
     paint: 'var(--color-slate)',
     Icon: Pickaxe,
+    emblem: miningEmblem,
   },
 }
 
 const actions: Record<string, ActionLabel> = {
   'cut-pine': { name: 'Pine', verb: 'Cutting pine', Icon: TreePine, sprite: pineTree },
   'cut-birch': { name: 'Birch', verb: 'Cutting birch', Icon: TreeDeciduous, sprite: birchTree },
-  'catch-perch': { name: 'Perch', verb: 'Catching perch', Icon: Fish },
-  'catch-pike': { name: 'Pike', verb: 'Catching pike', Icon: FishSymbol },
-  'mine-stone': { name: 'Stone', verb: 'Mining stone', Icon: Mountain },
-  'mine-copper': { name: 'Copper', verb: 'Mining copper', Icon: Gem },
+  'catch-perch': { name: 'Perch', verb: 'Catching perch', Icon: Fish, sprite: perchSpot },
+  'catch-pike': { name: 'Pike', verb: 'Catching pike', Icon: FishSymbol, sprite: pikeSpot },
+  'mine-stone': { name: 'Stone', verb: 'Mining stone', Icon: Mountain, sprite: stoneOutcrop },
+  'mine-copper': { name: 'Copper', verb: 'Mining copper', Icon: Gem, sprite: copperDeposit },
 }
 
 const items: Record<string, ItemLabel> = {
   'pine-log': { name: 'Pine log', sprite: pineLog },
   'birch-log': { name: 'Birch log', sprite: birchLog },
-  perch: { name: 'Perch', plural: 'perch' },
-  pike: { name: 'Pike', plural: 'pike' },
-  stone: { name: 'Stone', plural: 'stone' },
-  'copper-ore': { name: 'Copper ore', plural: 'copper ore' },
+  perch: { name: 'Perch', plural: 'perch', sprite: perchItem },
+  pike: { name: 'Pike', plural: 'pike', sprite: pikeItem },
+  stone: { name: 'Stone', plural: 'stone', sprite: stoneBlock },
+  'copper-ore': { name: 'Copper ore', plural: 'copper ore', sprite: copperOre },
 }
 
 function humanize(id: string): string {

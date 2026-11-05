@@ -38,6 +38,15 @@ Tool: PixelLab, `create_image_pro` (one call returns 64 candidates at 32x32 for
 - Prompt: name the single subject and its materials, then the role, e.g.
   `a single short oak log lying on its side, ... medieval game inventory item icon`.
   Ask for "not too detailed" when the subject is a low tier.
+- For a subject similar to an existing sprite (another fish, another ore), pass the
+  approved sprite in `reference_images` with a usage note for pose, orientation and scale.
+- Ask for the size explicitly when a subject is long ("about 28 pixels long so it fits
+  the canvas"). Without it, long subjects come back drawn across two candidates.
+- Review candidates with `art/tools/contact-sheet.ps1`, which downloads them into the
+  ignored `art/candidates/` folder and builds a numbered sheet. Candidates sometimes come
+  back rolled horizontally (the subject wraps around the left and right edges);
+  `art/tools/unwrap.ps1` cuts at the widest empty column run and recentres them. Discard
+  any candidate that still looks cut after that.
 - Pick the candidate that matches the base best, keep its orientation consistent with
   siblings (for example, every log's cut end on the same side), and record the prompt and
   candidate index in the table below.
@@ -62,10 +71,18 @@ Tool: PixelLab, `create_image_pro` (one call returns 64 candidates at 32x32 for
 | `items/birch-log.png` | a single short birch log lying on its side, cut end with pale rings facing the viewer | Style base |
 | `emblems/woodcutting.png` | a medieval iron hatchet leaning diagonally against a short chopped log | Woodcutting emblem |
 | `frames/wood.png` | simple square wooden frame, plain planks, nails at the corners, not too detailed | First frame tier; stretched pixel-exact from 37x38 to 46x48 |
+| `emblems/fishing.png` | a medieval wooden fishing rod with a line, leaning diagonally against a small woven wicker fish basket | Candidate 42; Woodcutting emblem as composition reference |
+| `emblems/mining.png` | a medieval iron pickaxe with a wooden handle, leaning diagonally against a small grey rock | Candidate 63; Woodcutting emblem as composition reference |
+| `actions/perch.png` | a small perch fish leaping out of a little patch of dark blue water with ripples | Candidate 33 |
+| `actions/pike.png` | a long slender pike leaping in a gentle arc out of a small patch of dark blue water, whole subject inside the canvas | Candidate 47; `actions/perch.png` as composition reference |
+| `actions/stone.png` | a grey stone boulder outcrop with cracks and a little moss at the base | Candidate 31 |
+| `actions/copper.png` | a dark grey rock outcrop with chunks of orange-brown copper ore showing through | Candidate 7 |
+| `items/perch.png` | a single raw perch lying on its side, head facing left, dark vertical stripes, orange fin | Candidate 4 |
+| `items/pike.png` | a small raw pike lying straight and horizontal, head facing left, about 28 px long to fit the canvas | Candidate 8 |
+| `items/stone.png` | a single rough-cut grey stone block, chiselled building stone | Candidate 17 |
+| `items/copper-ore.png` | a single lump of raw copper ore, dark grey rock with orange-brown and green-tinted chunks | Candidate 8 |
 
 ## Open points
-
-- Fishing and Mining have no sprites yet: their emblems, actions (perch, pike, stone, copper) and items (perch, pike, stone, copper ore) fall back to Lucide line icons until they are generated against the style base.
 
 - The sprites are not palette-locked yet (the base uses about 160 colours). A fixed
   palette derived from the UI tokens can be passed to `create_image_pro` (`palette`) once
