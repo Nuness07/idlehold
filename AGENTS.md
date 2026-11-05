@@ -10,6 +10,14 @@ IdleHold is a browser idle game. The backend is C#/.NET 10 and is **server-autho
 src/IdleHold.Engine   Pure game rules (GameEngine, GameState, GameContent, Experience)
 src/IdleHold.Api      ASP.NET Core Minimal API around the engine
 tests/                xUnit unit tests (engine) and integration tests (API)
+web/                  React + TypeScript + Vite + Tailwind client (pnpm)
+```
+
+Web client commands, from `web/`:
+
+```bash
+pnpm install
+pnpm typecheck && pnpm lint && pnpm test && pnpm build
 ```
 
 Build and test from the repository root:
@@ -29,6 +37,8 @@ dotnet test
 - Never trust client input. Validate request bodies and route values before calling the engine.
 - Storage is accessed only through `IPlayerStore`. Endpoints and services must not depend on a concrete store.
 - API responses use DTOs, not engine types.
+- The web client never computes rewards, XP or levels. It renders server state and only animates progress between requests.
+- `web/src/api/schema.d.ts` is generated from the API's OpenAPI document; regenerate it, never edit it by hand.
 
 ## Code style
 

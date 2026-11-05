@@ -1,3 +1,4 @@
+using System.Text.Json.Serialization;
 using IdleHold.Api;
 using IdleHold.Api.Players;
 using IdleHold.Engine;
@@ -9,6 +10,11 @@ var builder = WebApplication.CreateBuilder(args);
 // --- Services (dependency injection) ---
 // Registering here means "when someone asks for this type, hand them this instance".
 // Singleton = one shared instance for the whole app lifetime.
+// Numbers are JSON numbers only. The web default also accepts numeric strings,
+// which makes the OpenAPI document type every number as "number | string".
+builder.Services.ConfigureHttpJsonOptions(options =>
+    options.SerializerOptions.NumberHandling = JsonNumberHandling.Strict);
+
 builder.Services.AddOpenApi();
 builder.Services.AddProblemDetails();
 builder.Services.AddHealthChecks();

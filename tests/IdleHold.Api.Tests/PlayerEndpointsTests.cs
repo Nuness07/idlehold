@@ -50,7 +50,7 @@ public sealed class PlayerEndpointsTests : IDisposable
 
         // cut-pine takes 3s: 10s = 3 completions with 1s left on the bar.
         Assert.Equal(3, state.Inventory["pine-log"]);
-        Assert.Equal(30, state.Skills["woodcutting"].Xp);
+        Assert.Equal(new SkillResponse(Xp: 30, Level: 1, LevelStartXp: 0, NextLevelXp: 100), state.Skills["woodcutting"]);
         Assert.Equal(new ActiveActionResponse("cut-pine", ProgressMs: 1000, DurationMs: 3000), state.ActiveAction);
     }
 
@@ -64,7 +64,9 @@ public sealed class PlayerEndpointsTests : IDisposable
         var state = await GetPlayerAsync(player.Id);
 
         Assert.Equal(9600, state.Inventory["pine-log"]);
-        Assert.True(state.Skills["woodcutting"].Level > 1);
+        var woodcutting = state.Skills["woodcutting"];
+        Assert.True(woodcutting.Level > 1);
+        Assert.InRange(woodcutting.Xp, woodcutting.LevelStartXp, woodcutting.NextLevelXp!.Value - 1);
     }
 
     [Fact]
