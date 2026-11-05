@@ -17,10 +17,10 @@ A `main` é protegida pelo ruleset "Protect main" no GitHub. Não aceita push di
 1. Criar uma branch a partir da `main` atualizada (`feat/...`, `fix/...`, `docs/...`, `chore/...`, `ci/...`).
 2. Commits em Conventional Commits, sem coautoria.
 3. Abrir o PR com `gh pr create` (descrição com o quê / por quê / como testar).
-4. Comentar `@coderabbitai review` no PR. O repositório tem menos de 10 estrelas, então o CodeRabbit não revisa sozinho, e o status "CodeRabbit" é obrigatório para o merge.
-5. O Codex revisa automaticamente ao abrir o PR (reação 👀 e depois 👍 ou comentários).
-6. Ler os comentários dos dois revisores e corrigir no mesmo PR. Todas as conversas precisam estar resolvidas para o merge.
-7. O check "Build and test" (GitHub Actions) precisa estar verde.
+4. O Codex revisa automaticamente ao abrir o PR (reação 👀 e depois 👍 ou comentários). É o revisor padrão.
+5. O CodeRabbit é **opcional**: só revisa quando o dono do projeto comenta `@coderabbitai review`. Não comentar isso por conta própria.
+6. Ler os comentários dos revisores e corrigir no mesmo PR. Todas as conversas precisam estar resolvidas para o merge.
+7. O check "Build and test" (GitHub Actions) precisa estar verde. É o único check obrigatório.
 8. O merge é feito pelo dono do projeto.
 
 ## Pilares de design
