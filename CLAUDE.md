@@ -45,6 +45,10 @@ Browser idle game (genre inspiration: Melvor Idle — skills, progression, resou
 - `tests/IdleHold.Engine.Tests`: xUnit, engine tests.
 - `tests/IdleHold.Api.Tests`: integration tests with `WebApplicationFactory` and `FakeTimeProvider` (`ApiFactory`).
 - Run the tests: `dotnet test` (from the root).
+- `web/`: React + TypeScript + Vite + Tailwind CSS v4 client (pnpm). Feature folders under `web/src/features` (`player`, `actions`, `trades`, `stores`); typed API client in `web/src/api` (`schema.d.ts` is generated, never hand-edited); display names and trade paints in `web/src/content/labels.ts`; design tokens in the `@theme` block of `web/src/index.css`.
+  - The client never computes rewards or XP rules. It animates the working bar locally and refetches when a cycle ends; numbers on screen come from the server.
+  - Commands (in `web/`): `pnpm dev` (http://localhost:5173, proxies `/api` to the API), `pnpm test`, `pnpm typecheck`, `pnpm lint`, `pnpm build`, `pnpm gen:api` (regenerates types from a running API).
+- Visual design: PRODUCT.md holds product context. The visual direction is "Guild Signboards": each trade hangs a painted sign; limestone ground, oxblood band, one paint per trade, ochre only for what is working; Grenze Gotisch for the wordmark and trade names only, Alegreya Sans for everything else.
 - Run the API: `dotnet run --project src/IdleHold.Api` → http://localhost:5085. Interactive docs (Scalar) at http://localhost:5085/scalar, Development only. Manual requests live in `src/IdleHold.Api/IdleHold.Api.http`.
 
 ## Technical decisions
@@ -61,4 +65,9 @@ Record every decision here, with the reason in one line.
 - **In-memory state behind `IPlayerStore`** (temporary): Postgres will come in as another implementation of the same interface.
 - **Player id in the URL** (temporary, insecure): becomes `/me` once auth is added.
 - **Lazy evaluation:** every request runs `Tick(state, now − LastUpdated)`. Nothing runs while the player is away.
+- **TypeScript 7 (native compiler)** in `web/`. `openapi-typescript` still needs the TypeScript 5 JS API, so `gen:api` runs it through `pnpm dlx` with TypeScript 5.9 in isolation.
+- **API JSON numbers are strict** (`JsonNumberHandling.Strict`), so the OpenAPI document types numbers as `number`, not `number | string`.
+- **Skill responses carry level bounds** (`levelStartXp`, `nextLevelXp`), so the client shows level progress without reimplementing the XP curve.
+- **Server state via TanStack Query; types via OpenAPI** (`openapi-fetch` + generated `schema.d.ts`).
+- **Self-hosted fonts** through Fontsource; icons from Lucide.
 - **Open questions:** database (likely Postgres + EF Core), auth (likely ASP.NET Identity), type generation (OpenAPI), hosting, real time (SignalR, when multiplayer arrives).

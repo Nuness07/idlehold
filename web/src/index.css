@@ -1,0 +1,76 @@
+@import '@fontsource/alegreya-sans/400.css';
+@import '@fontsource/alegreya-sans/500.css';
+@import '@fontsource/alegreya-sans/700.css';
+@import '@fontsource/alegreya-sans/800.css';
+@import '@fontsource/grenze-gotisch/700.css';
+@import '@fontsource/grenze-gotisch/800.css';
+@import 'tailwindcss';
+
+@theme {
+  --color-stone: #ecedea;
+  --color-limewash: #f7f7f4;
+  --color-rule: #cfcfc8;
+  --color-ink: #1b1712;
+  --color-ink-hover: #33302a;
+  --color-muted: #5b564c;
+  --color-oxblood: #5a1e1b;
+  --color-oxblood-ink: #f4f1ea;
+  --color-oxblood-soft: #e9c9a6;
+  --color-ochre: #c9932e;
+  --color-ochre-wash: #f3e6c8;
+  --color-verdigris: #2f6b58;
+  --color-danger: #9b2c23;
+
+  --font-sans: 'Alegreya Sans', ui-sans-serif, system-ui, sans-serif;
+  --font-gothic: 'Grenze Gotisch', 'Alegreya Sans', serif;
+
+  --animate-sign-swing: sign-swing 1100ms cubic-bezier(0.2, 0.7, 0.2, 1);
+
+  @keyframes sign-swing {
+    0% { transform: rotate(0deg); }
+    18% { transform: rotate(2.4deg); }
+    42% { transform: rotate(-1.5deg); }
+    64% { transform: rotate(0.7deg); }
+    84% { transform: rotate(-0.25deg); }
+    100% { transform: rotate(0deg); }
+  }
+}
+
+@layer base {
+  html {
+    background: var(--color-stone);
+    color: var(--color-ink);
+    font-family: var(--font-sans);
+    font-variant-numeric: tabular-nums;
+    -webkit-font-smoothing: antialiased;
+    scrollbar-color: var(--color-rule) var(--color-stone);
+  }
+
+  ::selection {
+    background: var(--color-ochre);
+    color: var(--color-ink);
+  }
+
+  :focus-visible {
+    outline: 2px solid var(--color-ink);
+    outline-offset: 2px;
+  }
+
+  button {
+    cursor: pointer;
+  }
+
+  button:disabled {
+    cursor: default;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 1ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 1ms !important;
+  }
+}

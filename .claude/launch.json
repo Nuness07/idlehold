@@ -6,6 +6,12 @@
       "runtimeExecutable": "dotnet",
       "runtimeArgs": ["run", "--project", "src/IdleHold.Api", "--launch-profile", "http"],
       "port": 5085
+    },
+    {
+      "name": "web",
+      "runtimeExecutable": "pnpm",
+      "runtimeArgs": ["--dir", "web", "dev", "--port", "5173", "--strictPort"],
+      "port": 5173
     }
   ]
 }
