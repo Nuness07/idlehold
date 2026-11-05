@@ -1,6 +1,7 @@
 import type { GameAction, Skill } from '../../api/client'
 import { tradeLabel } from '../../content/labels'
 import { formatCount, formatDuration } from '../../lib/format'
+import { TradeEmblem } from './TradeEmblem'
 
 interface TradeSignProps {
   skillId: string
@@ -54,7 +55,6 @@ function nextLevelLine(skill: Skill, working: GameAction | undefined): string {
 /** The active trade's painted sign, hung from its bracket. */
 export function TradeSign({ skillId, skill, working, swingKey }: TradeSignProps) {
   const trade = tradeLabel(skillId)
-  const { Icon } = trade
   const span = skill.nextLevelXp === null ? 0 : skill.nextLevelXp - skill.levelStartXp
   const fill = span === 0 ? (skill.xp === 0 ? 0 : 1) : (skill.xp - skill.levelStartXp) / span
 
@@ -67,7 +67,7 @@ export function TradeSign({ skillId, skill, working, swingKey }: TradeSignProps)
           <div aria-hidden className="pointer-events-none absolute inset-2 rounded-sm border border-oxblood-ink/45" />
 
           <div className="relative flex flex-wrap items-center gap-x-5 gap-y-2">
-            <Icon aria-hidden className="size-10 shrink-0 sm:size-12" strokeWidth={1.75} />
+            <TradeEmblem trade={trade} scale={2} fallbackClassName="size-10 shrink-0 sm:size-12" />
             <h1 id="trade-name" className="font-gothic text-[clamp(2.5rem,4.5vw,4rem)] leading-none font-extrabold">
               {trade.name}
             </h1>

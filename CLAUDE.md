@@ -71,4 +71,5 @@ Record every decision here, with the reason in one line.
 - **Skill responses carry level bounds** (`levelStartXp`, `nextLevelXp`), so the client shows level progress without reimplementing the XP curve.
 - **Server state via TanStack Query; types via OpenAPI** (`openapi-fetch` + generated `schema.d.ts`).
 - **Self-hosted fonts** through Fontsource; icons from Lucide.
+- **Pixel art for world objects only**, generated with PixelLab Pro against `art/style-reference.png` (the tree and log sprites): one style base keeps every sprite consistent. Rules and the asset log live in `docs/art-direction.md`.
 - **Open questions:** database (likely Postgres + EF Core), auth (likely ASP.NET Identity), type generation (OpenAPI), hosting, real time (SignalR, when multiplayer arrives).

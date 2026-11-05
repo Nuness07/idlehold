@@ -1,5 +1,6 @@
 import type { GameAction } from '../../api/client'
 import { Button } from '../../components/Button'
+import { PixelSprite } from '../../components/PixelSprite'
 import { actionLabel, itemLabel, tradeLabel } from '../../content/labels'
 import { formatDuration } from '../../lib/format'
 
@@ -29,13 +30,17 @@ export function ActionList({ actions, activeActionId, pendingActionId, onStart }
                 working ? 'border-ochre bg-ochre-wash' : 'border-rule bg-limewash'
               }`}
             >
-              <span
-                aria-hidden
-                className="grid size-10 shrink-0 place-items-center rounded text-oxblood-ink"
-                style={{ backgroundColor: tradeLabel(action.skillId).paint }}
-              >
-                <label.Icon className="size-6" strokeWidth={1.75} />
-              </span>
+              {label.sprite ? (
+                <PixelSprite src={label.sprite} width={32} height={32} scale={2} />
+              ) : (
+                <span
+                  aria-hidden
+                  className="grid size-10 shrink-0 place-items-center rounded text-oxblood-ink"
+                  style={{ backgroundColor: tradeLabel(action.skillId).paint }}
+                >
+                  <label.Icon className="size-6" strokeWidth={1.75} />
+                </span>
+              )}
               <div className="min-w-0 flex-1">
                 <p className="text-lg leading-tight font-extrabold">{label.name}</p>
                 <p className="text-[15px] text-muted">
