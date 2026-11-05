@@ -1,0 +1,25 @@
+### Manual requests against the running API (`dotnet run --project src/IdleHold.Api`).
+### In VS Code, install the "REST Client" extension and click "Send Request" above each block.
+
+@host = http://localhost:5085
+
+### List game content
+GET {{host}}/content
+
+### Create a player (copy the "id" from the response into @playerId below)
+POST {{host}}/players
+
+###
+@playerId = 00000000-0000-0000-0000-000000000000
+
+### Get player state (caught up to now)
+GET {{host}}/players/{{playerId}}
+
+### Start chopping pine
+POST {{host}}/players/{{playerId}}/action
+Content-Type: application/json
+
+{ "actionId": "cut-pine" }
+
+### Stop the current action
+DELETE {{host}}/players/{{playerId}}/action

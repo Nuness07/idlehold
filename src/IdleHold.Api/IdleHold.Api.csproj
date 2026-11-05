@@ -1,0 +1,14 @@
+<Project Sdk="Microsoft.NET.Sdk.Web">
+
+  <!-- HTTP layer around the engine. Shared settings live in Directory.Build.props. -->
+
+  <ItemGroup>
+    <PackageReference Include="Microsoft.AspNetCore.OpenApi" Version="10.0.14" />
+    <PackageReference Include="Scalar.AspNetCore" Version="2.18.7" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\IdleHold.Engine\IdleHold.Engine.csproj" />
+  </ItemGroup>
+
+</Project>

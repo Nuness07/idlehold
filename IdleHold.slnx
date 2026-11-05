@@ -1,0 +1,10 @@
+<Solution>
+  <Folder Name="/src/">
+    <Project Path="src/IdleHold.Api/IdleHold.Api.csproj" />
+    <Project Path="src/IdleHold.Engine/IdleHold.Engine.csproj" />
+  </Folder>
+  <Folder Name="/tests/">
+    <Project Path="tests/IdleHold.Api.Tests/IdleHold.Api.Tests.csproj" />
+    <Project Path="tests/IdleHold.Engine.Tests/IdleHold.Engine.Tests.csproj" />
+  </Folder>
+</Solution>

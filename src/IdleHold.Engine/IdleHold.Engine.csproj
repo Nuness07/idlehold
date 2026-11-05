@@ -1,0 +1,5 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <!-- Pure game rules: no web, no database, no I/O. Shared settings live in Directory.Build.props. -->
+
+</Project>
