@@ -20,7 +20,7 @@ Browser idle game (genre inspiration: Melvor Idle — skills, progression, resou
 4. Codex reviews automatically when the PR is opened (👀 reaction, then 👍 or comments). It is the default reviewer.
 5. CodeRabbit is **opt-in**: it only reviews when the project owner comments `@coderabbitai review`. Never post that comment on your own.
 6. Read the reviewers' comments and fix them in the same PR. All conversations must be resolved before merging.
-7. The "Build and test" check (GitHub Actions) must be green. It is the only required check.
+7. The "Build and test" (.NET) and "Web" (frontend) checks from GitHub Actions must be green. They are the required checks.
 8. The project owner does the merge.
 
 ## Design pillars
