@@ -11,6 +11,7 @@ var builder = WebApplication.CreateBuilder(args);
 // Singleton = one shared instance for the whole app lifetime.
 builder.Services.AddOpenApi();
 builder.Services.AddProblemDetails();
+builder.Services.AddHealthChecks();
 
 builder.Services.AddSingleton(TimeProvider.System);
 builder.Services.AddSingleton(_ => DefaultContent.Create());
@@ -26,6 +27,9 @@ if (app.Environment.IsDevelopment())
     app.MapOpenApi();             // OpenAPI document at /openapi/v1.json
     app.MapScalarApiReference();  // Interactive docs UI at /scalar, built from that document
 }
+
+// Liveness probe for hosting platforms and uptime monitors.
+app.MapHealthChecks("/health");
 
 app.MapGameContentEndpoints();
 app.MapPlayerEndpoints();
