@@ -14,3 +14,11 @@ export function writeStorage(key: string, value: string): void {
     // Storage unavailable: the game still works for this session.
   }
 }
+
+export function removeStorage(key: string): void {
+  try {
+    window.localStorage.removeItem(key)
+  } catch {
+    // Storage unavailable: nothing was kept there.
+  }
+}
