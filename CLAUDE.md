@@ -41,11 +41,14 @@ Browser idle game (genre inspiration: Melvor Idle — skills, progression, resou
 - `src/IdleHold.Engine`: pure game rules (`GameEngine`, `GameState`, `GameContent`, `Experience`). Must not depend on web, databases or I/O.
 - `src/IdleHold.Api`: ASP.NET Core API (Minimal APIs) that references the Engine. Never the reverse.
   - `Players/`: `PlayerService` (catches the player up to "now" with `Tick`, applies the command, saves), `IPlayerStore` + `InMemoryPlayerStore`, endpoints and DTOs.
+  - `Persistence/`: `GameDbContext` (EF Core), `PlayerRecord` (`players` table: `id`, `state` as `jsonb`, `last_updated`, `xmin` as concurrency token), `StateDocument` (the versioned saved shape of `GameState`, separate from the engine type), `PostgresPlayerStore` (optimistic concurrency with retries), and `Migrations/` (generated, never hand-edited).
+  - With a `ConnectionStrings:Game` value the API saves to Postgres; without one it falls back to the in-memory store. Development applies migrations on start.
   - Endpoints: `GET /health`, `GET /content`, `POST /players`, `GET /players/{id}`, `POST /players/{id}/action`, `DELETE /players/{id}/action`.
   - The current time always comes from the injected `TimeProvider`. Never use `DateTime.Now` directly.
 - `tests/IdleHold.Engine.Tests`: xUnit, engine tests.
-- `tests/IdleHold.Api.Tests`: integration tests with `WebApplicationFactory` and `FakeTimeProvider` (`ApiFactory`).
-- Run the tests: `dotnet test` (from the root).
+- `tests/IdleHold.Api.Tests`: integration tests with `WebApplicationFactory` and `FakeTimeProvider` (`ApiFactory`, which runs in a "Testing" environment with in-memory saves unless given a connection string). `PostgresPlayerStoreTests` use a throwaway Postgres container (`PostgresFixture`, Testcontainers) and need Docker running.
+- Run the tests: `dotnet test` (from the root; Docker must be running).
+- Local database: `docker compose up -d` starts Postgres 17 on host port **5433** (`docker-compose.yml`, local-only credentials; 5433 avoids a natively installed Postgres on 5432). New migration: `dotnet ef migrations add <Name> --project src/IdleHold.Api --output-dir Persistence/Migrations` (`dotnet-ef` is a local tool in `dotnet-tools.json`; run `dotnet tool restore` once).
 - `web/`: React + TypeScript + Vite + Tailwind CSS v4 client (pnpm). Feature folders under `web/src/features` (`player`, `actions`, `trades`, `stores`); typed API client in `web/src/api` (`schema.d.ts` is generated, never hand-edited); display names and trade paints in `web/src/content/labels.ts`; design tokens in the `@theme` block of `web/src/index.css`.
   - The client never computes rewards or XP rules. It animates the working bar locally and refetches when a cycle ends; numbers on screen come from the server.
   - Commands (in `web/`): `pnpm dev` (http://localhost:5173, proxies `/api` to the API), `pnpm test`, `pnpm typecheck`, `pnpm lint`, `pnpm build`, `pnpm gen:api` (regenerates types from a running API).
@@ -63,7 +66,11 @@ Record every decision here, with the reason in one line.
 - **Tests:** xUnit on the backend, Vitest on the frontend.
 - **Monorepo:** root folder with `.slnx` for .NET and a pnpm workspace for the frontend; Turborepo only if needed.
 - **Minimal APIs** (not Controllers): Microsoft's current default, with less ceremony.
-- **In-memory state behind `IPlayerStore`** (temporary): Postgres will come in as another implementation of the same interface.
+- **Postgres, with the game state as `jsonb`**: relational for what will need transactions and queries (accounts, market, leaderboards), a JSON document for the state the engine reads and writes whole. A field that needs indexing later (for a leaderboard) gets promoted to its own column.
+- **EF Core + Npgsql, migrations in the repo**; local Postgres in Docker, a managed Postgres (likely Neon) when deployed.
+- **Optimistic concurrency on `xmin`** instead of locks: a conflicting write reloads the newer state and reapplies the command.
+- **Saved state is a versioned document (`StateDocument`)**, not the engine record, so engine refactors cannot break existing saves.
+- **Accounts (next): ASP.NET Core Identity with cookie auth, guest first.** Players start as guests; the game asks them to create an account later and the guest's progress moves to it. A future tutorial runs as a guest, and the account is asked for when the real game starts.
 - **Player id in the URL** (temporary, insecure): becomes `/me` once auth is added.
 - **Lazy evaluation:** every request runs `Tick(state, now − LastUpdated)`. Nothing runs while the player is away.
 - **TypeScript 7 (native compiler)** in `web/`. `openapi-typescript` still needs the TypeScript 5 JS API, so `gen:api` runs it through `pnpm dlx` with TypeScript 5.9 in isolation.
@@ -72,4 +79,4 @@ Record every decision here, with the reason in one line.
 - **Server state via TanStack Query; types via OpenAPI** (`openapi-fetch` + generated `schema.d.ts`).
 - **Self-hosted fonts** through Fontsource; icons from Lucide.
 - **Pixel art for world objects only**, generated with PixelLab Pro against `art/style-reference.png` (the tree and log sprites): one style base keeps every sprite consistent. Rules and the asset log live in `docs/art-direction.md`.
-- **Open questions:** database (likely Postgres + EF Core), auth (likely ASP.NET Identity), type generation (OpenAPI), hosting, real time (SignalR, when multiplayer arrives).
+- **Open questions:** hosting, real time (SignalR, when multiplayer arrives).

@@ -23,6 +23,7 @@ pnpm typecheck && pnpm lint && pnpm test && pnpm build
 Build and test from the repository root:
 
 ```bash
+docker compose up -d   # local Postgres; also needed by the Testcontainers tests
 dotnet build
 dotnet test
 ```
@@ -36,6 +37,8 @@ dotnet test
 - The API gets the current time only from the injected `TimeProvider`.
 - Never trust client input. Validate request bodies and route values before calling the engine.
 - Storage is accessed only through `IPlayerStore`. Endpoints and services must not depend on a concrete store.
+- Saves are written as `StateDocument` (versioned), never by serializing engine types directly. A change to the saved shape bumps `SchemaVersion` and handles older documents.
+- Schema changes go through EF Core migrations in `src/IdleHold.Api/Persistence/Migrations`; never edit a migration that is already on `main`.
 - API responses use DTOs, not engine types.
 - The web client never computes rewards, XP or levels. It renders server state and only animates progress between requests.
 - `web/src/api/schema.d.ts` is generated from the API's OpenAPI document; regenerate it, never edit it by hand.
