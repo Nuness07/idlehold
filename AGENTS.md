@@ -1,65 +1,64 @@
 # AGENTS.md
 
-Guidance for AI coding agents and reviewers working on IdleHold.
+Guidance for AI coding agents and reviewers working on IdleHold. This file loads in every session, so it stays short; details live in the files it points to.
 
 ## Project
 
-IdleHold is a browser idle game. The backend is C#/.NET 10 and is **server-authoritative**: all game rules run on the server, and the client only renders state.
+IdleHold is an original browser idle game (genre: Melvor Idle; mechanics yes, names, art or content from existing games no). The backend is C#/.NET 10 and **server-authoritative**: all game rules run on the server, and the client only renders state.
 
 ```
-src/IdleHold.Engine   Pure game rules (GameEngine, GameState, GameContent, Experience)
-src/IdleHold.Api      ASP.NET Core Minimal API around the engine
-tests/                xUnit unit tests (engine) and integration tests (API)
+src/IdleHold.Engine   Pure game rules
+src/IdleHold.Api      ASP.NET Core Minimal API around the engine, Postgres saves, Identity accounts
+tests/                xUnit: engine unit tests, API integration tests
 web/                  React + TypeScript + Vite + Tailwind client (pnpm)
 ```
 
-Web client commands, from `web/`:
+## Where to read more
 
-```bash
-pnpm install
-pnpm typecheck && pnpm lint && pnpm test && pnpm build
-```
+| Working on | Read first |
+|---|---|
+| Engine, API, backend tests | `src/AGENTS.md` |
+| Web client | `web/AGENTS.md` |
+| Why something is the way it is | `docs/decisions.md` (add every new decision there, with the reason in one line) |
+| Game design | `docs/game-design.md` (only "Decided" items are decisions) |
+| Visual design and art | `PRODUCT.md`, `DESIGN.md`, `docs/art-direction.md` |
 
-Build and test from the repository root:
+## Design pillars
 
-```bash
-docker compose up -d   # local Postgres; also needed by the Testcontainers tests
-dotnet build
-dotnet test
-```
+- **The village is the core.** Skills feed a village rebuilt after the old one was attacked; unlockable villagers take on work.
+- **Reward active play.** Being present has to matter through decisions, events and interaction, not just faster actions.
+- Do not implement game design ideas, or the active-play mechanic, before the project owner decides them.
 
-## Architecture rules
+## Roadmap
 
-- `IdleHold.Engine` is pure. It must not reference ASP.NET Core, databases, the file system, the network, `DateTime.Now`/`UtcNow`, or unseeded randomness.
-- Dependencies point one way: `IdleHold.Api` references `IdleHold.Engine`, never the reverse.
-- Game state is immutable. Engine methods return a new `GameState` (`with` expressions) and never mutate their input.
-- `Tick(state, elapsed)` must run in constant time with respect to `elapsed`. Compute completions with arithmetic, never with a loop per cycle.
-- The API gets the current time only from the injected `TimeProvider`.
-- Never trust client input. Validate request bodies and route values before calling the engine.
-- Guest routes (`/players/{id}`) must refuse a hold that belongs to an account; owned holds are reachable only through the signed-in `/me/player` routes.
-- Login errors never reveal whether an e-mail has an account. Passwords are handled only by ASP.NET Core Identity.
+1. MVP (done). 2. Accounts and server saves (done). 3. Data at scale. 4. Multiplayer (market, leaderboards, chat): leave the door open, do not build ahead.
+
+## Rules for every change
+
+- Prefer small, incremental steps. Start simple and evolve.
+- Game rules live only in the engine. The web client never computes rewards, XP or levels.
 - No real secret is ever committed. Local-only Docker credentials are fine; production values come from environment variables (for example `ConnectionStrings__Game`).
-- Storage is accessed only through `IPlayerStore`. Endpoints and services must not depend on a concrete store.
-- Saves are written as `StateDocument` (versioned), never by serializing engine types directly. A change to the saved shape bumps `SchemaVersion` and handles older documents.
-- Schema changes go through EF Core migrations in `src/IdleHold.Api/Persistence/Migrations`; never edit a migration that is already on `main`.
-- API responses use DTOs, not engine types.
-- The web client never computes rewards, XP or levels. It renders server state and only animates progress between requests.
-- `web/src/api/schema.d.ts` is generated from the API's OpenAPI document; regenerate it, never edit it by hand.
+- Guest routes refuse a hold that belongs to an account. Login errors never reveal whether an e-mail has an account. Passwords are handled only by ASP.NET Core Identity.
+- Everything in the repository (code, names, comments, commits, PRs, docs) is in English.
+- Conventional Commits (`feat:`, `fix:`, `docs:`, `ci:`, `chore:`, `test:`, `refactor:`). Commits and pull requests never include AI co-author or attribution lines.
 
-## Code style
+## Workflow
 
-- Nullable reference types and warnings-as-errors are on. Do not suppress warnings to make a build pass.
-- Classes and records are `sealed` unless they are designed for inheritance.
-- Use `long` for item quantities and XP, since idle numbers grow large.
-- Names, comments, commit messages and docs are in English.
-- Commits follow Conventional Commits (`feat:`, `fix:`, `docs:`, `ci:`, `chore:`, `test:`, `refactor:`).
-- Commits and pull requests must not include AI co-author or attribution lines.
+`main` is protected (no direct push, force push or deletion).
 
-## Testing
+1. Branch from an up-to-date `main` (`feat/...`, `fix/...`, `docs/...`, `chore/...`, `ci/...`).
+2. Open the PR with `gh pr create` (what / why / how to test).
+3. Codex reviews automatically. CodeRabbit reviews only when the project owner comments `@coderabbitai review`; never post that comment.
+4. Fix reviewers' comments in the same PR; all conversations resolved before merging.
+5. Required checks: "Build and test" (.NET) and "Web". The project owner merges.
 
-- Any change to game rules needs engine unit tests in `tests/IdleHold.Engine.Tests`.
-- Any change to an endpoint needs integration tests in `tests/IdleHold.Api.Tests`, using `ApiFactory` and its `FakeTimeProvider` to control time.
-- Tests must be deterministic: no real clock, no real waiting, no shared state between tests.
+## Commands
+
+```bash
+docker compose up -d     # local Postgres on port 5433; also needed by the Testcontainers tests
+dotnet test              # from the root
+cd web && pnpm typecheck && pnpm lint && pnpm test && pnpm build
+```
 
 ## Review guidelines
 
@@ -73,5 +72,6 @@ Treat these as **P1** (must fix before merge):
 - `int` is used for item quantities or XP.
 - A game rule or endpoint changes without a matching test.
 - A response DTO changes shape in a way that breaks existing clients, without saying so in the PR.
+- Web UI text is hard-coded instead of coming from the locale files.
 
 Do not flag pure formatting or naming preferences unless they hurt readability.

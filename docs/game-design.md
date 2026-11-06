@@ -12,7 +12,7 @@ A living document of ideas. Nothing here is committed until it is moved to "Deci
 
 You manage a small village. Your old home was attacked and lost, and you start over somewhere new with almost nothing. At first you do everything yourself. Over time you rebuild, unlock villagers who take on work, and the village grows into a hold.
 
-The game is idle: the village keeps working while you are away. Being present still has to matter, through decisions and moments that reward attention, not only through faster numbers (see the design pillar in `CLAUDE.md`).
+The game is idle: the village keeps working while you are away. Being present still has to matter, through decisions and moments that reward attention, not only through faster numbers (see the design pillars in `AGENTS.md`).
 
 ## Core loop
 
