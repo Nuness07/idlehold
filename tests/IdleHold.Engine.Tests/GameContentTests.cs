@@ -29,4 +29,31 @@ public class GameContentTests
 
         Assert.NotEmpty(content.Actions);
     }
+
+    [Fact]
+    public void DefaultContent_HasTwoActionsPerGatheringSkill()
+    {
+        var bySkill = DefaultContent.Create().Actions
+            .GroupBy(action => action.SkillId)
+            .ToDictionary(group => group.Key, group => group.Count());
+
+        Assert.Equal(
+            new Dictionary<string, int> { ["woodcutting"] = 2, ["fishing"] = 2, ["mining"] = 2 },
+            bySkill);
+    }
+
+    [Fact]
+    public void DefaultContent_SlowerActionsPayMoreXpPerSecond()
+    {
+        // Within a skill, waiting longer must be worth it; otherwise the slow action is a trap.
+        foreach (var skill in DefaultContent.Create().Actions.GroupBy(action => action.SkillId))
+        {
+            var ordered = skill.OrderBy(action => action.Duration).ToList();
+            var rates = ordered.Select(action => action.XpPerCompletion / action.Duration.TotalSeconds).ToList();
+
+            Assert.True(
+                rates.SequenceEqual(rates.Order()),
+                $"In {skill.Key}, slower actions should not give less XP per second.");
+        }
+    }
 }

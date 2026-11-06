@@ -55,6 +55,8 @@ export function usePlayer() {
       return keepNewest(queryClient.getQueryData<PlayerSnapshot>(playerQueryKey), next)
     },
     refetchInterval: 30_000,
+    // Keep polling in a background tab: that is where idle players leave the game.
+    refetchIntervalInBackground: true,
     refetchOnWindowFocus: true,
     retry: 2,
   })

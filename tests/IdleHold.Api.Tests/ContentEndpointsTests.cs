@@ -20,4 +20,15 @@ public sealed class ContentEndpointsTests : IDisposable
         Assert.Equal(3000, pine.DurationMs);
         Assert.Equal("woodcutting", pine.SkillId);
     }
+
+    [Fact]
+    public async Task GetContent_ListsEveryGatheringSkill()
+    {
+        using var client = _factory.CreateClient();
+
+        var content = await client.GetFromJsonAsync<ContentResponse>("/content");
+
+        var skills = content!.Actions.Select(action => action.SkillId).Distinct().Order();
+        Assert.Equal(["fishing", "mining", "woodcutting"], skills);
+    }
 }

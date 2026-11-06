@@ -5,10 +5,11 @@ import { TradeEmblem } from './TradeEmblem'
 interface TradeRailProps {
   trades: { skillId: string; skill: Skill; working: boolean }[]
   selected: string
+  onSelect: (skillId: string) => void
 }
 
 /** The list of trades. A column on wide screens, a row of tabs on phones. */
-export function TradeRail({ trades, selected }: TradeRailProps) {
+export function TradeRail({ trades, selected, onSelect }: TradeRailProps) {
   return (
     <nav aria-label="Trades" className="lg:py-6">
       <h2 className="sr-only lg:not-sr-only lg:mb-3 lg:block lg:px-6 lg:text-xs lg:font-extrabold lg:tracking-[0.14em] lg:text-muted lg:uppercase">
@@ -20,11 +21,12 @@ export function TradeRail({ trades, selected }: TradeRailProps) {
           const isSelected = skillId === selected
           return (
             <li key={skillId} className="shrink-0">
-              {/* Not a link yet: with a single trade there is nothing to switch to. */}
-              <div
-                aria-current={isSelected ? 'true' : undefined}
-                className={`flex items-center gap-3 rounded border px-3 py-2.5 text-[16px] font-bold text-ink ${
-                  isSelected ? 'border-ink/30 bg-white' : 'border-transparent'
+              <button
+                type="button"
+                onClick={() => onSelect(skillId)}
+                aria-pressed={isSelected}
+                className={`flex w-full items-center gap-3 rounded border px-3 py-2.5 text-left text-[16px] font-bold text-ink transition-colors ${
+                  isSelected ? 'border-ink/30 bg-white' : 'border-transparent hover:bg-ink/5'
                 }`}
               >
                 {trade.emblem ? (
@@ -43,7 +45,7 @@ export function TradeRail({ trades, selected }: TradeRailProps) {
                   <span aria-label="working" className="size-2 rounded-full bg-ochre" />
                 )}
                 <span className="ml-auto pl-4 tabular-nums">{skill.level}</span>
-              </div>
+              </button>
             </li>
           )
         })}

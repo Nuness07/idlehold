@@ -32,9 +32,19 @@ The village is the differentiator. Skills feed the village; the village gives sk
 
 ## Systems
 
-### Gathering skills: Next
+### Gathering skills: Decided
 
-Woodcutting exists. Mining and Fishing follow the same model (an action takes time and grants XP and an item), so they mostly need content, not new engine rules.
+Three gathering skills exist, each with a quick starter action and a slower one that pays more XP per second:
+
+| Skill | Actions | Item |
+|---|---|---|
+| Woodcutting | Pine (3 s, 10 XP), Birch (5 s, 18 XP) | Pine log, Birch log |
+| Fishing | Perch (4 s, 12 XP), Pike (7 s, 28 XP) | Perch, Pike |
+| Mining | Stone (3 s, 9 XP), Copper (6 s, 22 XP) | Stone, Copper ore |
+
+Wood and stone are the village's building materials; fish feeds Cooking; copper feeds Smithing. A content test keeps the rule that a slower action never pays less XP per second. Level gates on the slower actions are not in yet.
+
+Note on originality: Melvor Idle already has a village skill (Township). Here the village is not one skill among many; the skills exist to serve the village.
 
 ### Processing skills: Next
 
@@ -88,7 +98,7 @@ A shared market for trading goods. Requires accounts, persistent saves, an econo
 ## Proposed order
 
 1. **Content as data**: item and skill catalogs in content files, validated on load.
-2. **Mining and Fishing**: two more gathering skills on the existing model.
+2. ~~**Mining and Fishing**~~: done (see Gathering skills).
 3. **Recipes**: the first processing skill (Cooking or Smithing), with input consumption in the engine.
 4. **Persistent saves**: Postgres behind `IPlayerStore`, so progress survives server restarts.
 5. **Accounts**: sign up and log in; `/players/{id}` becomes `/me`.
