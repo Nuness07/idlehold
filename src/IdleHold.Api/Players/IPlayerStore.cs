@@ -11,6 +11,9 @@ public interface IPlayerStore
     /// <summary>Reads a player's save without changing it. Returns <c>null</c> when the player does not exist.</summary>
     Task<PlayerSave?> GetAsync(Guid playerId, CancellationToken cancellationToken);
 
+    /// <summary>The player owned by an account, or <c>null</c> if the account has none yet.</summary>
+    Task<PlayerSave?> FindByAccountAsync(Guid accountId, CancellationToken cancellationToken);
+
     /// <summary>
     /// Loads a player, applies <paramref name="update"/> and saves the result as one atomic step,
     /// so two requests for the same player can never overwrite each other.

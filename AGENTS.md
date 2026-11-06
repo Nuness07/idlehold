@@ -36,6 +36,9 @@ dotnet test
 - `Tick(state, elapsed)` must run in constant time with respect to `elapsed`. Compute completions with arithmetic, never with a loop per cycle.
 - The API gets the current time only from the injected `TimeProvider`.
 - Never trust client input. Validate request bodies and route values before calling the engine.
+- Guest routes (`/players/{id}`) must refuse a hold that belongs to an account; owned holds are reachable only through the signed-in `/me/player` routes.
+- Login errors never reveal whether an e-mail has an account. Passwords are handled only by ASP.NET Core Identity.
+- No real secret is ever committed. Local-only Docker credentials are fine; production values come from environment variables (for example `ConnectionStrings__Game`).
 - Storage is accessed only through `IPlayerStore`. Endpoints and services must not depend on a concrete store.
 - Saves are written as `StateDocument` (versioned), never by serializing engine types directly. A change to the saved shape bumps `SchemaVersion` and handles older documents.
 - Schema changes go through EF Core migrations in `src/IdleHold.Api/Persistence/Migrations`; never edit a migration that is already on `main`.

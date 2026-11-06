@@ -15,7 +15,14 @@ namespace IdleHold.Api.Tests;
 /// </summary>
 public sealed class ApiFactory(string? gameDatabase = null) : WebApplicationFactory<Program>
 {
-    public FakeTimeProvider Clock { get; } = new(new DateTimeOffset(2026, 1, 1, 12, 0, 0, TimeSpan.Zero));
+    /// <summary>
+    /// Every factory's clock starts at the same real instant. It must be near the real time: ASP.NET
+    /// also uses this clock for cookie expiry, and a client drops a cookie that expired in real time.
+    /// Sharing one start keeps tests that use two factories (a "restart") deterministic.
+    /// </summary>
+    private static readonly DateTimeOffset Start = DateTimeOffset.UtcNow;
+
+    public FakeTimeProvider Clock { get; } = new(Start);
 
     protected override void ConfigureWebHost(IWebHostBuilder builder)
     {
