@@ -1,15 +1,26 @@
+using IdleHold.Api.Accounts;
+using Microsoft.AspNetCore.Identity;
+using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Design;
 
 namespace IdleHold.Api.Persistence;
 
-/// <summary>The game's database. EF Core migrations under <c>Persistence/Migrations</c> build its schema.</summary>
-public sealed class GameDbContext(DbContextOptions<GameDbContext> options) : DbContext(options)
+/// <summary>
+/// The game's database. It inherits Identity's tables (<c>AspNetUsers</c> and friends, keyed by
+/// <see cref="Guid"/>) and adds the game's own. EF Core migrations under <c>Persistence/Migrations</c>
+/// build the schema.
+/// </summary>
+public sealed class GameDbContext(DbContextOptions<GameDbContext> options)
+    : IdentityDbContext<Account, IdentityRole<Guid>, Guid>(options)
 {
     public DbSet<PlayerRecord> Players => Set<PlayerRecord>();
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
+        // Identity configures its own tables first.
+        base.OnModelCreating(modelBuilder);
+
         modelBuilder.Entity<PlayerRecord>(player =>
         {
             player.ToTable("players");
@@ -18,6 +29,13 @@ public sealed class GameDbContext(DbContextOptions<GameDbContext> options) : DbC
             player.Property(p => p.State).HasColumnName("state").HasColumnType("jsonb").IsRequired();
             player.Property(p => p.LastUpdated).HasColumnName("last_updated");
             player.Property(p => p.Version).IsRowVersion();
+
+            player.Property(p => p.AccountId).HasColumnName("account_id");
+            player.HasIndex(p => p.AccountId).IsUnique();
+            player.HasOne<Account>()
+                .WithMany()
+                .HasForeignKey(p => p.AccountId)
+                .OnDelete(DeleteBehavior.Cascade); // Deleting an account deletes its hold.
         });
     }
 }

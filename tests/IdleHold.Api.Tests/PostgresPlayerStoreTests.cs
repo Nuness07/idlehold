@@ -102,8 +102,9 @@ public sealed class PostgresPlayerStoreTests(PostgresFixture database) : IClassF
             Assert.Equal(3, beforeRestart!.Inventory["pine-log"]);
         }
 
-        // The second server starts its own clock at the same noon. Move it 9 s past the moment the
-        // first server last saved (12:00:09), so the test proves time kept counting across the restart.
+        // The second server's clock starts at the same instant as the first one. Move it 9 s past the
+        // moment the first server last saved (start + 9 s), so the test proves time kept counting
+        // across the restart.
         await using var secondRun = new ApiFactory(database.ConnectionString);
         using var secondClient = secondRun.CreateClient();
         secondRun.Clock.Advance(TimeSpan.FromSeconds(18));

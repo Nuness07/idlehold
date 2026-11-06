@@ -42,9 +42,11 @@ Browser idle game (genre inspiration: Melvor Idle — skills, progression, resou
 - `src/IdleHold.Api`: ASP.NET Core API (Minimal APIs) that references the Engine. Never the reverse.
   - `Players/`: `PlayerService` (catches the player up to "now" with `Tick`; reads never write, commands apply and save), `IPlayerStore` + `InMemoryPlayerStore`, endpoints and DTOs.
   - `Persistence/`: `GameDbContext` (EF Core), `PlayerRecord` (`players` table: `id`, `state` as `jsonb`, `last_updated`, `xmin` as concurrency token), `StateDocument` (the versioned saved shape of `GameState`, separate from the engine type), `PostgresPlayerStore` (optimistic concurrency with retries), and `Migrations/` (generated, never hand-edited).
-  - With a `ConnectionStrings:Game` value the API saves to Postgres; without one it falls back to the in-memory store. Development applies migrations on start.
-  - Endpoints: `GET /health`, `GET /content`, `POST /players`, `GET /players/{id}`, `POST /players/{id}/action`, `DELETE /players/{id}/action`.
-  - The current time always comes from the injected `TimeProvider`. Never use `DateTime.Now` directly.
+  - `Accounts/`: `Account` (Identity user, `Guid` key) and `AccountEndpoints` (register, login, logout, me). `GameDbContext` inherits `IdentityDbContext`, so Identity's `AspNetUsers` tables live in the same database; `players.account_id` (unique, nullable) links an account to its one hold.
+  - With a `ConnectionStrings:Game` value the API saves to Postgres and enables accounts; without one it falls back to the in-memory store and has no account routes. Development applies migrations on start.
+  - Endpoints: `GET /health`, `GET /content`; guest routes `POST /players`, `GET /players/{id}`, `POST|DELETE /players/{id}/action` (403 once the hold belongs to an account); accounts `POST /account/register` (optional `guestPlayerId` keeps the guest's progress), `POST /account/login`, `POST /account/logout`, `GET /account/me`; signed-in routes `GET /me/player`, `POST|DELETE /me/player/action`.
+  - Session: Identity's cookie `idlehold.session`, HttpOnly, SameSite=Strict, 30 days sliding. Unauthenticated API calls get 401, never a redirect.
+  - The current time always comes from the injected `TimeProvider`. Never use `DateTime.Now` directly. ASP.NET also uses it for cookie expiry, so test clocks start at a fixed date far in the future (`ApiFactory`), never the wall clock or a date in the past.
 - `tests/IdleHold.Engine.Tests`: xUnit, engine tests.
 - `tests/IdleHold.Api.Tests`: integration tests with `WebApplicationFactory` and `FakeTimeProvider` (`ApiFactory`, which runs in a "Testing" environment with in-memory saves unless given a connection string). `PostgresPlayerStoreTests` use a throwaway Postgres container (`PostgresFixture`, Testcontainers) and need Docker running.
 - Run the tests: `dotnet test` (from the root; Docker must be running).
@@ -71,7 +73,7 @@ Record every decision here, with the reason in one line.
 - **EF Core + Npgsql, migrations in the repo**; local Postgres in Docker, a managed Postgres (likely Neon) when deployed.
 - **Optimistic concurrency on `xmin`** instead of locks: a conflicting write reloads the newer state and reapplies the command.
 - **Saved state is a versioned document (`StateDocument`)**, not the engine record, so engine refactors cannot break existing saves.
-- **Accounts (next): ASP.NET Core Identity with cookie auth, guest first.** Players start as guests; the game asks them to create an account later and the guest's progress moves to it. A future tutorial runs as a guest, and the account is asked for when the real game starts.
+- **Accounts: ASP.NET Core Identity with cookie auth, guest first** (API done; web screens next). Players start as guests; the game asks them to create an account later and the guest's progress moves to it. A future tutorial runs as a guest, and the account is asked for when the real game starts.
 - **Player id in the URL** (temporary, insecure): becomes `/me` once auth is added.
 - **Lazy evaluation:** every request runs `Tick(state, now − LastUpdated)`. Nothing runs while the player is away.
 - **Reads never write.** The current state follows from the save, its timestamp and the clock, and `Tick` is deterministic and constant-time, so `GET` only computes. Only commands save, which cuts writes from every poll to every player action and removes almost all concurrency conflicts.
@@ -82,4 +84,5 @@ Record every decision here, with the reason in one line.
 - **Self-hosted fonts** through Fontsource; icons from Lucide.
 - **i18n with react-i18next** (English + pt-BR): the market standard, with plural rules from `Intl` per language and typed keys.
 - **Pixel art for world objects only**, generated with PixelLab Pro against `art/style-reference.png` (the tree and log sprites): one style base keeps every sprite consistent. Rules and the asset log live in `docs/art-direction.md`.
+- **Before deploying:** persist ASP.NET Data Protection keys (they sign the session cookie; if they live only in the container, every restart signs everyone out), send e-mail for confirmation and password reset, and serve over HTTPS so the cookie is Secure.
 - **Open questions:** hosting, real time (SignalR, when multiplayer arrives).

@@ -30,6 +30,14 @@ public sealed class InMemoryPlayerStore : IPlayerStore
         }
     }
 
+    public Task<PlayerSave?> FindByAccountAsync(Guid accountId, CancellationToken cancellationToken)
+    {
+        lock (_lock)
+        {
+            return Task.FromResult(_players.Values.FirstOrDefault(player => player.AccountId == accountId));
+        }
+    }
+
     public Task<PlayerSave?> UpdateAsync(Guid playerId, Func<PlayerSave, PlayerSave> update, CancellationToken cancellationToken)
     {
         lock (_lock)
@@ -40,7 +48,11 @@ public sealed class InMemoryPlayerStore : IPlayerStore
             }
 
             var updated = update(current);
-            _players[playerId] = updated;
+            if (!ReferenceEquals(updated, current))
+            {
+                _players[playerId] = updated;
+            }
+
             return Task.FromResult<PlayerSave?>(updated);
         }
     }

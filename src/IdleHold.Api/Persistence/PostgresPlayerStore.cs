@@ -25,8 +25,16 @@ public sealed class PostgresPlayerStore(IDbContextFactory<GameDbContext> context
             Id = player.Id,
             State = StateDocument.From(player.State).Serialize(),
             LastUpdated = player.LastUpdated,
+            AccountId = player.AccountId,
         });
         await db.SaveChangesAsync(cancellationToken);
+    }
+
+    public async Task<PlayerSave?> FindByAccountAsync(Guid accountId, CancellationToken cancellationToken)
+    {
+        await using var db = await contexts.CreateDbContextAsync(cancellationToken);
+        var record = await db.Players.AsNoTracking().SingleOrDefaultAsync(p => p.AccountId == accountId, cancellationToken);
+        return record is null ? null : ToSave(record);
     }
 
     public async Task<PlayerSave?> GetAsync(Guid playerId, CancellationToken cancellationToken)
@@ -52,10 +60,16 @@ public sealed class PostgresPlayerStore(IDbContextFactory<GameDbContext> context
                 return null;
             }
 
-            var updated = update(ToSave(record));
+            var current = ToSave(record);
+            var updated = update(current);
+            if (ReferenceEquals(updated, current))
+            {
+                return current; // Nothing to save.
+            }
 
             record.State = StateDocument.From(updated.State).Serialize();
             record.LastUpdated = updated.LastUpdated;
+            record.AccountId = updated.AccountId;
 
             try
             {
@@ -70,5 +84,5 @@ public sealed class PostgresPlayerStore(IDbContextFactory<GameDbContext> context
     }
 
     private static PlayerSave ToSave(PlayerRecord record) =>
-        new(record.Id, StateDocument.Deserialize(record.State).ToState(), record.LastUpdated);
+        new(record.Id, StateDocument.Deserialize(record.State).ToState(), record.LastUpdated, record.AccountId);
 }

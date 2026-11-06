@@ -15,7 +15,14 @@ namespace IdleHold.Api.Tests;
 /// </summary>
 public sealed class ApiFactory(string? gameDatabase = null) : WebApplicationFactory<Program>
 {
-    public FakeTimeProvider Clock { get; } = new(new DateTimeOffset(2026, 1, 1, 12, 0, 0, TimeSpan.Zero));
+    /// <summary>
+    /// Every factory's clock starts at the same fixed instant, so runs never depend on the wall clock.
+    /// It sits far in the future because ASP.NET also uses this clock for cookie expiry, and the test
+    /// client drops a cookie whose expiry is in the real past.
+    /// </summary>
+    private static readonly DateTimeOffset Start = new(2100, 1, 1, 12, 0, 0, TimeSpan.Zero);
+
+    public FakeTimeProvider Clock { get; } = new(Start);
 
     protected override void ConfigureWebHost(IWebHostBuilder builder)
     {
