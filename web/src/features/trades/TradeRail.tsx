@@ -1,5 +1,7 @@
+import { useTranslation } from 'react-i18next'
 import type { Skill } from '../../api/client'
 import { tradeLabel } from '../../content/labels'
+import { useContentText } from '../../content/text'
 import { TradeEmblem } from './TradeEmblem'
 
 interface TradeRailProps {
@@ -10,10 +12,13 @@ interface TradeRailProps {
 
 /** The list of trades. A column on wide screens, a row of tabs on phones. */
 export function TradeRail({ trades, selected, onSelect }: TradeRailProps) {
+  const { t } = useTranslation()
+  const text = useContentText()
+
   return (
-    <nav aria-label="Trades" className="lg:py-6">
+    <nav aria-label={t('trades.heading')} className="lg:py-6">
       <h2 className="sr-only lg:not-sr-only lg:mb-3 lg:block lg:px-6 lg:text-xs lg:font-extrabold lg:tracking-[0.14em] lg:text-muted lg:uppercase">
-        Trades
+        {t('trades.heading')}
       </h2>
       <ul className="flex gap-2 overflow-x-auto px-4 py-3 lg:flex-col lg:gap-1 lg:px-3 lg:py-0">
         {trades.map(({ skillId, skill, working }) => {
@@ -40,9 +45,9 @@ export function TradeRail({ trades, selected, onSelect }: TradeRailProps) {
                     <trade.Icon className="size-[18px]" strokeWidth={2} />
                   </span>
                 )}
-                <span>{trade.name}</span>
+                <span>{text.tradeName(skillId)}</span>
                 {working && (
-                  <span aria-label="working" className="size-2 rounded-full bg-ochre" />
+                  <span aria-label={t('trades.working')} className="size-2 rounded-full bg-ochre" />
                 )}
                 <span className="ml-auto pl-4 tabular-nums">{skill.level}</span>
               </button>
