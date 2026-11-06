@@ -5,9 +5,25 @@ import type { Skill } from './api/client'
 import { Button } from './components/Button'
 import { LanguageSwitch } from './components/LanguageSwitch'
 import { useContentText } from './content/text'
+import { AccountDialog } from './features/account/AccountDialog'
+import type { AccountFormMode } from './features/account/AccountForm'
+import { AccountMenu } from './features/account/AccountMenu'
+import { switchAccount, useAccount, useLogout } from './features/account/queries'
+import { hasProgressWorthSaving, useNudgeDismissed } from './features/account/nudge'
+import { SaveNudge } from './features/account/SaveNudge'
+import { SignedOut } from './features/account/SignedOut'
 import { ActionList } from './features/actions/ActionList'
 import { WorkingAction } from './features/actions/WorkingAction'
-import { playerQueryKey, useContent, usePlayer, useStartAction, useStopAction } from './features/player/queries'
+import {
+  HoldOwnedError,
+  playerQueryRoot,
+  SessionEndedError,
+  useContent,
+  usePlayer,
+  useStartAction,
+  useStartAsNewGuest,
+  useStopAction,
+} from './features/player/queries'
 import { SinceYouLeft } from './features/player/SinceYouLeft'
 import { rememberLastSeen, summarizeAway, type AwaySummary } from './features/player/awaySummary'
 import { Stores } from './features/stores/Stores'
@@ -24,12 +40,20 @@ export default function App() {
   const format = useFormat()
   const queryClient = useQueryClient()
   const content = useContent()
-  const playerQuery = usePlayer()
+  const accountQuery = useAccount()
+  const accountState = accountQuery.data
+  const mode = accountState ? (accountState.account ? 'account' : 'guest') : undefined
+  const playerQuery = usePlayer(mode)
   const snapshot = playerQuery.data
   const player = snapshot?.player
 
-  const startAction = useStartAction(player?.id)
-  const stopAction = useStopAction(player?.id)
+  const startAction = useStartAction(mode ?? 'guest', player?.id)
+  const stopAction = useStopAction(mode ?? 'guest', player?.id)
+  const logout = useLogout()
+  const startAsNewGuest = useStartAsNewGuest()
+
+  const [dialog, setDialog] = useState<AccountFormMode | null>(null)
+  const [nudgeDismissed, dismissNudge] = useNudgeDismissed()
 
   const [away, setAway] = useState<AwaySummary | null>(null)
   const [swingKey, setSwingKey] = useState(0)
@@ -37,7 +61,7 @@ export default function App() {
   /** The trade the player chose to look at; until they choose, the screen follows the working trade. */
   const [viewedSkillId, setViewedSkillId] = useState<string>()
   const summarized = useRef(false)
-  const lastTotals = useRef<{ xp: number; levels: number } | null>(null)
+  const lastTotals = useRef<{ playerId: string; xp: number; levels: number } | null>(null)
 
   const actions = useMemo(() => content.data?.actions ?? [], [content.data])
   const skillIds = useMemo(() => [...new Set(actions.map((action) => action.skillId))], [actions])
@@ -60,12 +84,14 @@ export default function App() {
     if (!player) return
     const skills = Object.values(player.skills)
     const totals = {
+      playerId: player.id,
       xp: skills.reduce((sum, skill) => sum + skill.xp, 0),
       levels: skills.reduce((sum, skill) => sum + skill.level, 0),
     }
     const previous = lastTotals.current
     lastTotals.current = totals
-    if (previous === null || totals.xp <= previous.xp) return
+    // A different hold (after signing in or out) is a new baseline, not a reward.
+    if (previous === null || previous.playerId !== totals.playerId || totals.xp <= previous.xp) return
 
     if (totals.levels > previous.levels) setSwingKey((key) => key + 1)
     setFreshItemId(activeDefinition?.outputItemId)
@@ -88,31 +114,78 @@ export default function App() {
   }, [player, activeDefinition, t, text, format])
 
   const refreshPlayer = useCallback(
-    () => queryClient.invalidateQueries({ queryKey: playerQueryKey }),
+    () => queryClient.invalidateQueries({ queryKey: playerQueryRoot }),
     [queryClient],
   )
 
-  if (playerQuery.isError || content.isError) {
-    return (
-      <Shell totalLevel={null}>
-        <div className="mx-auto max-w-xl px-6 py-20">
+  // The session ended while playing (expired, or signed out elsewhere): fall back to the guest view,
+  // which finds the browser's hold owned and asks to sign in.
+  const sessionEnded =
+    playerQuery.error instanceof SessionEndedError ||
+    startAction.error instanceof SessionEndedError ||
+    stopAction.error instanceof SessionEndedError
+  useEffect(() => {
+    if (sessionEnded) switchAccount(queryClient, null)
+  }, [sessionEnded, queryClient])
+
+  // The browser's hold belongs to an account: there is no guest hold to save, only one to sign in to.
+  const holdOwned = playerQuery.error instanceof HoldOwnedError
+  const guestPlayer = mode === 'guest' && !holdOwned ? player : undefined
+  const guestHasXp = guestPlayer ? Object.values(guestPlayer.skills).some((skill) => skill.xp > 0) : false
+  const shell = (totalLevel: number | null, children: React.ReactNode) => (
+    <Shell
+      totalLevel={totalLevel}
+      menu={
+        accountState?.enabled && !holdOwned ? (
+          <AccountMenu
+            account={accountState.account}
+            onSaveProgress={() => setDialog('register')}
+            onSignOut={() => logout.mutate()}
+            signingOut={logout.isPending}
+          />
+        ) : null
+      }
+    >
+      {children}
+      <AccountDialog
+        mode={dialog}
+        onModeChange={setDialog}
+        onClose={() => setDialog(null)}
+        guest={guestPlayer ? { playerId: guestPlayer.id, hasProgress: guestHasXp } : null}
+      />
+    </Shell>
+  )
+
+  if (holdOwned) {
+    return shell(null, <SignedOut onSignIn={() => setDialog('login')} onNewGuest={startAsNewGuest} />)
+  }
+
+  if ((playerQuery.isError && !sessionEnded) || content.isError || accountQuery.isError) {
+    return shell(
+      null,
+      <div className="mx-auto max-w-xl px-6 py-20">
           <h1 className="text-3xl font-extrabold">{t('app.errorTitle')}</h1>
           <p className="mt-2 text-muted">{t('app.errorBody')}</p>
-          <Button className="mt-6" onClick={() => { void playerQuery.refetch(); void content.refetch() }}>
+          <Button
+            className="mt-6"
+            onClick={() => {
+              void accountQuery.refetch()
+              void playerQuery.refetch()
+              void content.refetch()
+            }}
+          >
             {t('app.tryAgain')}
           </Button>
-        </div>
-      </Shell>
+        </div>,
     )
   }
 
   if (!player || !snapshot || !content.data || !selectedSkillId) {
-    return (
-      <Shell totalLevel={null}>
-        <p className="px-6 py-20 text-center text-lg text-muted" role="status">
-          {t('app.loading')}
-        </p>
-      </Shell>
+    return shell(
+      null,
+      <p className="px-6 py-20 text-center text-lg text-muted" role="status">
+        {t('app.loading')}
+      </p>,
     )
   }
 
@@ -120,8 +193,12 @@ export default function App() {
   const totalLevel = skillIds.reduce((sum, skillId) => sum + skillOf(skillId).level, 0)
   const tradeActions = actions.filter((action) => action.skillId === selectedSkillId)
 
-  return (
-    <Shell totalLevel={totalLevel}>
+  const showNudge =
+    mode === 'guest' && accountState?.enabled === true && !nudgeDismissed && hasProgressWorthSaving(player.skills)
+
+  return shell(
+    totalLevel,
+    <>
       {/* grid-cols-1 is minmax(0, 1fr): on phones the trade row scrolls instead of widening the page. */}
       <div className="grid flex-1 grid-cols-1 lg:grid-cols-[240px_minmax(0,1fr)] xl:grid-cols-[260px_minmax(0,1fr)_320px]">
         <aside className="min-w-0 border-b border-rule bg-limewash lg:row-span-2 lg:border-r lg:border-b-0 xl:row-span-1">
@@ -152,6 +229,8 @@ export default function App() {
 
           {away && <SinceYouLeft summary={away} onDismiss={() => setAway(null)} />}
 
+          {showNudge && <SaveNudge onCreateAccount={() => setDialog('register')} onDismiss={dismissNudge} />}
+
           <WorkingAction
             active={activeAction}
             action={activeDefinition}
@@ -179,11 +258,18 @@ export default function App() {
           <Stores inventory={player.inventory} freshItemId={freshItemId} />
         </aside>
       </div>
-    </Shell>
+    </>,
   )
 }
 
-function Shell({ totalLevel, children }: { totalLevel: number | null; children: React.ReactNode }) {
+interface ShellProps {
+  totalLevel: number | null
+  /** The account controls, or `null` when the server has no accounts. */
+  menu: React.ReactNode
+  children: React.ReactNode
+}
+
+function Shell({ totalLevel, menu, children }: ShellProps) {
   const { t } = useTranslation()
   return (
     <div className="flex min-h-dvh flex-col">
@@ -193,12 +279,13 @@ function Shell({ totalLevel, children }: { totalLevel: number | null; children: 
           <span aria-hidden className="mr-px font-sans font-extrabold">I</span>
           <span aria-hidden>dleHold</span>
         </span>
-        <div className="ml-auto flex items-center gap-5">
+        <div className="ml-auto flex items-center gap-3 sm:gap-5">
           {totalLevel !== null && (
             <span className="hidden text-[15px] font-medium text-oxblood-soft sm:inline">
               {t('app.totalLevel')} <span className="font-extrabold text-oxblood-ink">{totalLevel}</span>
             </span>
           )}
+          {menu}
           <LanguageSwitch />
         </div>
       </header>
