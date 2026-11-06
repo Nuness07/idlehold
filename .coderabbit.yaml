@@ -23,6 +23,12 @@ reviews:
     enabled: true
     drafts: false
 
+  # Comments here explain why, where it is not obvious. A blanket docstring-coverage rule would
+  # push comments that only restate a method's name.
+  pre_merge_checks:
+    docstrings:
+      mode: "off"
+
   path_filters:
     - "!**/bin/**"
     - "!**/obj/**"

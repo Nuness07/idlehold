@@ -22,6 +22,14 @@ public sealed class InMemoryPlayerStore : IPlayerStore
         return Task.CompletedTask;
     }
 
+    public Task<PlayerSave?> GetAsync(Guid playerId, CancellationToken cancellationToken)
+    {
+        lock (_lock)
+        {
+            return Task.FromResult(_players.GetValueOrDefault(playerId));
+        }
+    }
+
     public Task<PlayerSave?> UpdateAsync(Guid playerId, Func<PlayerSave, PlayerSave> update, CancellationToken cancellationToken)
     {
         lock (_lock)

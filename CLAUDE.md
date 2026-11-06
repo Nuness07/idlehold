@@ -40,7 +40,7 @@ Browser idle game (genre inspiration: Melvor Idle — skills, progression, resou
 - `IdleHold.slnx`: .NET solution. `Directory.Build.props` holds shared settings (net10.0, nullable, warnings as errors). `global.json` pins SDK 10.
 - `src/IdleHold.Engine`: pure game rules (`GameEngine`, `GameState`, `GameContent`, `Experience`). Must not depend on web, databases or I/O.
 - `src/IdleHold.Api`: ASP.NET Core API (Minimal APIs) that references the Engine. Never the reverse.
-  - `Players/`: `PlayerService` (catches the player up to "now" with `Tick`, applies the command, saves), `IPlayerStore` + `InMemoryPlayerStore`, endpoints and DTOs.
+  - `Players/`: `PlayerService` (catches the player up to "now" with `Tick`; reads never write, commands apply and save), `IPlayerStore` + `InMemoryPlayerStore`, endpoints and DTOs.
   - `Persistence/`: `GameDbContext` (EF Core), `PlayerRecord` (`players` table: `id`, `state` as `jsonb`, `last_updated`, `xmin` as concurrency token), `StateDocument` (the versioned saved shape of `GameState`, separate from the engine type), `PostgresPlayerStore` (optimistic concurrency with retries), and `Migrations/` (generated, never hand-edited).
   - With a `ConnectionStrings:Game` value the API saves to Postgres; without one it falls back to the in-memory store. Development applies migrations on start.
   - Endpoints: `GET /health`, `GET /content`, `POST /players`, `GET /players/{id}`, `POST /players/{id}/action`, `DELETE /players/{id}/action`.
@@ -73,6 +73,7 @@ Record every decision here, with the reason in one line.
 - **Accounts (next): ASP.NET Core Identity with cookie auth, guest first.** Players start as guests; the game asks them to create an account later and the guest's progress moves to it. A future tutorial runs as a guest, and the account is asked for when the real game starts.
 - **Player id in the URL** (temporary, insecure): becomes `/me` once auth is added.
 - **Lazy evaluation:** every request runs `Tick(state, now − LastUpdated)`. Nothing runs while the player is away.
+- **Reads never write.** The current state follows from the save, its timestamp and the clock, and `Tick` is deterministic and constant-time, so `GET` only computes. Only commands save, which cuts writes from every poll to every player action and removes almost all concurrency conflicts.
 - **TypeScript 7 (native compiler)** in `web/`. `openapi-typescript` still needs the TypeScript 5 JS API, so `gen:api` runs it through `pnpm dlx` with TypeScript 5.9 in isolation.
 - **API JSON numbers are strict** (`JsonNumberHandling.Strict`), so the OpenAPI document types numbers as `number`, not `number | string`.
 - **Skill responses carry level bounds** (`levelStartXp`, `nextLevelXp`), so the client shows level progress without reimplementing the XP curve.
