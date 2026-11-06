@@ -57,7 +57,9 @@ Cooking, Smithing (smelting ore into bars, bars into tools), Leatherworking. The
 
 Buildings cost goods and give something back: unlock a skill, unlock a villager, raise storage, add a passive bonus. This is the main long-term sink for resources and the visual centre of the game.
 
-Open: is the village a map you look at, a list of buildings, or both?
+Decided: the village is a scene you look at and the home screen (the hub), seen in first person from the camp looking out to the horizon. It starts as a campfire among the ruins of the old village, with the forest behind. The village has a name ("Idle Road" for now; the player will choose it later); how it is shown is not decided. Its pieces will be animated over time.
+
+Open: how buildings appear in the scene, and whether it is also a list of buildings.
 
 ### Villagers: Later (core)
 
