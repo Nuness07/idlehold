@@ -80,15 +80,19 @@ public sealed class PostgresPlayerStoreTests(PostgresFixture database) : IClassF
             playerId = created!.Id;
             await client.PostAsJsonAsync($"/players/{playerId}/action", new StartActionRequest("cut-pine"));
             firstRun.Clock.Advance(TimeSpan.FromSeconds(9));
-            await client.GetAsync($"/players/{playerId}");
+            var beforeRestart = await client.GetFromJsonAsync<PlayerResponse>($"/players/{playerId}");
+            Assert.Equal(3, beforeRestart!.Inventory["pine-log"]);
         }
 
+        // The second server starts its own clock at the same noon. Move it 9 s past the moment the
+        // first server last saved (12:00:09), so the test proves time kept counting across the restart.
         await using var secondRun = new ApiFactory(database.ConnectionString);
         using var secondClient = secondRun.CreateClient();
+        secondRun.Clock.Advance(TimeSpan.FromSeconds(18));
         var response = await secondClient.GetAsync($"/players/{playerId}");
 
         response.EnsureSuccessStatusCode();
         var player = await response.Content.ReadFromJsonAsync<PlayerResponse>();
-        Assert.True(player!.Inventory["pine-log"] >= 3);
+        Assert.Equal(6, player!.Inventory["pine-log"]);
     }
 }
