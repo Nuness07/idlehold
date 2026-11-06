@@ -142,9 +142,16 @@ async function command(
   return data
 }
 
+/**
+ * Command errors belong to the session that produced them. Keying each command by mode resets it when
+ * the player signs in or out, so an old 401 cannot keep the app thinking the session just ended.
+ */
+const commandKey = (name: 'start' | 'stop', mode: PlayerMode) => ['command', name, mode] as const
+
 export function useStartAction(mode: PlayerMode, playerId: string | undefined) {
   const queryClient = useQueryClient()
   return useMutation({
+    mutationKey: commandKey('start', mode),
     // A read already in flight would carry the state from before this action.
     onMutate: () => queryClient.cancelQueries({ queryKey: playerQueryKey(mode) }),
     mutationFn: (actionId: string) =>
@@ -159,6 +166,7 @@ export function useStartAction(mode: PlayerMode, playerId: string | undefined) {
 export function useStopAction(mode: PlayerMode, playerId: string | undefined) {
   const queryClient = useQueryClient()
   return useMutation({
+    mutationKey: commandKey('stop', mode),
     onMutate: () => queryClient.cancelQueries({ queryKey: playerQueryKey(mode) }),
     mutationFn: () =>
       command(mode, playerId, {
