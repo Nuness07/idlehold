@@ -3,7 +3,8 @@ param(
   [Parameter(Mandatory)] [string] $Name,
   [string] $OutRoot = (Join-Path $PSScriptRoot '..\candidates'),
   [int] $Count = 64,
-  [int] $Scale = 4
+  [int] $Scale = 4,
+  [int] $Size = 32
 )
 
 # Downloads every candidate of a PixelLab job into art/candidates/<Name>/ and tiles them into a
@@ -22,7 +23,7 @@ for ($i = 0; $i -lt $Count; $i++) {
 }
 
 $cols = 8
-$cell = 32 * $Scale
+$cell = $Size * $Scale
 $pad = 18
 $rows = [Math]::Ceiling($Count / $cols)
 $sheet = New-Object System.Drawing.Bitmap ($cols * ($cell + 8)), ($rows * ($cell + $pad + 8))
