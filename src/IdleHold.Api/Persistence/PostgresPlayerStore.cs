@@ -29,6 +29,15 @@ public sealed class PostgresPlayerStore(IDbContextFactory<GameDbContext> context
         await db.SaveChangesAsync(cancellationToken);
     }
 
+    public async Task<PlayerSave?> GetAsync(Guid playerId, CancellationToken cancellationToken)
+    {
+        await using var db = await contexts.CreateDbContextAsync(cancellationToken);
+
+        // AsNoTracking: we only read, so EF Core does not keep a copy to detect changes.
+        var record = await db.Players.AsNoTracking().SingleOrDefaultAsync(p => p.Id == playerId, cancellationToken);
+        return record is null ? null : ToSave(record);
+    }
+
     public async Task<PlayerSave?> UpdateAsync(
         Guid playerId,
         Func<PlayerSave, PlayerSave> update,
@@ -43,8 +52,7 @@ public sealed class PostgresPlayerStore(IDbContextFactory<GameDbContext> context
                 return null;
             }
 
-            var current = new PlayerSave(record.Id, StateDocument.Deserialize(record.State).ToState(), record.LastUpdated);
-            var updated = update(current);
+            var updated = update(ToSave(record));
 
             record.State = StateDocument.From(updated.State).Serialize();
             record.LastUpdated = updated.LastUpdated;
@@ -60,4 +68,7 @@ public sealed class PostgresPlayerStore(IDbContextFactory<GameDbContext> context
             }
         }
     }
+
+    private static PlayerSave ToSave(PlayerRecord record) =>
+        new(record.Id, StateDocument.Deserialize(record.State).ToState(), record.LastUpdated);
 }

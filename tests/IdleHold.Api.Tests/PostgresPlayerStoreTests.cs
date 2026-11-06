@@ -40,6 +40,24 @@ public sealed class PostgresPlayerStoreTests(PostgresFixture database) : IClassF
     }
 
     [Fact]
+    public async Task Get_ReadsWithoutChangingTheRow()
+    {
+        var store = new PostgresPlayerStore(database.CreateFactory());
+        var player = NewPlayer();
+        await store.AddAsync(player, CancellationToken.None);
+        uint VersionOf() { using var db = database.CreateContext(); return db.Players.Single(p => p.Id == player.Id).Version; }
+        var versionBefore = VersionOf();
+
+        var read = await store.GetAsync(player.Id, CancellationToken.None);
+        await store.GetAsync(player.Id, CancellationToken.None);
+
+        Assert.Equal(player.Id, read!.Id);
+        Assert.Equal(Noon, read.LastUpdated);
+        Assert.Equal(versionBefore, VersionOf());
+        Assert.Null(await store.GetAsync(Guid.NewGuid(), CancellationToken.None));
+    }
+
+    [Fact]
     public async Task Update_UnknownPlayer_ReturnsNull()
     {
         var store = new PostgresPlayerStore(database.CreateFactory());

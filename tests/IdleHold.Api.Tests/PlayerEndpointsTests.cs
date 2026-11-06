@@ -1,6 +1,7 @@
 using System.Net;
 using System.Net.Http.Json;
 using IdleHold.Api.Players;
+using Microsoft.Extensions.DependencyInjection;
 
 namespace IdleHold.Api.Tests;
 
@@ -67,6 +68,41 @@ public sealed class PlayerEndpointsTests : IDisposable
         var woodcutting = state.Skills["woodcutting"];
         Assert.True(woodcutting.Level > 1);
         Assert.InRange(woodcutting.Xp, woodcutting.LevelStartXp, woodcutting.NextLevelXp!.Value - 1);
+    }
+
+    [Fact]
+    public async Task Reading_ComputesNowWithoutWritingTheSave()
+    {
+        var player = await CreatePlayerAsync();
+        await StartActionAsync(player.Id, "cut-pine");
+        var store = _factory.Services.GetRequiredService<IPlayerStore>();
+        var savedAfterStart = await store.GetAsync(player.Id, CancellationToken.None);
+
+        _factory.Clock.Advance(TimeSpan.FromSeconds(9));
+        var first = await GetPlayerAsync(player.Id);
+        _factory.Clock.Advance(TimeSpan.FromSeconds(3));
+        var second = await GetPlayerAsync(player.Id);
+
+        // Each read is caught up to its own "now"...
+        Assert.Equal(3, first.Inventory["pine-log"]);
+        Assert.Equal(4, second.Inventory["pine-log"]);
+        // ...while the stored save is still the one written by the command.
+        Assert.Equal(savedAfterStart, await store.GetAsync(player.Id, CancellationToken.None));
+    }
+
+    [Fact]
+    public async Task Command_SavesTheCaughtUpState()
+    {
+        var player = await CreatePlayerAsync();
+        await StartActionAsync(player.Id, "cut-pine");
+        _factory.Clock.Advance(TimeSpan.FromSeconds(10));
+
+        await _client.DeleteAsync($"/players/{player.Id}/action");
+
+        var saved = await _factory.Services.GetRequiredService<IPlayerStore>().GetAsync(player.Id, CancellationToken.None);
+        Assert.Equal(3, saved!.State.ItemCount("pine-log"));
+        Assert.Null(saved.State.ActiveAction);
+        Assert.Equal(_factory.Clock.GetUtcNow(), saved.LastUpdated);
     }
 
     [Fact]
