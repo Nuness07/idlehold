@@ -29,6 +29,7 @@ import { rememberLastSeen, summarizeAway, type AwaySummary } from './features/pl
 import { Stores } from './features/stores/Stores'
 import { TradeRail } from './features/trades/TradeRail'
 import { TradeSign } from './features/trades/TradeSign'
+import { VillageView } from './features/village/VillageView'
 import { useFormat } from './lib/format'
 
 /** A trade the player has not earned XP in yet. Its real level bounds arrive with the first XP. */
@@ -60,6 +61,8 @@ export default function App() {
   const [freshItemId, setFreshItemId] = useState<string>()
   /** The trade the player chose to look at; until they choose, the screen follows the working trade. */
   const [viewedSkillId, setViewedSkillId] = useState<string>()
+  /** The village is the home screen; choosing a trade leaves it, and the rail's Village entry comes back. */
+  const [villageOpen, setVillageOpen] = useState(true)
   const summarized = useRef(false)
   const lastTotals = useRef<{ playerId: string; xp: number; levels: number } | null>(null)
 
@@ -200,11 +203,15 @@ export default function App() {
     totalLevel,
     <>
       {/* grid-cols-1 is minmax(0, 1fr): on phones the trade row scrolls instead of widening the page. */}
-      <div className="grid flex-1 grid-cols-1 lg:grid-cols-[240px_minmax(0,1fr)] xl:grid-cols-[260px_minmax(0,1fr)_320px]">
+      <div className="grid flex-1 grid-cols-1 content-start lg:content-normal lg:grid-cols-[240px_minmax(0,1fr)] xl:grid-cols-[260px_minmax(0,1fr)_320px]">
         <aside className="min-w-0 border-b border-rule bg-limewash lg:row-span-2 lg:border-r lg:border-b-0 xl:row-span-1">
           <TradeRail
-            selected={selectedSkillId}
-            onSelect={setViewedSkillId}
+            selected={villageOpen ? null : selectedSkillId}
+            onSelect={(skillId) => {
+              setViewedSkillId(skillId)
+              setVillageOpen(false)
+            }}
+            onSelectVillage={() => setVillageOpen(true)}
             trades={skillIds.map((skillId) => ({
               skillId,
               skill: skillOf(skillId),
@@ -213,46 +220,77 @@ export default function App() {
           />
         </aside>
 
-        <main className="flex w-full max-w-[880px] min-w-0 flex-col gap-7 justify-self-center px-4 pb-10 sm:px-8 lg:px-10">
-          <TradeSign
-            skillId={selectedSkillId}
-            skill={skillOf(selectedSkillId)}
-            working={activeDefinition?.skillId === selectedSkillId ? activeDefinition : undefined}
-            swingKey={swingKey}
-          />
+        {villageOpen ? (
+          // The village spans the middle column; the blocks below it hold notices and the worked action.
+          <main className="min-w-0">
+            <VillageView />
+            <div className="p-4 sm:p-6">
+              <div className="flex w-full max-w-3xl flex-col gap-3">
+                {snapshot.replacedLostSave && (
+                  <p role="status" className="rounded-md border border-danger/40 bg-white px-4 py-3 text-[15px]">
+                    {t('app.lostSave')}
+                  </p>
+                )}
+                {away && <SinceYouLeft summary={away} onDismiss={() => setAway(null)} />}
+                {showNudge && <SaveNudge onCreateAccount={() => setDialog('register')} onDismiss={dismissNudge} />}
+                {activeAction && (
+                  <WorkingAction
+                    active={activeAction}
+                    action={activeDefinition}
+                    receivedAt={snapshot.receivedAt}
+                    onCycleComplete={refreshPlayer}
+                    onStop={() => stopAction.mutate()}
+                    stopping={stopAction.isPending}
+                  />
+                )}
+                {(startAction.isError || stopAction.isError) && (
+                  <p role="alert" className="text-[15px] font-medium text-danger">
+                    {t('app.actionFailed')}
+                  </p>
+                )}
+              </div>
+            </div>
+          </main>
+        ) : (
+          <main className="flex w-full max-w-[880px] min-w-0 flex-col gap-7 justify-self-center px-4 pb-10 sm:px-8 lg:px-10">
+            <TradeSign
+              skillId={selectedSkillId}
+              skill={skillOf(selectedSkillId)}
+              working={activeDefinition?.skillId === selectedSkillId ? activeDefinition : undefined}
+              swingKey={swingKey}
+            />
 
-          {snapshot.replacedLostSave && (
-            <p role="status" className="rounded-md border border-danger/40 bg-white px-4 py-3 text-[15px]">
-              {t('app.lostSave')}
-            </p>
-          )}
+            {snapshot.replacedLostSave && (
+              <p role="status" className="rounded-md border border-danger/40 bg-white px-4 py-3 text-[15px]">
+                {t('app.lostSave')}
+              </p>
+            )}
+            {away && <SinceYouLeft summary={away} onDismiss={() => setAway(null)} />}
+            {showNudge && <SaveNudge onCreateAccount={() => setDialog('register')} onDismiss={dismissNudge} />}
 
-          {away && <SinceYouLeft summary={away} onDismiss={() => setAway(null)} />}
+            <WorkingAction
+              active={activeAction}
+              action={activeDefinition}
+              receivedAt={snapshot.receivedAt}
+              onCycleComplete={refreshPlayer}
+              onStop={() => stopAction.mutate()}
+              stopping={stopAction.isPending}
+            />
 
-          {showNudge && <SaveNudge onCreateAccount={() => setDialog('register')} onDismiss={dismissNudge} />}
+            {(startAction.isError || stopAction.isError) && (
+              <p role="alert" className="text-[15px] font-medium text-danger">
+                {t('app.actionFailed')}
+              </p>
+            )}
 
-          <WorkingAction
-            active={activeAction}
-            action={activeDefinition}
-            receivedAt={snapshot.receivedAt}
-            onCycleComplete={refreshPlayer}
-            onStop={() => stopAction.mutate()}
-            stopping={stopAction.isPending}
-          />
-
-          {(startAction.isError || stopAction.isError) && (
-            <p role="alert" className="text-[15px] font-medium text-danger">
-              {t('app.actionFailed')}
-            </p>
-          )}
-
-          <ActionList
-            actions={tradeActions}
-            activeActionId={activeAction?.actionId}
-            pendingActionId={startAction.isPending ? startAction.variables : undefined}
-            onStart={(actionId) => startAction.mutate(actionId)}
-          />
-        </main>
+            <ActionList
+              actions={tradeActions}
+              activeActionId={activeAction?.actionId}
+              pendingActionId={startAction.isPending ? startAction.variables : undefined}
+              onStart={(actionId) => startAction.mutate(actionId)}
+            />
+          </main>
+        )}
 
         <aside className="border-t border-rule bg-limewash lg:col-start-2 xl:col-start-auto xl:border-t-0 xl:border-l">
           <Stores inventory={player.inventory} freshItemId={freshItemId} />

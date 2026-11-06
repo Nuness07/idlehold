@@ -58,6 +58,11 @@ export const ptBR = {
       newGuest: 'Começar um domínio novo como convidado',
     },
   },
+  village: {
+    rail: 'Vila',
+    defaultName: 'Idle Road',
+    sceneLabel: 'Uma fogueira numa clareira da floresta ao pôr do sol, entre as ruínas da antiga vila: uma casa meio de pé, uma casa desabada e muros de pedra caídos, com a floresta de pinheiros e os morros no horizonte.',
+  },
   trades: {
     heading: 'Ofícios',
     working: 'trabalhando',

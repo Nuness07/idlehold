@@ -38,6 +38,18 @@
     84% { transform: rotate(-0.25deg); }
     100% { transform: rotate(0deg); }
   }
+
+  /* Village scene: the sky drifts one loop width (384 art pixels); the campfire steps through 8 frames. */
+  --animate-village-sky: village-sky 128s steps(384) infinite;
+  --animate-village-fire: village-fire 880ms steps(8) infinite;
+
+  @keyframes village-sky {
+    to { background-position-x: calc(-384 * var(--px)); }
+  }
+
+  @keyframes village-fire {
+    to { background-position-x: calc(-512 * var(--px)); }
+  }
 }
 
 @layer base {
