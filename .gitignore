@@ -483,3 +483,6 @@ $RECYCLE.BIN/
 
 # Local design tooling workspace (mocks, review captures, briefs)
 .impeccable/
+
+# PixelLab candidate downloads and contact sheets (review only)
+art/candidates/
