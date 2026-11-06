@@ -61,6 +61,25 @@ Tool: PixelLab, `create_image_pro` (one call returns 64 candidates at 32x32 for
   the first frame tier; later tiers (stone, gold, ...) reuse the same 46x48 shape with a
   32x32 opening at (7, 8), so they swap in without layout changes.
 
+## Village scene
+
+The village is the game's hub, seen in first person from the camp, looking out to the horizon
+(`web/src/features/village/`). It uses bigger pixels than the item sprites: the scene is 320x180 art
+pixels, scaled to the width of the middle column; the space below it holds information blocks.
+Three layers, placed in art pixels:
+
+- **Sky** (`village/sky.png`, 384x64): drifts left one art pixel per step in a seamless loop. Generated
+  with `create_image_pro`, locked to the six colours of the scene's own sky, then made seamless by
+  rolling it half its width and inpainting the join.
+- **Scene** (`village/scene.png`, 320x180): the approved sketch ("sketch A": `create_image_pro` with the
+  project owner's reference for composition, then `edit_image` for crisper, more detailed props), with
+  every sky pixel cut out so the drifting sky shows behind the trees and hills.
+- **Campfire** (`village/fire.png`, 8 frames of 64x96): `animate_image` on a crop of the fire and its
+  smoke; each frame keeps only the pixels that change, drawn over the fire painted in the scene.
+
+Motion stops for players who ask for reduced motion. Later, each building becomes its own layer so it
+can brighten on hover, open a screen and change art as it is rebuilt.
+
 ## Asset log
 
 | File | Prompt (short) | Notes |
@@ -81,6 +100,7 @@ Tool: PixelLab, `create_image_pro` (one call returns 64 candidates at 32x32 for
 | `items/pike.png` | a small raw pike lying straight and horizontal, head facing left, about 28 px long to fit the canvas | Candidate 8 |
 | `items/stone.png` | a single rough-cut grey stone block, chiselled building stone | Candidate 17 |
 | `items/copper-ore.png` | a single lump of raw copper ore, dark grey rock with orange-brown and green-tinted chunks | Candidate 8 |
+
 
 ## Open points
 

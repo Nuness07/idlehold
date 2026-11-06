@@ -59,6 +59,11 @@ export const en = {
       newGuest: 'Start a new hold as a guest',
     },
   },
+  village: {
+    rail: 'Village',
+    defaultName: 'Idle Road',
+    sceneLabel: 'A campfire in a forest clearing at sunset, among the ruins of the old village: a half-standing cottage, a collapsed house and crumbled stone walls, with a pine forest and hills on the horizon.',
+  },
   trades: {
     heading: 'Trades',
     working: 'working',

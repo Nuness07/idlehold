@@ -1,3 +1,4 @@
+import { Flame } from 'lucide-react'
 import { useTranslation } from 'react-i18next'
 import type { Skill } from '../../api/client'
 import { tradeLabel } from '../../content/labels'
@@ -6,12 +7,14 @@ import { TradeEmblem } from './TradeEmblem'
 
 interface TradeRailProps {
   trades: { skillId: string; skill: Skill; working: boolean }[]
-  selected: string
+  /** The trade on screen, or `null` while the village is. */
+  selected: string | null
   onSelect: (skillId: string) => void
+  onSelectVillage: () => void
 }
 
 /** The list of trades. A column on wide screens, a row of tabs on phones. */
-export function TradeRail({ trades, selected, onSelect }: TradeRailProps) {
+export function TradeRail({ trades, selected, onSelect, onSelectVillage }: TradeRailProps) {
   const { t } = useTranslation()
   const text = useContentText()
 
@@ -21,6 +24,21 @@ export function TradeRail({ trades, selected, onSelect }: TradeRailProps) {
         {t('trades.heading')}
       </h2>
       <ul className="flex gap-2 overflow-x-auto px-4 py-3 lg:flex-col lg:gap-1 lg:px-3 lg:py-0">
+        <li className="shrink-0 lg:mb-2">
+          <button
+            type="button"
+            onClick={onSelectVillage}
+            aria-pressed={selected === null}
+            className={`flex w-full items-center gap-3 rounded border px-3 py-2.5 text-left text-[16px] font-bold text-ink transition-colors ${
+              selected === null ? 'border-ink/30 bg-white' : 'border-transparent hover:bg-ink/5'
+            }`}
+          >
+            <span aria-hidden className="grid size-8 place-items-center rounded bg-oxblood text-oxblood-ink">
+              <Flame className="size-[18px]" strokeWidth={2} />
+            </span>
+            <span>{t('village.rail')}</span>
+          </button>
+        </li>
         {trades.map(({ skillId, skill, working }) => {
           const trade = tradeLabel(skillId)
           const isSelected = skillId === selected

@@ -85,5 +85,6 @@ Record every decision here, with the reason in one line.
 - **Self-hosted fonts** through Fontsource; icons from Lucide.
 - **i18n with react-i18next** (English + pt-BR): the market standard, with plural rules from `Intl` per language and typed keys.
 - **Pixel art for world objects only**, generated with PixelLab Pro against `art/style-reference.png` (the tree and log sprites): one style base keeps every sprite consistent. Rules and the asset log live in `docs/art-direction.md`.
+- **The village scene is drawn in layers** (sky, painted scene, animated pieces) placed in art pixels in `web/src/features/village/`: each piece can be animated, made clickable or swapped as it is rebuilt without repainting the scene; animation is CSS `steps()` so it stays on the pixel grid.
 - **Before deploying:** persist ASP.NET Data Protection keys (they sign the session cookie; if they live only in the container, every restart signs everyone out), send e-mail for confirmation and password reset, and serve over HTTPS so the cookie is Secure.
 - **Open questions:** hosting, real time (SignalR, when multiplayer arrives).
