@@ -84,18 +84,39 @@ public sealed class PlayerService(IPlayerStore store, GameEngine engine, TimePro
             : ClaimResult.Claimed;
     }
 
-    public Task<PlayerSave?> StartActionAsync(Guid playerId, string actionId, CancellationToken cancellationToken) =>
-        ApplyAsync(playerId, state => engine.StartAction(state, actionId), cancellationToken);
+    /// <param name="owner">Who is asking: <c>null</c> for a guest, or the signed-in account.</param>
+    public Task<CommandResult> StartActionAsync(Guid playerId, Guid? owner, string actionId, CancellationToken cancellationToken) =>
+        ApplyAsync(playerId, owner, state => engine.StartAction(state, actionId), cancellationToken);
 
-    public Task<PlayerSave?> StopActionAsync(Guid playerId, CancellationToken cancellationToken) =>
-        ApplyAsync(playerId, engine.StopAction, cancellationToken);
+    /// <param name="owner">Who is asking: <c>null</c> for a guest, or the signed-in account.</param>
+    public Task<CommandResult> StopActionAsync(Guid playerId, Guid? owner, CancellationToken cancellationToken) =>
+        ApplyAsync(playerId, owner, engine.StopAction, cancellationToken);
 
-    private Task<PlayerSave?> ApplyAsync(Guid playerId, Func<GameState, GameState> command, CancellationToken cancellationToken) =>
-        store.UpdateAsync(playerId, save =>
+    /// <summary>
+    /// Applies a command only if <paramref name="owner"/> owns the player. The check runs inside the
+    /// store's atomic update, so it is repeated on every concurrency retry: a hold claimed by an
+    /// account between two attempts is refused, never changed by the guest request.
+    /// </summary>
+    private async Task<CommandResult> ApplyAsync(
+        Guid playerId, Guid? owner, Func<GameState, GameState> command, CancellationToken cancellationToken)
+    {
+        var denied = false;
+        var updated = await store.UpdateAsync(playerId, save =>
         {
+            denied = save.AccountId != owner;
+            if (denied)
+            {
+                return save; // Unchanged: the store skips the write.
+            }
+
             var caughtUp = CatchUp(save, time.GetUtcNow());
             return caughtUp with { State = command(caughtUp.State) };
         }, cancellationToken);
+
+        return updated is null ? CommandResult.NotFound
+            : denied ? CommandResult.Forbidden
+            : CommandResult.Done(updated);
+    }
 
     /// <summary>The save as it stands at <paramref name="now"/>, with the elapsed time simulated.</summary>
     private PlayerSave CatchUp(PlayerSave save, DateTimeOffset now)
@@ -104,6 +125,22 @@ public sealed class PlayerService(IPlayerStore store, GameEngine engine, TimePro
         var elapsed = now > save.LastUpdated ? now - save.LastUpdated : TimeSpan.Zero;
         return save with { State = engine.Tick(save.State, elapsed), LastUpdated = now };
     }
+}
+
+public enum CommandStatus
+{
+    Done,
+    NotFound,
+    Forbidden,
+}
+
+public sealed record CommandResult(CommandStatus Status, PlayerSave? Player)
+{
+    public static CommandResult NotFound { get; } = new(CommandStatus.NotFound, null);
+
+    public static CommandResult Forbidden { get; } = new(CommandStatus.Forbidden, null);
+
+    public static CommandResult Done(PlayerSave player) => new(CommandStatus.Done, player);
 }
 
 public enum ClaimResult

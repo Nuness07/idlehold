@@ -16,8 +16,9 @@ public interface IPlayerStore
 
     /// <summary>
     /// Loads a player, applies <paramref name="update"/> and saves the result as one atomic step,
-    /// so two requests for the same player can never overwrite each other.
-    /// Returns <c>null</c> when the player does not exist.
+    /// so two requests for the same player can never overwrite each other. <paramref name="update"/>
+    /// may run more than once (on a concurrency retry) and may return its input unchanged to save
+    /// nothing. Returns <c>null</c> when the player does not exist.
     /// </summary>
     Task<PlayerSave?> UpdateAsync(Guid playerId, Func<PlayerSave, PlayerSave> update, CancellationToken cancellationToken);
 }

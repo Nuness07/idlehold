@@ -2,6 +2,7 @@ using System.Net;
 using System.Net.Http.Json;
 using IdleHold.Api.Accounts;
 using IdleHold.Api.Players;
+using Microsoft.AspNetCore.Mvc;
 
 namespace IdleHold.Api.Tests;
 
@@ -18,6 +19,9 @@ public sealed class AccountEndpointsTests(PostgresFixture database) : IClassFixt
     public void Dispose() => _factory.Dispose();
 
     private static string NewEmail() => $"{Guid.NewGuid():N}@example.test";
+
+    private static async Task<string?> TitleOf(HttpResponseMessage response) =>
+        (await response.Content.ReadFromJsonAsync<ProblemDetails>())?.Title;
 
     private static RegisterRequest Register(string email, Guid? guest = null) => new(email, Password, guest);
 
@@ -64,10 +68,35 @@ public sealed class AccountEndpointsTests(PostgresFixture database) : IClassFixt
         // Someone who only knows the id, without the session cookie.
         using var stranger = _factory.CreateClient();
         var read = await stranger.GetAsync($"/players/{guest.Id}");
-        var write = await stranger.PostAsJsonAsync($"/players/{guest.Id}/action", new StartActionRequest("cut-pine"));
+        var start = await stranger.PostAsJsonAsync($"/players/{guest.Id}/action", new StartActionRequest("cut-pine"));
+        var stop = await stranger.DeleteAsync($"/players/{guest.Id}/action");
+        var mine = await client.GetFromJsonAsync<PlayerResponse>("/me/player");
 
         Assert.Equal(HttpStatusCode.Forbidden, read.StatusCode);
-        Assert.Equal(HttpStatusCode.Forbidden, write.StatusCode);
+        Assert.Equal(HttpStatusCode.Forbidden, start.StatusCode);
+        Assert.Equal(HttpStatusCode.Forbidden, stop.StatusCode);
+        Assert.Null(mine!.ActiveAction);
+    }
+
+    [Fact]
+    public async Task Login_WhenLockedOut_LooksLikeAnUnknownEmail()
+    {
+        var email = NewEmail();
+        using var client = _factory.CreateClient();
+        await client.PostAsJsonAsync("/account/register", Register(email));
+        await client.PostAsync("/account/logout", content: null);
+        for (var attempt = 0; attempt < 5; attempt++)
+        {
+            await client.PostAsJsonAsync("/account/login", new LoginRequest(email, "not the password"));
+        }
+
+        // Even the right password is refused while locked out, with the same answer as a stranger's e-mail.
+        var lockedOut = await client.PostAsJsonAsync("/account/login", new LoginRequest(email, Password));
+        var unknown = await client.PostAsJsonAsync("/account/login", new LoginRequest(NewEmail(), Password));
+
+        Assert.Equal(HttpStatusCode.Unauthorized, lockedOut.StatusCode);
+        Assert.Equal(unknown.StatusCode, lockedOut.StatusCode);
+        Assert.Equal(await TitleOf(unknown), await TitleOf(lockedOut));
     }
 
     [Fact]

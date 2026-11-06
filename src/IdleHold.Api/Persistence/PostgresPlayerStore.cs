@@ -60,7 +60,12 @@ public sealed class PostgresPlayerStore(IDbContextFactory<GameDbContext> context
                 return null;
             }
 
-            var updated = update(ToSave(record));
+            var current = ToSave(record);
+            var updated = update(current);
+            if (ReferenceEquals(updated, current))
+            {
+                return current; // Nothing to save.
+            }
 
             record.State = StateDocument.From(updated.State).Serialize();
             record.LastUpdated = updated.LastUpdated;

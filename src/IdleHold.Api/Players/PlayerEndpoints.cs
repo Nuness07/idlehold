@@ -64,26 +64,13 @@ public static class PlayerEndpoints
             return invalid;
         }
 
-        if (await GuestAccessProblem(playerId, players, cancellationToken) is { } problem)
-        {
-            return problem;
-        }
-
-        var player = await players.StartActionAsync(playerId, request.ActionId, cancellationToken);
-        return player is null ? TypedResults.NotFound() : TypedResults.Ok(PlayerResponse.From(player, content));
+        // owner: null means "a guest is asking", so a hold that belongs to an account is refused.
+        return ToResponse(await players.StartActionAsync(playerId, owner: null, request.ActionId, cancellationToken), content);
     }
 
-    private static async Task<Results<Ok<PlayerResponse>, NotFound, ProblemHttpResult>> StopAction(
-        Guid playerId, PlayerService players, GameContent content, CancellationToken cancellationToken)
-    {
-        if (await GuestAccessProblem(playerId, players, cancellationToken) is { } problem)
-        {
-            return problem;
-        }
-
-        var player = await players.StopActionAsync(playerId, cancellationToken);
-        return player is null ? TypedResults.NotFound() : TypedResults.Ok(PlayerResponse.From(player, content));
-    }
+    private static async Task<Results<Ok<PlayerResponse>, NotFound, ValidationProblem, ProblemHttpResult>> StopAction(
+        Guid playerId, PlayerService players, GameContent content, CancellationToken cancellationToken) =>
+        ToResponse(await players.StopActionAsync(playerId, owner: null, cancellationToken), content);
 
     private static async Task<Ok<PlayerResponse>> GetMyPlayer(
         ClaimsPrincipal user, PlayerService players, GameContent content, CancellationToken cancellationToken)
@@ -92,7 +79,7 @@ public static class PlayerEndpoints
         return TypedResults.Ok(PlayerResponse.From(player, content));
     }
 
-    private static async Task<Results<Ok<PlayerResponse>, NotFound, ValidationProblem>> StartMyAction(
+    private static async Task<Results<Ok<PlayerResponse>, NotFound, ValidationProblem, ProblemHttpResult>> StartMyAction(
         ClaimsPrincipal user, StartActionRequest request, PlayerService players, GameContent content, CancellationToken cancellationToken)
     {
         if (InvalidAction(request, content) is { } invalid)
@@ -100,18 +87,26 @@ public static class PlayerEndpoints
             return invalid;
         }
 
-        var mine = await players.GetOrCreateForAccountAsync(AccountId(user), cancellationToken);
-        var player = await players.StartActionAsync(mine.Id, request.ActionId, cancellationToken);
-        return player is null ? TypedResults.NotFound() : TypedResults.Ok(PlayerResponse.From(player, content));
+        var accountId = AccountId(user);
+        var mine = await players.GetOrCreateForAccountAsync(accountId, cancellationToken);
+        return ToResponse(await players.StartActionAsync(mine.Id, accountId, request.ActionId, cancellationToken), content);
     }
 
-    private static async Task<Results<Ok<PlayerResponse>, NotFound>> StopMyAction(
+    private static async Task<Results<Ok<PlayerResponse>, NotFound, ValidationProblem, ProblemHttpResult>> StopMyAction(
         ClaimsPrincipal user, PlayerService players, GameContent content, CancellationToken cancellationToken)
     {
-        var mine = await players.GetOrCreateForAccountAsync(AccountId(user), cancellationToken);
-        var player = await players.StopActionAsync(mine.Id, cancellationToken);
-        return player is null ? TypedResults.NotFound() : TypedResults.Ok(PlayerResponse.From(player, content));
+        var accountId = AccountId(user);
+        var mine = await players.GetOrCreateForAccountAsync(accountId, cancellationToken);
+        return ToResponse(await players.StopActionAsync(mine.Id, accountId, cancellationToken), content);
     }
+
+    private static Results<Ok<PlayerResponse>, NotFound, ValidationProblem, ProblemHttpResult> ToResponse(
+        CommandResult result, GameContent content) => result.Status switch
+        {
+            CommandStatus.Done => TypedResults.Ok(PlayerResponse.From(result.Player!, content)),
+            CommandStatus.Forbidden => OwnedByAccount(),
+            _ => TypedResults.NotFound(),
+        };
 
     /// <summary>The body comes from the browser, so never trust it: validate before touching the engine.</summary>
     private static ValidationProblem? InvalidAction(StartActionRequest request, GameContent content) =>
@@ -121,11 +116,6 @@ public static class PlayerEndpoints
                 ["actionId"] = [$"Unknown action '{request.ActionId}'."],
             })
             : null;
-
-    /// <summary>A 403 when the player id belongs to an account; guest routes may not touch it.</summary>
-    private static async Task<ProblemHttpResult?> GuestAccessProblem(
-        Guid playerId, PlayerService players, CancellationToken cancellationToken) =>
-        await players.GetAsync(playerId, cancellationToken) is { IsGuest: false } ? OwnedByAccount() : null;
 
     private static ProblemHttpResult OwnedByAccount() => TypedResults.Problem(
         statusCode: StatusCodes.Status403Forbidden,

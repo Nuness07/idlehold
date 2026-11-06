@@ -48,7 +48,11 @@ public sealed class InMemoryPlayerStore : IPlayerStore
             }
 
             var updated = update(current);
-            _players[playerId] = updated;
+            if (!ReferenceEquals(updated, current))
+            {
+                _players[playerId] = updated;
+            }
+
             return Task.FromResult<PlayerSave?>(updated);
         }
     }

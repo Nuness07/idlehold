@@ -75,18 +75,14 @@ public static class AccountEndpoints
         var result = await signIn.PasswordSignInAsync(
             request.Email ?? "", request.Password ?? "", isPersistent: true, lockoutOnFailure: true);
 
-        if (result.IsLockedOut)
-        {
-            return TypedResults.Problem(
-                statusCode: StatusCodes.Status429TooManyRequests,
-                title: "Too many failed attempts. Try again in a few minutes.");
-        }
-
         if (!result.Succeeded)
         {
-            // One message for "no such account" and "wrong password", so the API does not reveal
-            // which e-mail addresses have accounts.
-            return TypedResults.Problem(statusCode: StatusCodes.Status401Unauthorized, title: "Wrong e-mail or password.");
+            // One answer for "no such account", "wrong password" and "locked out": only an existing
+            // account can be locked out, so a different answer there would reveal that the e-mail
+            // has an account. The lockout itself still applies.
+            return TypedResults.Problem(
+                statusCode: StatusCodes.Status401Unauthorized,
+                title: "Wrong e-mail or password, or too many attempts. Try again in a few minutes.");
         }
 
         var account = await accounts.FindByNameAsync(request.Email!);
