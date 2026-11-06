@@ -20,7 +20,7 @@ web/                  React + TypeScript + Vite + Tailwind client (pnpm)
 | Engine, API, backend tests | `src/AGENTS.md` |
 | Web client | `web/AGENTS.md` |
 | Why something is the way it is | `docs/decisions.md` (add every new decision there, with the reason in one line) |
-| Game design | `docs/game-design.md` (only "Decided" items are decisions) |
+| Game design | `docs/game-design.md` (what has been decided; anything not there is not a decision) |
 | Visual design and art | `PRODUCT.md`, `DESIGN.md`, `docs/art-direction.md` |
 
 ## Design pillars
