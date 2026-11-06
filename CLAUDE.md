@@ -47,6 +47,7 @@ Browser idle game (genre inspiration: Melvor Idle — skills, progression, resou
 - `tests/IdleHold.Api.Tests`: integration tests with `WebApplicationFactory` and `FakeTimeProvider` (`ApiFactory`).
 - Run the tests: `dotnet test` (from the root).
 - `web/`: React + TypeScript + Vite + Tailwind CSS v4 client (pnpm). Feature folders under `web/src/features` (`player`, `actions`, `trades`, `stores`); typed API client in `web/src/api` (`schema.d.ts` is generated, never hand-edited); display names and trade paints in `web/src/content/labels.ts`; design tokens in the `@theme` block of `web/src/index.css`.
+  - Languages: English and Brazilian Portuguese with react-i18next. All UI copy and content names (trades, actions, items, with plural forms) live in `web/src/i18n/locales/en.ts` and `pt-BR.ts`; `pt-BR` is typed against `en`, so a missing key fails the build. Never hard-code UI text in components. `web/src/content/labels.ts` holds only paints, icons and sprites; `web/src/content/text.ts` resolves content names. The language switch is in the header; the first visit follows the browser language and the choice is saved.
   - The client never computes rewards or XP rules. It animates the working bar locally and refetches when a cycle ends; numbers on screen come from the server.
   - Commands (in `web/`): `pnpm dev` (http://localhost:5173, proxies `/api` to the API), `pnpm test`, `pnpm typecheck`, `pnpm lint`, `pnpm build`, `pnpm gen:api` (regenerates types from a running API).
 - Visual design: PRODUCT.md holds product context. The visual direction is "Guild Signboards": each trade hangs a painted sign; limestone ground, oxblood band, one paint per trade, ochre only for what is working; Grenze Gotisch for the wordmark and trade names only, Alegreya Sans for everything else.
@@ -71,5 +72,6 @@ Record every decision here, with the reason in one line.
 - **Skill responses carry level bounds** (`levelStartXp`, `nextLevelXp`), so the client shows level progress without reimplementing the XP curve.
 - **Server state via TanStack Query; types via OpenAPI** (`openapi-fetch` + generated `schema.d.ts`).
 - **Self-hosted fonts** through Fontsource; icons from Lucide.
+- **i18n with react-i18next** (English + pt-BR): the market standard, with plural rules from `Intl` per language and typed keys.
 - **Pixel art for world objects only**, generated with PixelLab Pro against `art/style-reference.png` (the tree and log sprites): one style base keeps every sprite consistent. Rules and the asset log live in `docs/art-direction.md`.
 - **Open questions:** database (likely Postgres + EF Core), auth (likely ASP.NET Identity), type generation (OpenAPI), hosting, real time (SignalR, when multiplayer arrives).
