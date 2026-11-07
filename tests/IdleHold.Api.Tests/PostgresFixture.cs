@@ -26,10 +26,11 @@ public sealed class PostgresFixture : IAsyncLifetime
 
     public GameDbContext CreateContext() => new(Options());
 
-    /// <summary>Adds a guest account straight to the database, for tests that need an owner for a hold.</summary>
-    public async Task<Guid> CreateAccountAsync()
+    /// <summary>Adds an account straight to the database (a guest by default), for tests that need an owner for a hold.</summary>
+    public async Task<Guid> CreateAccountAsync(bool guest = true)
     {
         var account = Account.NewGuest();
+        account.IsAnonymous = guest;
         account.NormalizedUserName = account.UserName!.ToUpperInvariant();
         await using var db = CreateContext();
         db.Users.Add(account);

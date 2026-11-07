@@ -28,6 +28,7 @@ public sealed class ApiFactory(string gameDatabase) : WebApplicationFactory<Prog
     {
         builder.UseEnvironment("Testing");
         builder.UseSetting("ConnectionStrings:Game", gameDatabase);
+        builder.UseSetting("GuestCleanup:Enabled", "false"); // It would delete other tests' empty holds.
         builder.ConfigureTestServices(services => services.AddSingleton<TimeProvider>(Clock));
     }
 

@@ -65,6 +65,14 @@ builder.Services
 // Replaces Identity's user validator, which refuses a guest for having no e-mail.
 builder.Services.Replace(ServiceDescriptor.Scoped<IUserValidator<Account>, AccountValidator>());
 
+// Deletes guests that never made any progress (settings under "GuestCleanup").
+builder.Services.Configure<GuestCleanupOptions>(builder.Configuration.GetSection("GuestCleanup"));
+builder.Services.AddSingleton<GuestCleanup>();
+if (builder.Configuration.GetValue("GuestCleanup:Enabled", defaultValue: true))
+{
+    builder.Services.AddHostedService<GuestCleanupService>();
+}
+
 builder.Services.ConfigureApplicationCookie(options =>
 {
     options.Cookie.Name = "idlehold.session";
