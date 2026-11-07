@@ -22,5 +22,8 @@ export default defineConfig({
     environment: 'jsdom',
     setupFiles: ['./src/test/setup.ts'],
     css: false,
+    // The first test in a file pays for the first render in a fresh jsdom. With every file running at
+    // once on a busy machine that can pass Vitest's 5 s default, though no test is slow on its own.
+    testTimeout: 15_000,
   },
 })
