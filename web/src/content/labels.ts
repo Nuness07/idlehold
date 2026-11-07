@@ -1,4 +1,4 @@
-import { Axe, Castle, Cherry, Fish, FishSymbol, Gem, Hammer, Hand, Mountain, Pickaxe, Sprout, TreeDeciduous, TreePine, type LucideIcon } from 'lucide-react'
+import { Axe, Cherry, Fish, FishSymbol, Gem, Hammer, Hand, Mountain, Pickaxe, Sprout, TreeDeciduous, TreePine, type LucideIcon } from 'lucide-react'
 import berryBush from '../assets/actions/berry-bush.png'
 import tower from '../assets/brand/tower.png'
 import birchTree from '../assets/actions/birch-tree.png'
@@ -49,10 +49,7 @@ interface ActionLabel {
   sprite?: string
 }
 
-/** The village's emblem: the hold's stone tower, also the mark beside the wordmark. */
-export const villageLabel: TradeLabel = { paint: 'var(--color-oxblood)', Icon: Castle, emblem: tower }
-
-/** The tower on its own, 32x32 art pixels. */
+/** The hold's stone tower, 32x32 art pixels: the Village's emblem and the mark beside the wordmark. */
 export const towerSprite = tower
 
 const trades: Record<string, TradeLabel> = {

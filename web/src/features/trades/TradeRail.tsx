@@ -1,6 +1,7 @@
 import { useTranslation } from 'react-i18next'
 import type { Skill, SkillCategory } from '../../api/client'
-import { tradeLabel, villageLabel } from '../../content/labels'
+import { PixelSprite } from '../../components/PixelSprite'
+import { towerSprite, tradeLabel } from '../../content/labels'
 import { useContentText } from '../../content/text'
 import { TradeEmblem } from './TradeEmblem'
 import { cn } from '../../lib/cn'
@@ -55,7 +56,10 @@ export function TradeRail({ trades, selected, onSelect, onSelectVillage }: Trade
           aria-pressed={selected === null}
           className={cn(railButton(selected === null), 'w-auto shrink-0 lg:w-full')}
         >
-          <TradeEmblem trade={villageLabel} scale={1} fallbackClassName="size-[18px]" />
+          {/* The tower stands on its own, unframed, in a box as wide as a framed emblem so the names line up. */}
+          <span aria-hidden className="grid h-12 w-[46px] shrink-0 place-items-center">
+            <PixelSprite src={towerSprite} width={32} height={32} />
+          </span>
           <span>{t('village.rail')}</span>
         </button>
 
