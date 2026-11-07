@@ -164,6 +164,34 @@
   }
 
   /* A paper pinned to the board: every button and entry on a wooden panel. */
+  /*
+   * A rail entry is a signpost board pointing right. On wide screens it leaks past the panel's frame,
+   * like a sign nailed to the post.
+   */
+  .rail-sign {
+    color: var(--color-oxblood-ink);
+    filter: drop-shadow(0 2px 0 rgb(0 0 0 / 0.45));
+    transition: transform 120ms ease-out, filter 120ms ease-out;
+
+    &:hover {
+      filter: drop-shadow(0 2px 0 rgb(0 0 0 / 0.45)) brightness(1.12);
+    }
+
+    &[aria-pressed='true'] {
+      filter: drop-shadow(0 2px 0 rgb(0 0 0 / 0.45)) brightness(1.25);
+    }
+  }
+
+  /* The pixel-art board at 4x (55x13 art pixels): the nailed left end and the arrow tip stay whole, the
+     plank between them tiles. */
+  .rail-sign-board {
+    border-style: solid;
+    /* A 1-pixel top and bottom slice gives the plank a scale (4x) to tile at; with none, nothing is drawn. */
+    border-width: 4px 28px 4px 20px;
+    border-image: url('./assets/frames/rail-sign.png') 1 7 1 5 fill / 4px 28px 4px 20px round;
+    image-rendering: pixelated;
+  }
+
   .paper {
     background-color: var(--color-parchment);
     box-shadow: 0 2px 0 rgb(0 0 0 / 0.35);
