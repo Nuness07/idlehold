@@ -24,6 +24,8 @@ import {
 import { SinceYouLeft } from './features/player/SinceYouLeft'
 import { rememberLastSeen, summarizeAway, type AwaySummary } from './features/player/awaySummary'
 import { Stores } from './features/stores/Stores'
+import { ToolCards } from './features/tools/ToolCards'
+import { toolCardsFor } from './features/tools/tools'
 import { TradeRail } from './features/trades/TradeRail'
 import { TradeSign } from './features/trades/TradeSign'
 import { VillageView } from './features/village/VillageView'
@@ -193,7 +195,13 @@ export default function App() {
 
   const skillOf = (skillId: string) => player.skills[skillId] ?? untouchedSkill
   const totalLevel = skillIds.reduce((sum, skillId) => sum + skillOf(skillId).level, 0)
-  const tradeActions = actions.filter((action) => action.skillId === selectedSkillId)
+  // Recipes that make a tool show as tool cards (always the next tier), not as rows of the action list.
+  const toolItemIds = new Set(content.data.tools.map((tool) => tool.itemId))
+  const tradeActions = actions.filter(
+    (action) => action.skillId === selectedSkillId && !toolItemIds.has(action.outputItemId),
+  )
+  const toolCards = toolCardsFor(selectedSkillId, player.tools, actions)
+  const pendingActionId = startAction.isPending ? startAction.variables : undefined
 
   const showNudge = account?.isGuest === true && !nudgeDismissed && hasProgressWorthSaving(player.skills)
 
@@ -272,12 +280,22 @@ export default function App() {
               </p>
             )}
 
-            <ActionList
-              actions={tradeActions}
+            <ToolCards
+              cards={toolCards}
+              inventory={player.inventory}
               activeActionId={activeAction?.actionId}
-              pendingActionId={startAction.isPending ? startAction.variables : undefined}
-              onStart={(actionId) => startAction.mutate(actionId)}
+              pendingActionId={pendingActionId}
+              onBuild={(actionId: string) => startAction.mutate(actionId)}
             />
+
+            {tradeActions.length > 0 && (
+              <ActionList
+                actions={tradeActions}
+                activeActionId={activeAction?.actionId}
+                pendingActionId={pendingActionId}
+                onStart={(actionId) => startAction.mutate(actionId)}
+              />
+            )}
           </main>
         )}
 

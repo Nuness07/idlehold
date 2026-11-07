@@ -101,6 +101,17 @@ export const en = {
     switch: 'Switch',
     starting: 'Starting…',
   },
+  tools: {
+    heading: 'Tools',
+    meta: '{{time}} · {{xp}} XP',
+    best: 'Your best so far',
+    materials: 'Materials',
+    slot: '{{have}} of {{need}} {{item}}',
+    showMore: 'Show {{count}} more materials',
+    showFewer: 'Show fewer materials',
+    build: 'Build',
+    building: 'Building',
+  },
   stores: {
     heading: 'Stores',
     empty: 'Nothing stored yet. Start an action and the stores fill up, even while you are away.',

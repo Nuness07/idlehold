@@ -8,6 +8,7 @@ function player(logs: number, level: number): Player {
     activeAction: null,
     inventory: logs > 0 ? { 'pine-log': logs } : {},
     skills: { woodcutting: { xp: logs * 10, level, levelStartXp: 0, nextLevelXp: 100 } },
+    tools: [],
     updatedAt: '2026-11-05T12:00:00Z',
   }
 }

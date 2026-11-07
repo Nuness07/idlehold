@@ -100,6 +100,17 @@ export const ptBR = {
     switch: 'Trocar',
     starting: 'Começando…',
   },
+  tools: {
+    heading: 'Ferramentas',
+    meta: '{{time}} · {{xp}} XP',
+    best: 'A melhor por enquanto',
+    materials: 'Materiais',
+    slot: '{{have}} de {{need}} {{item}}',
+    showMore: 'Mostrar mais {{count}} materiais',
+    showFewer: 'Mostrar menos materiais',
+    build: 'Construir',
+    building: 'Construindo',
+  },
   stores: {
     heading: 'Estoque',
     empty: 'Nada guardado ainda. Comece uma ação e o estoque vai enchendo, mesmo enquanto você estiver fora.',

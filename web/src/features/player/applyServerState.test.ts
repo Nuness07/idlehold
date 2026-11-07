@@ -8,6 +8,7 @@ const hold = (id: string, updatedAt: string, actionId: string | null = null): Pl
   activeAction: actionId ? { actionId, progressMs: 0, durationMs: 3000 } : null,
   inventory: {},
   skills: {},
+  tools: [],
   updatedAt,
 })
 

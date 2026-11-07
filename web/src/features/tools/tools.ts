@@ -1,0 +1,29 @@
+import type { GameAction, ToolProgress } from '../../api/client'
+
+export interface ToolCardData {
+  family: string
+  /** The tool shown: the next tier to make, or the best one owned when nothing better exists. */
+  itemId: string
+  /** The recipe for the next tier; `undefined` once the family is at its best tool. */
+  recipe: GameAction | undefined
+}
+
+/**
+ * The tool cards of one trade, from what the server says comes next in each family. A family appears in
+ * the trade whose recipe makes its tools; a family with neither an owned tool nor a recipe shows nothing.
+ */
+export function toolCardsFor(skillId: string, tools: ToolProgress[], actions: GameAction[]): ToolCardData[] {
+  const byId = new Map(actions.map((action) => [action.id, action]))
+  const cards: ToolCardData[] = []
+
+  for (const tool of tools) {
+    const recipe = tool.nextActionId ? byId.get(tool.nextActionId) : undefined
+    const itemId = recipe?.outputItemId ?? tool.ownedItemId
+    const madeIn = recipe ?? actions.find((action) => action.outputItemId === tool.ownedItemId)
+    if (itemId && madeIn?.skillId === skillId) {
+      cards.push({ family: tool.family, itemId, recipe })
+    }
+  }
+
+  return cards
+}
