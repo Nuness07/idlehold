@@ -34,8 +34,15 @@ async function loadMine(): Promise<PlayerSnapshot> {
   return snapshot(data)
 }
 
-function applyServerState(queryClient: QueryClient, player: Player): void {
-  queryClient.setQueryData<PlayerSnapshot>(playerQueryKey, (previous) => keepNewest(previous, snapshot(player)))
+/**
+ * A command's answer only updates the hold it was sent for. If the session changed while it was in
+ * flight (signed in, signed out), the screen now shows another hold, or none yet; the late answer
+ * belongs to a hold that is gone, so it is dropped.
+ */
+export function applyServerState(queryClient: QueryClient, player: Player): void {
+  const current = queryClient.getQueryData<PlayerSnapshot>(playerQueryKey)
+  if (current?.player.id !== player.id) return
+  queryClient.setQueryData<PlayerSnapshot>(playerQueryKey, keepNewest(current, snapshot(player)))
 }
 
 /** @param ready `false` until the session is known; nothing loads before there is one. */
