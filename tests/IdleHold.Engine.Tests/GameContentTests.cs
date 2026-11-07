@@ -23,6 +23,41 @@ public class GameContentTests
     }
 
     [Fact]
+    public void Constructor_InputWithNonPositiveQuantity_Throws()
+    {
+        var action = new ActionDefinition("saw", "crafting", TimeSpan.FromSeconds(3), 10, "plank") { Inputs = [new ItemAmount("log", 0)] };
+
+        Assert.Throws<ArgumentException>(() => new GameContent([action]));
+    }
+
+    [Fact]
+    public void Constructor_SameInputTwice_Throws()
+    {
+        var action = new ActionDefinition("saw", "crafting", TimeSpan.FromSeconds(3), 10, "plank")
+        {
+            Inputs = [new ItemAmount("log", 1), new ItemAmount("log", 2)],
+        };
+
+        Assert.Throws<ArgumentException>(() => new GameContent([action]));
+    }
+
+    [Fact]
+    public void Constructor_ToolRecipeMakingMoreThanOne_Throws()
+    {
+        var action = new ActionDefinition("craft-axe", "crafting", TimeSpan.FromSeconds(3), 10, "axe", OutputQuantity: 2);
+
+        Assert.Throws<ArgumentException>(() => new GameContent([action], [new ToolDefinition("axe", "axe", 1)]));
+    }
+
+    [Fact]
+    public void Constructor_TwoToolsWithTheSameFamilyAndTier_Throws()
+    {
+        Assert.Throws<ArgumentException>(() => new GameContent(
+            [],
+            [new ToolDefinition("axe", "axe", 1), new ToolDefinition("other-axe", "axe", 1)]));
+    }
+
+    [Fact]
     public void DefaultContent_IsValid()
     {
         var content = DefaultContent.Create();
@@ -38,7 +73,7 @@ public class GameContentTests
             .ToDictionary(group => group.Key, group => group.Count());
 
         Assert.Equal(
-            new Dictionary<string, int> { ["woodcutting"] = 3, ["fishing"] = 2, ["mining"] = 3, ["foraging"] = 1 },
+            new Dictionary<string, int> { ["woodcutting"] = 3, ["fishing"] = 2, ["mining"] = 3, ["foraging"] = 2, ["crafting"] = 2 },
             bySkill);
     }
 
@@ -71,5 +106,25 @@ public class GameContentTests
                 rates.SequenceEqual(rates.Order()),
                 $"In {skill.Key}, slower actions should not give less XP per second.");
         }
+    }
+
+    [Fact]
+    public void DefaultContent_RecipesUseItemsThePlayerCanGather()
+    {
+        // Every input must come out of some action, or the recipe can never be made.
+        var content = DefaultContent.Create();
+        var produced = content.Actions.Select(action => action.OutputItemId).ToHashSet();
+
+        Assert.All(
+            content.Actions.SelectMany(action => action.Inputs),
+            input => Assert.Contains(input.ItemId, produced));
+    }
+
+    [Fact]
+    public void DefaultContent_EveryToolHasARecipe()
+    {
+        var content = DefaultContent.Create();
+
+        Assert.All(content.Tools, tool => Assert.Contains(content.Actions, action => action.OutputItemId == tool.ItemId));
     }
 }
