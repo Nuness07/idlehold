@@ -4,12 +4,13 @@ import { describe, expect, it, vi } from 'vitest'
 import type { Account } from '../../api/client'
 import { AccountMenu } from './AccountMenu'
 
-const account: Account = { email: 'ana@example.test', playerId: '11111111-1111-1111-1111-111111111111' }
+const account: Account = { email: 'ana@example.test', isGuest: false }
+const guest: Account = { email: null, isGuest: true }
 
-const defaults = { account: null, onSaveProgress: vi.fn(), onSignOut: vi.fn(), signingOut: false }
+const defaults = { account: guest, onSaveProgress: vi.fn(), onSignOut: vi.fn(), signingOut: false }
 
 describe('AccountMenu', () => {
-  it('offers a guest a way to save progress', async () => {
+  it('offers a guest a way to save progress, and no way to sign out', async () => {
     const onSaveProgress = vi.fn()
     render(<AccountMenu {...defaults} onSaveProgress={onSaveProgress} />)
 

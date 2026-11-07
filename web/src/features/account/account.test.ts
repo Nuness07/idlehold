@@ -11,7 +11,7 @@ describe('problemsFromValidation', () => {
   })
 
   it('falls back to a general failure for anything else', () => {
-    expect(problemsFromValidation({ guestPlayerId: ['owned'] })).toEqual(['failed'])
+    expect(problemsFromValidation({ userName: ['taken'] })).toEqual(['failed'])
     expect(problemsFromValidation(undefined)).toEqual(['failed'])
   })
 })

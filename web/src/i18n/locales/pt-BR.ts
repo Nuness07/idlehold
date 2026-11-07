@@ -7,7 +7,6 @@ export const ptBR = {
     errorTitle: 'Não foi possível chegar ao seu domínio',
     errorBody: 'O servidor do jogo não respondeu. Seu progresso está salvo no servidor; tente de novo em instantes.',
     tryAgain: 'Tentar de novo',
-    lostSave: 'Seu domínio anterior não foi encontrado, então um novo foi criado.',
     actionFailed: 'O servidor não aceitou isso. Confira sua conexão e tente de novo.',
     actionBlocked: {
       'missing-inputs': 'Ainda faltam materiais para isso.',
@@ -40,7 +39,7 @@ export const ptBR = {
     login: {
       title: 'Entrar',
       body: 'Continue o seu domínio de onde parou.',
-      guestWarning: 'Ao entrar, abre o domínio da sua conta. O domínio de convidado deste navegador fica para trás.',
+      guestWarning: 'Ao entrar, abre o domínio da sua conta. O domínio de convidado deste navegador será apagado. Para mantê-lo, crie uma conta.',
       submit: 'Entrar',
       submitting: 'Entrando…',
       switch: 'Primeira vez aqui? <action>Criar uma conta</action>',
@@ -55,11 +54,6 @@ export const ptBR = {
       body: 'Seu domínio está crescendo. Crie uma conta para ele não se perder com os dados deste navegador.',
       action: 'Criar conta',
       dismiss: 'Dispensar',
-    },
-    signedOut: {
-      title: 'Este domínio pertence a uma conta',
-      body: 'Entre para continuar jogando nele.',
-      newGuest: 'Começar um domínio novo como convidado',
     },
   },
   village: {

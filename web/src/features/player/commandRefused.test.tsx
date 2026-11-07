@@ -27,7 +27,7 @@ describe('a command the game refuses', () => {
         headers: { 'Content-Type': 'application/problem+json' },
       }),
     )
-    const { result } = renderHook(() => useStartAction('guest', 'a-hold'), { wrapper })
+    const { result } = renderHook(() => useStartAction('a-hold'), { wrapper })
 
     act(() => result.current.mutate('craft-chipped-stone-axe'))
     await waitFor(() => expect(result.current.isError).toBe(true))

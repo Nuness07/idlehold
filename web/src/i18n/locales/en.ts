@@ -8,7 +8,6 @@ export const en = {
     errorTitle: "The hold can't be reached",
     errorBody: 'The game server did not answer. Your progress is safe on the server; try again in a moment.',
     tryAgain: 'Try again',
-    lostSave: 'Your previous hold could not be found, so a new one was started.',
     actionFailed: 'The server did not accept that. Check your connection and try again.',
     actionBlocked: {
       'missing-inputs': 'Not enough materials for that yet.',
@@ -41,7 +40,7 @@ export const en = {
     login: {
       title: 'Sign in',
       body: 'Pick up your hold where you left it.',
-      guestWarning: 'Signing in opens your account’s hold. The guest hold in this browser is left behind.',
+      guestWarning: 'Signing in opens your account’s hold. The guest hold in this browser will be deleted. To keep it, create an account instead.',
       submit: 'Sign in',
       submitting: 'Signing in…',
       switch: 'New here? <action>Create an account</action>',
@@ -56,11 +55,6 @@ export const en = {
       body: 'Your hold is growing. Create an account so it is not lost with this browser’s data.',
       action: 'Create account',
       dismiss: 'Dismiss',
-    },
-    signedOut: {
-      title: 'This hold belongs to an account',
-      body: 'Sign in to keep playing it.',
-      newGuest: 'Start a new hold as a guest',
     },
   },
   village: {

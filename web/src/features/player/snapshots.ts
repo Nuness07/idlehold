@@ -4,12 +4,10 @@ import type { Player } from '../../api/client'
 export interface PlayerSnapshot {
   player: Player
   receivedAt: number
-  /** True when a stored player no longer existed on the server and a new one was created. */
-  replacedLostSave: boolean
 }
 
-export function snapshot(player: Player, replacedLostSave = false): PlayerSnapshot {
-  return { player, receivedAt: performance.now(), replacedLostSave }
+export function snapshot(player: Player): PlayerSnapshot {
+  return { player, receivedAt: performance.now() }
 }
 
 /**
@@ -18,7 +16,5 @@ export function snapshot(player: Player, replacedLostSave = false): PlayerSnapsh
  */
 export function keepNewest(previous: PlayerSnapshot | undefined, next: PlayerSnapshot): PlayerSnapshot {
   if (!previous || previous.player.id !== next.player.id) return next
-
-  const merged = previous.replacedLostSave ? { ...next, replacedLostSave: true } : next
-  return Date.parse(next.player.updatedAt) < Date.parse(previous.player.updatedAt) ? previous : merged
+  return Date.parse(next.player.updatedAt) < Date.parse(previous.player.updatedAt) ? previous : next
 }
