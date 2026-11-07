@@ -46,7 +46,8 @@ Tool: PixelLab, `create_image_pro` (one call returns 64 candidates at 32x32 for
   ignored `art/candidates/` folder and builds a numbered sheet. Candidates sometimes come
   back rolled horizontally (the subject wraps around the left and right edges);
   `art/tools/unwrap.ps1` cuts at the widest empty column run and recentres them. Discard
-  any candidate that still looks cut after that.
+  any candidate that still looks cut after that. Long diagonal subjects can also cross into
+  the candidates above and below; ask for a smaller size and generate again instead.
 - Pick the candidate that matches the base best, keep its orientation consistent with
   siblings (for example, every log's cut end on the same side), and record the prompt and
   candidate index in the table below.
@@ -105,6 +106,13 @@ it becomes a button once clicking it does something, and changes art as it is re
 | `items/pike.png` | a small raw pike lying straight and horizontal, head facing left, about 28 px long to fit the canvas | Candidate 8 |
 | `items/stone.png` | a single rough-cut grey stone block, chiselled building stone | Candidate 17 |
 | `items/copper-ore.png` | a single lump of raw copper ore, dark grey rock with orange-brown and green-tinted chunks | Candidate 8 |
+| `items/twig.png` | a small bundle of a few thin dry brown twigs tied with a plant fibre band, about 26 px long | Candidate 47 of a second run; `items/pine-log.png` as reference. The first run drew a longer bundle that crossed into neighbouring candidates |
+| `items/pebble.png` | a few small smooth grey pebbles in a little cluster, rounded river stones | Candidate 4; `items/stone.png` as colour reference |
+| `items/wild-berry.png` | a small cluster of dark purple-red wild berries with two green leaves on a short stem | Candidate 8 |
+| `actions/twigs.png` | fallen dry twigs and small broken branches on a little patch of grass and dirt | Candidate 1; `actions/stone.png` as composition reference |
+| `actions/pebbles.png` | a few small loose grey pebbles on a little oval patch of grass and dirt | Candidate 2; `actions/twigs.png` for the ground patch, `items/stone.png` for colour |
+| `actions/berry-bush.png` | a small round wild berry bush, dark green leaves dotted with dark purple-red berries | Candidate 4; `actions/stone.png` as composition reference |
+| `emblems/foraging.png` | a small woven wicker basket full of wild berries, a leafy sprig leaning diagonally against it | Candidate 33; `emblems/mining.png` as composition reference |
 
 
 ## Open points
