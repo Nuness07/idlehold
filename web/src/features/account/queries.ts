@@ -1,54 +1,44 @@
 import { useMutation, useQuery, useQueryClient, type QueryClient } from '@tanstack/react-query'
-import { api, type Account } from '../../api/client'
+import { api, isApiError, type Account } from '../../api/client'
 import { playerQueryKey } from '../player/queries'
 
-export const accountQueryKey = ['account'] as const
+const accountQueryKey = ['account'] as const
 
 /** What went wrong with a sign-up or sign-in, as the form shows it. */
 export type AccountProblem = 'email' | 'password' | 'login' | 'failed'
 
-export class AccountError extends Error {
-  readonly problems: AccountProblem[]
-
-  constructor(problems: AccountProblem[]) {
-    super(`Account request failed: ${problems.join(', ')}`)
-    this.problems = problems
-  }
-}
-
-/** The fields the API's validation problem names, turned into what the form shows. */
-export function problemsFromValidation(errors: Record<string, string[]> | undefined): AccountProblem[] {
+/**
+ * A failed sign-up or sign-in, as the form shows it: the fields a validation problem (400) names,
+ * a refused sign-in (401, which never says which part was wrong), or a general failure.
+ */
+export function formProblems(error: Error | null): AccountProblem[] {
+  if (!error) return []
+  if (isApiError(error, 401)) return ['login']
+  const fields = isApiError(error, 400) ? (error.problem.errors ?? {}) : {}
   const problems: AccountProblem[] = []
-  if (errors?.email) problems.push('email')
-  if (errors?.password) problems.push('password')
+  if (fields.email) problems.push('email')
+  if (fields.password) problems.push('password')
   return problems.length > 0 ? problems : ['failed']
 }
 
 /**
- * Who this browser plays as. A first visit has no session, so it starts one as a guest: the server
- * makes an anonymous account and sets the session cookie, and the client never sees a player id.
+ * Who this browser plays as. A first visit has no session (401), so it starts one as a guest: the
+ * server makes an anonymous account and sets the session cookie, and the client never sees a player id.
  */
 export function useAccount() {
   return useQuery({
     queryKey: accountQueryKey,
     queryFn: async (): Promise<Account> => {
-      const me = await api.GET('/account/me')
-      if (me.data) return me.data
-      if (me.response.status !== 401) throw new Error(`Loading the session failed (${me.response.status}).`)
-
-      const guest = await api.POST('/account/guest')
-      if (guest.data) return guest.data
-      throw new Error(`Starting a guest session failed (${guest.response.status}).`)
+      try {
+        return (await api.GET('/account/me')).data!
+      } catch (error) {
+        if (!isApiError(error, 401)) throw error
+        return (await api.POST('/account/guest')).data!
+      }
     },
     staleTime: Infinity,
     retry: 2,
   })
-}
-
-/** Switches the screen to another session: the old hold is dropped and the new one loads fresh. */
-export function switchAccount(queryClient: QueryClient, account: Account): void {
-  queryClient.removeQueries({ queryKey: playerQueryKey })
-  queryClient.setQueryData<Account>(accountQueryKey, account)
 }
 
 /** The session is gone (signed out or expired): forget it, which starts a new guest session. */
@@ -66,11 +56,7 @@ interface Credentials {
 export function useRegister() {
   const queryClient = useQueryClient()
   return useMutation({
-    mutationFn: async ({ email, password }: Credentials) => {
-      const { data, error } = await api.POST('/account/register', { body: { email, password } })
-      if (data) return data
-      throw new AccountError(problemsFromValidation(error?.errors))
-    },
+    mutationFn: async (body: Credentials) => (await api.POST('/account/register', { body })).data!,
     // Same hold, so it stays on screen while it refreshes.
     onSuccess: (account) => {
       queryClient.setQueryData<Account>(accountQueryKey, account)
@@ -83,13 +69,12 @@ export function useRegister() {
 export function useLogin() {
   const queryClient = useQueryClient()
   return useMutation({
-    mutationFn: async ({ email, password }: Credentials) => {
-      const { data, response } = await api.POST('/account/login', { body: { email, password } })
-      if (data) return data
-      // One answer for every refused sign-in: the server does not say which part was wrong.
-      throw new AccountError([response.status === 401 ? 'login' : 'failed'])
+    mutationFn: async (body: Credentials) => (await api.POST('/account/login', { body })).data!,
+    // Another hold: drop the guest's and load the account's fresh.
+    onSuccess: (account) => {
+      queryClient.removeQueries({ queryKey: playerQueryKey })
+      queryClient.setQueryData<Account>(accountQueryKey, account)
     },
-    onSuccess: (account) => switchAccount(queryClient, account),
   })
 }
 
@@ -97,10 +82,7 @@ export function useLogin() {
 export function useLogout() {
   const queryClient = useQueryClient()
   return useMutation({
-    mutationFn: async () => {
-      const { response } = await api.POST('/account/logout')
-      if (!response.ok) throw new Error(`Signing out failed (${response.status}).`)
-    },
-    onSuccess: () => void endSession(queryClient),
+    mutationFn: () => api.POST('/account/logout'),
+    onSuccess: () => endSession(queryClient),
   })
 }

@@ -90,6 +90,7 @@ Record every decision here, with the reason in one line.
 - **API JSON numbers are strict** (`JsonNumberHandling.Strict`), so the OpenAPI document types numbers as `number`, not `number | string`.
 - **Skill responses carry level bounds** (`levelStartXp`, `nextLevelXp`), so the client shows level progress without reimplementing the XP curve.
 - **Server state via TanStack Query; types via OpenAPI** (`openapi-fetch` + generated `schema.d.ts`).
+- **API errors are thrown in one place**: an `openapi-fetch` middleware turns every error answer into an `ApiError` (`status` plus the problem body), because React Query only sees thrown errors. Hooks read `data` and stay short; the screen checks `isApiError(error, 401 | 409 | …)`.
 - **Self-hosted fonts** through Fontsource; icons from Lucide.
 - **i18n with react-i18next** (English + pt-BR): the market standard, with plural rules from `Intl` per language and typed keys.
 - **Pixel art for world objects**, generated with PixelLab Pro against `art/style-reference.png` (the tree and log sprites): one style base keeps every sprite consistent. Rules and the asset log live in `docs/art-direction.md`.

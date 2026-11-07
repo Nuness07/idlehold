@@ -1,18 +1,29 @@
 import { describe, expect, it } from 'vitest'
-import type { Skill } from '../../api/client'
+import { ApiError, type Skill } from '../../api/client'
 import { hasProgressWorthSaving } from './nudge'
-import { problemsFromValidation } from './queries'
+import { formProblems } from './queries'
 
 const skill = (level: number): Skill => ({ xp: level * 100, level, levelStartXp: 0, nextLevelXp: null })
 
-describe('problemsFromValidation', () => {
-  it('names each refused field', () => {
-    expect(problemsFromValidation({ email: ['taken'], password: ['short'] })).toEqual(['email', 'password'])
+describe('formProblems', () => {
+  it('names each field a validation problem refused', () => {
+    const error = new ApiError(400, { errors: { email: ['taken'], password: ['short'] } })
+
+    expect(formProblems(error)).toEqual(['email', 'password'])
+  })
+
+  it('reports a refused sign-in without saying which part was wrong', () => {
+    expect(formProblems(new ApiError(401, {}))).toEqual(['login'])
   })
 
   it('falls back to a general failure for anything else', () => {
-    expect(problemsFromValidation({ userName: ['taken'] })).toEqual(['failed'])
-    expect(problemsFromValidation(undefined)).toEqual(['failed'])
+    expect(formProblems(new ApiError(400, { errors: { userName: ['taken'] } }))).toEqual(['failed'])
+    expect(formProblems(new ApiError(500, {}))).toEqual(['failed'])
+    expect(formProblems(new TypeError('Failed to fetch'))).toEqual(['failed'])
+  })
+
+  it('is empty without an error', () => {
+    expect(formProblems(null)).toEqual([])
   })
 })
 

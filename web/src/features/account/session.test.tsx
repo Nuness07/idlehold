@@ -10,15 +10,11 @@ const seen = vi.hoisted(() => [] as string[])
 // The real client uses a relative base URL, which only a browser can resolve; this one answers from the fake.
 vi.mock('../../api/client', async (importOriginal) => {
   const original = await importOriginal<typeof import('../../api/client')>()
-  const { default: createClient } = await import('openapi-fetch')
-  const api = createClient({
-    baseUrl: 'http://localhost/api',
-    fetch: (request) => {
-      seen.push(`${request.method} ${new URL(request.url).pathname}`)
-      return fetchMock(request)
-    },
-  })
-  return { ...original, api: api as typeof original.api }
+  const fetch = (request: Request) => {
+    seen.push(`${request.method} ${new URL(request.url).pathname}`)
+    return fetchMock(request)
+  }
+  return { ...original, api: original.createApi({ baseUrl: 'http://localhost/api', fetch }) }
 })
 
 const json = (status: number, body?: unknown) =>

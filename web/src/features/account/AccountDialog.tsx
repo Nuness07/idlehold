@@ -2,7 +2,7 @@ import { X } from 'lucide-react'
 import { useEffect, useRef } from 'react'
 import { useTranslation } from 'react-i18next'
 import { AccountForm, type AccountFormMode } from './AccountForm'
-import { AccountError, useLogin, useRegister, type AccountProblem } from './queries'
+import { formProblems, useLogin, useRegister } from './queries'
 
 interface AccountDialogProps {
   /** Which form is open, or `null` when the dialog is closed. */
@@ -11,11 +11,6 @@ interface AccountDialogProps {
   onClose: () => void
   /** A guest hold with progress is on screen. Creating an account keeps it; signing in deletes it. */
   guestHasProgress: boolean
-}
-
-function problemsOf(error: Error | null): AccountProblem[] {
-  if (!error) return []
-  return error instanceof AccountError ? error.problems : ['failed']
 }
 
 /**
@@ -82,7 +77,7 @@ export function AccountDialog({ mode, onModeChange, onClose, guestHasProgress }:
             key={mode}
             mode={mode}
             pending={active.isPending}
-            problems={problemsOf(active.error)}
+            problems={formProblems(active.error)}
             warnGuest={guestHasProgress}
             onSubmit={submit}
             onSwitch={() => switchTo(mode === 'login' ? 'register' : 'login')}
