@@ -2,9 +2,9 @@ using System.Net.Http.Json;
 
 namespace IdleHold.Api.Tests;
 
-public sealed class ContentEndpointsTests : IDisposable
+public sealed class ContentEndpointsTests(PostgresFixture database) : IClassFixture<PostgresFixture>, IDisposable
 {
-    private readonly ApiFactory _factory = new();
+    private readonly ApiFactory _factory = new(database.ConnectionString);
 
     public void Dispose() => _factory.Dispose();
 

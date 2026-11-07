@@ -3,6 +3,7 @@ using System.Net.Http.Json;
 using IdleHold.Api.Persistence;
 using IdleHold.Api.Players;
 using IdleHold.Engine.State;
+using Microsoft.AspNetCore.Mvc.Testing;
 
 namespace IdleHold.Api.Tests;
 
@@ -11,13 +12,15 @@ public sealed class PostgresPlayerStoreTests(PostgresFixture database) : IClassF
 {
     private static readonly DateTimeOffset Noon = new(2026, 1, 1, 12, 0, 0, TimeSpan.Zero);
 
-    private static PlayerSave NewPlayer() => new(Guid.NewGuid(), GameState.New, Noon);
+    /// <summary>Every hold has an owner, so each test player gets its own account first.</summary>
+    private async Task<PlayerSave> NewPlayerAsync() =>
+        new(Guid.NewGuid(), GameState.New, Noon, await database.CreateAccountAsync());
 
     [Fact]
     public async Task Add_ThenUpdate_RoundTripsTheWholeState()
     {
         var store = new PostgresPlayerStore(database.CreateFactory());
-        var player = NewPlayer();
+        var player = await NewPlayerAsync();
         await store.AddAsync(player, CancellationToken.None);
 
         var state = GameState.New with
@@ -43,7 +46,7 @@ public sealed class PostgresPlayerStoreTests(PostgresFixture database) : IClassF
     public async Task Get_ReadsWithoutChangingTheRow()
     {
         var store = new PostgresPlayerStore(database.CreateFactory());
-        var player = NewPlayer();
+        var player = await NewPlayerAsync();
         await store.AddAsync(player, CancellationToken.None);
         uint VersionOf() { using var db = database.CreateContext(); return db.Players.Single(p => p.Id == player.Id).Version; }
         var versionBefore = VersionOf();
@@ -71,7 +74,7 @@ public sealed class PostgresPlayerStoreTests(PostgresFixture database) : IClassF
     public async Task ConcurrentUpdates_AreAllApplied()
     {
         var store = new PostgresPlayerStore(database.CreateFactory());
-        var player = NewPlayer();
+        var player = await NewPlayerAsync();
         await store.AddAsync(player, CancellationToken.None);
 
         // Several requests change the same player at once; optimistic concurrency retries the losers.
@@ -90,25 +93,26 @@ public sealed class PostgresPlayerStoreTests(PostgresFixture database) : IClassF
     [Fact]
     public async Task Progress_SurvivesAnApiRestart()
     {
-        Guid playerId;
+        string session;
         await using (var firstRun = new ApiFactory(database.ConnectionString))
         {
             using var client = firstRun.CreateClient();
-            var created = await (await client.PostAsync("/players", content: null)).Content.ReadFromJsonAsync<PlayerResponse>();
-            playerId = created!.Id;
-            await client.PostAsJsonAsync($"/players/{playerId}/action", new StartActionRequest("cut-pine"));
+            var guest = await client.PostAsync("/account/guest", content: null);
+            session = guest.Headers.GetValues("Set-Cookie").Single().Split(';')[0];
+            await client.PostAsJsonAsync("/me/player/action", new StartActionRequest("cut-pine"));
             firstRun.Clock.Advance(TimeSpan.FromSeconds(9));
-            var beforeRestart = await client.GetFromJsonAsync<PlayerResponse>($"/players/{playerId}");
+            var beforeRestart = await client.GetFromJsonAsync<PlayerResponse>("/me/player");
             Assert.Equal(3, beforeRestart!.Inventory["pine-log"]);
         }
 
         // The second server's clock starts at the same instant as the first one. Move it 9 s past the
         // moment the first server last saved (start + 9 s), so the test proves time kept counting
-        // across the restart.
+        // across the restart. The browser still holds the session cookie from before the restart.
         await using var secondRun = new ApiFactory(database.ConnectionString);
-        using var secondClient = secondRun.CreateClient();
+        using var secondClient = secondRun.CreateClient(new WebApplicationFactoryClientOptions { HandleCookies = false });
+        secondClient.DefaultRequestHeaders.Add("Cookie", session);
         secondRun.Clock.Advance(TimeSpan.FromSeconds(18));
-        var response = await secondClient.GetAsync($"/players/{playerId}");
+        var response = await secondClient.GetAsync("/me/player");
 
         response.EnsureSuccessStatusCode();
         var player = await response.Content.ReadFromJsonAsync<PlayerResponse>();

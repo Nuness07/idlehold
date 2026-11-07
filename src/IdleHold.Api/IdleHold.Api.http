@@ -1,31 +1,47 @@
 ### Manual requests against the running API (`dotnet run --project src/IdleHold.Api`).
 ### In VS Code, install the "REST Client" extension and click "Send Request" above each block.
+### The session is a cookie, so run "Start a guest session" (or sign in) first; the client keeps it.
 
 @host = http://localhost:5085
 
 ### List game content
 GET {{host}}/content
 
-### Create a player (copy the "id" from the response into @playerId below)
-POST {{host}}/players
+### Start a guest session (an anonymous account with its own hold)
+POST {{host}}/account/guest
 
-###
-@playerId = 00000000-0000-0000-0000-000000000000
+### Who is signed in (a guest has no e-mail)
+GET {{host}}/account/me
 
-### Get player state (caught up to now)
-GET {{host}}/players/{{playerId}}
+### Get my player state (caught up to now)
+GET {{host}}/me/player
 
 ### Start chopping pine
-POST {{host}}/players/{{playerId}}/action
+POST {{host}}/me/player/action
 Content-Type: application/json
 
 { "actionId": "cut-pine" }
 
 ### Craft the chipped stone axe (needs 3 twigs and 2 pebbles; 409 without them or once you own it)
-POST {{host}}/players/{{playerId}}/action
+POST {{host}}/me/player/action
 Content-Type: application/json
 
 { "actionId": "craft-chipped-stone-axe" }
 
 ### Stop the current action
-DELETE {{host}}/players/{{playerId}}/action
+DELETE {{host}}/me/player/action
+
+### Sign up: a guest keeps its hold
+POST {{host}}/account/register
+Content-Type: application/json
+
+{ "email": "player@example.test", "password": "a long enough password" }
+
+### Sign in (a guest session's hold is deleted)
+POST {{host}}/account/login
+Content-Type: application/json
+
+{ "email": "player@example.test", "password": "a long enough password" }
+
+### Sign out (a guest is deleted with its hold)
+POST {{host}}/account/logout

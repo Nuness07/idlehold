@@ -14,19 +14,6 @@ namespace IdleHold.Api.Players;
 /// </summary>
 public sealed class PlayerService(IPlayerStore store, GameEngine engine, TimeProvider time)
 {
-    public async Task<PlayerSave> CreateAsync(CancellationToken cancellationToken)
-    {
-        var player = new PlayerSave(Guid.NewGuid(), GameState.New, time.GetUtcNow());
-        await store.AddAsync(player, cancellationToken);
-        return player;
-    }
-
-    public async Task<PlayerSave?> GetAsync(Guid playerId, CancellationToken cancellationToken)
-    {
-        var save = await store.GetAsync(playerId, cancellationToken);
-        return save is null ? null : CatchUp(save, time.GetUtcNow());
-    }
-
     /// <summary>The account's player caught up to now, created on first use for an account that has none.</summary>
     public async Task<PlayerSave> GetOrCreateForAccountAsync(Guid accountId, CancellationToken cancellationToken)
     {
@@ -57,77 +44,37 @@ public sealed class PlayerService(IPlayerStore store, GameEngine engine, TimePro
         }
     }
 
-    /// <summary>Whether a guest player exists and nobody owns it yet.</summary>
-    public async Task<bool> IsClaimableAsync(Guid playerId, CancellationToken cancellationToken) =>
-        await store.GetAsync(playerId, cancellationToken) is { IsGuest: true };
-
-    /// <summary>
-    /// Moves a guest player to an account, keeping all of its progress. Only the owner changes:
-    /// the state and its timestamp stay as saved, so no time is simulated here.
-    /// </summary>
-    public async Task<ClaimResult> ClaimAsync(Guid playerId, Guid accountId, CancellationToken cancellationToken)
-    {
-        if (await store.FindByAccountAsync(accountId, cancellationToken) is not null)
-        {
-            return ClaimResult.AccountAlreadyHasPlayer;
-        }
-
-        var alreadyOwned = false;
-        var updated = await store.UpdateAsync(playerId, save =>
-        {
-            alreadyOwned = !save.IsGuest;
-            return alreadyOwned ? save : save with { AccountId = accountId };
-        }, cancellationToken);
-
-        return updated is null ? ClaimResult.NotFound
-            : alreadyOwned ? ClaimResult.AlreadyOwned
-            : ClaimResult.Claimed;
-    }
-
-    /// <param name="owner">Who is asking: <c>null</c> for a guest, or the signed-in account.</param>
-    /// The game checks the caught-up state, so materials gathered while away count.
-    public Task<CommandResult> StartActionAsync(Guid playerId, Guid? owner, string actionId, CancellationToken cancellationToken) =>
+    /// <summary>Starts an action on the account's hold. The game checks the caught-up state, so materials gathered while away count.</summary>
+    public Task<CommandResult> StartActionAsync(Guid accountId, string actionId, CancellationToken cancellationToken) =>
         ApplyAsync(
-            playerId,
-            owner,
+            accountId,
             state => state.ActiveAction?.ActionId == actionId ? null : engine.CheckStart(state, actionId),
             state => engine.StartAction(state, actionId),
             cancellationToken);
 
-    /// <param name="owner">Who is asking: <c>null</c> for a guest, or the signed-in account.</param>
-    public Task<CommandResult> StopActionAsync(Guid playerId, Guid? owner, CancellationToken cancellationToken) =>
-        ApplyAsync(playerId, owner, check: _ => null, engine.StopAction, cancellationToken);
+    public Task<CommandResult> StopActionAsync(Guid accountId, CancellationToken cancellationToken) =>
+        ApplyAsync(accountId, check: _ => null, engine.StopAction, cancellationToken);
 
     /// <summary>
-    /// Applies a command only if <paramref name="owner"/> owns the player. The check runs inside the
-    /// store's atomic update, so it is repeated on every concurrency retry: a hold claimed by an
-    /// account between two attempts is refused, never changed by the guest request.
+    /// Applies a command to the account's hold as one atomic store update (repeated on a concurrency retry).
     /// <paramref name="check"/> runs on the caught-up state; when the game refuses the command, nothing is written.
     /// </summary>
     private async Task<CommandResult> ApplyAsync(
-        Guid playerId,
-        Guid? owner,
+        Guid accountId,
         Func<GameState, ActionBlock?> check,
         Func<GameState, GameState> command,
         CancellationToken cancellationToken)
     {
-        var denied = false;
+        var mine = await GetOrCreateForAccountAsync(accountId, cancellationToken);
         ActionBlock? block = null;
-        var updated = await store.UpdateAsync(playerId, save =>
+        var updated = await store.UpdateAsync(mine.Id, save =>
         {
-            denied = save.AccountId != owner;
-            if (denied)
-            {
-                return save; // Unchanged: the store skips the write.
-            }
-
             var caughtUp = CatchUp(save, time.GetUtcNow());
             block = check(caughtUp.State);
             return block is null ? caughtUp with { State = command(caughtUp.State) } : save;
         }, cancellationToken);
 
         return updated is null ? CommandResult.NotFound
-            : denied ? CommandResult.Forbidden
             : block is { } blocked ? CommandResult.Blocked(blocked)
             : CommandResult.Done(updated);
     }
@@ -145,7 +92,6 @@ public enum CommandStatus
 {
     Done,
     NotFound,
-    Forbidden,
 
     /// <summary>The game refused the command (see <see cref="CommandResult.Block"/>); nothing was saved.</summary>
     Blocked,
@@ -157,15 +103,5 @@ public sealed record CommandResult(CommandStatus Status, PlayerSave? Player, Act
 
     public static CommandResult NotFound { get; } = new(CommandStatus.NotFound, null);
 
-    public static CommandResult Forbidden { get; } = new(CommandStatus.Forbidden, null);
-
     public static CommandResult Done(PlayerSave player) => new(CommandStatus.Done, player);
-}
-
-public enum ClaimResult
-{
-    Claimed,
-    NotFound,
-    AlreadyOwned,
-    AccountAlreadyHasPlayer,
 }
