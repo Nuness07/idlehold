@@ -93,6 +93,28 @@ public class RecipeTests
     }
 
     [Fact]
+    public void Tick_QuantitiesBeyondInt_AreKeptWhole()
+    {
+        // Late-game costs and stockpiles can pass int.MaxValue (about 2.1 billion).
+        const long bigCost = 3_000_000_000;
+        var content = new GameContent(
+        [
+            new ActionDefinition("press", "crafting", TimeSpan.FromSeconds(1), XpPerCompletion: 1, OutputItemId: "brick", OutputQuantity: bigCost)
+            {
+                Inputs = [new ItemAmount("clay", bigCost)],
+            },
+        ]);
+        var engine = new GameEngine(content);
+        var state = engine.StartAction(With(("clay", 2 * bigCost + 1)), "press");
+
+        var result = engine.Tick(state, TimeSpan.FromMinutes(1));
+
+        Assert.Equal(1, result.ItemCount("clay"));
+        Assert.Equal(2 * bigCost, result.ItemCount("brick"));
+        Assert.Null(result.ActiveAction);
+    }
+
+    [Fact]
     public void CheckStart_WithoutEnoughInputs_ReportsMissingInputs()
     {
         var state = With(("twig", 3), ("pebble", 1));

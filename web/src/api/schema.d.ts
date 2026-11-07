@@ -509,7 +509,7 @@ export interface components {
             /** Format: int64 */
             xpPerCompletion: number;
             outputItemId: string;
-            /** Format: int32 */
+            /** Format: int64 */
             outputQuantity: number;
             inputs: components["schemas"]["ItemAmountResponse"][];
         };
@@ -537,7 +537,7 @@ export interface components {
         };
         ItemAmountResponse: {
             itemId: string;
-            /** Format: int32 */
+            /** Format: int64 */
             quantity: number;
         };
         LoginRequest: {

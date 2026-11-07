@@ -11,11 +11,11 @@ public sealed record ActionDefinition(
     TimeSpan Duration,
     long XpPerCompletion,
     string OutputItemId,
-    int OutputQuantity = 1)
+    long OutputQuantity = 1)
 {
     /// <summary>Items taken from the stores at the end of each completion.</summary>
     public IReadOnlyList<ItemAmount> Inputs { get; init; } = [];
 }
 
 /// <summary>A quantity of one item, such as "3 twigs".</summary>
-public sealed record ItemAmount(string ItemId, int Quantity);
+public sealed record ItemAmount(string ItemId, long Quantity);

@@ -34,11 +34,11 @@ public sealed record ActionResponse(
     long DurationMs,
     long XpPerCompletion,
     string OutputItemId,
-    int OutputQuantity,
+    long OutputQuantity,
     IReadOnlyList<ItemAmountResponse> Inputs);
 
 /// <summary>An action's input: taken from the stores at the end of each completion.</summary>
-public sealed record ItemAmountResponse(string ItemId, int Quantity);
+public sealed record ItemAmountResponse(string ItemId, long Quantity);
 
 /// <summary>
 /// Marks an item as a tool. The player owns one per family and upgrades its tier; a recipe that makes
