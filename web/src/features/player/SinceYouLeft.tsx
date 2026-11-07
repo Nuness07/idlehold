@@ -1,25 +1,14 @@
 import { X } from 'lucide-react'
-import { Fragment, type ReactNode } from 'react'
+import type { ReactNode } from 'react'
 import { Trans, useTranslation } from 'react-i18next'
 import { useContentText } from '../../content/text'
 import { formatDuration, useFormat } from '../../lib/format'
+import { joinList } from '../../lib/joinList'
 import type { AwaySummary } from './awaySummary'
 
 interface SinceYouLeftProps {
   summary: AwaySummary
   onDismiss: () => void
-}
-
-/** Joins elements the way the language does: "a, b and c" / "a, b e c". */
-function joinList(parts: ReactNode[], language: string): ReactNode[] {
-  const placeholders = parts.map((_, index) => `\u0000${index}\u0000`)
-  return new Intl.ListFormat(language, { type: 'conjunction' })
-    .formatToParts(placeholders)
-    .map((part, index) =>
-      part.type === 'element'
-        ? <Fragment key={index}>{parts[placeholders.indexOf(part.value)]}</Fragment>
-        : <Fragment key={index}>{part.value}</Fragment>,
-    )
 }
 
 /** What the hold produced while the player was away, told as one sentence. */
