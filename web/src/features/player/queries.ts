@@ -38,6 +38,19 @@ export class HoldOwnedError extends Error {
 }
 
 /** The session cookie expired or was revoked while playing. */
+/**
+ * The game refused a command (409), for example a recipe without its materials. `reason` is the
+ * server's stable code (`missing-inputs`, `tool-already-owned`); the screen translates it.
+ */
+export class ActionBlockedError extends Error {
+  readonly reason: string | undefined
+
+  constructor(reason: string | undefined) {
+    super(`The game refused the command (${reason ?? 'no reason given'}).`)
+    this.reason = reason
+  }
+}
+
 export class SessionEndedError extends Error {
   constructor() {
     super('The session ended.')
@@ -127,7 +140,7 @@ export function useContent() {
   })
 }
 
-type Sent = Promise<{ data?: Player; response: Response }>
+type Sent = Promise<{ data?: Player; error?: unknown; response: Response }>
 
 /** Sends a command through the guest route or the signed-in route. */
 async function command(
@@ -136,8 +149,9 @@ async function command(
   send: { guest: (playerId: string) => Sent; account: () => Sent },
 ): Promise<Player> {
   if (!playerId) throw new Error('No hold loaded yet.')
-  const { data, response } = await (mode === 'account' ? send.account() : send.guest(playerId))
+  const { data, error, response } = await (mode === 'account' ? send.account() : send.guest(playerId))
   if (response.status === 401) throw new SessionEndedError()
+  if (response.status === 409) throw new ActionBlockedError(reasonOf(error))
   if (!data) throw new Error(`The command failed (${response.status}).`)
   return data
 }
@@ -175,4 +189,9 @@ export function useStopAction(mode: PlayerMode, playerId: string | undefined) {
       }),
     onSuccess: (player) => applyServerState(queryClient, mode, player),
   })
+}
+
+function reasonOf(problem: unknown): string | undefined {
+  if (typeof problem !== 'object' || problem === null || !('reason' in problem)) return undefined
+  return typeof problem.reason === 'string' ? problem.reason : undefined
 }

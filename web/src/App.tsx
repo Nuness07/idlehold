@@ -15,6 +15,7 @@ import { SignedOut } from './features/account/SignedOut'
 import { ActionList } from './features/actions/ActionList'
 import { WorkingAction } from './features/actions/WorkingAction'
 import {
+  ActionBlockedError,
   HoldOwnedError,
   playerQueryRoot,
   SessionEndedError,
@@ -50,6 +51,16 @@ export default function App() {
 
   const startAction = useStartAction(mode ?? 'guest', player?.id)
   const stopAction = useStopAction(mode ?? 'guest', player?.id)
+  const commandError = startAction.error ?? stopAction.error
+
+  /** A refusal from the game says why; anything else is a connection or server problem. */
+  const commandErrorText = (error: Error) => {
+    if (error instanceof ActionBlockedError) {
+      if (error.reason === 'missing-inputs') return t('app.actionBlocked.missing-inputs')
+      if (error.reason === 'tool-already-owned') return t('app.actionBlocked.tool-already-owned')
+    }
+    return t('app.actionFailed')
+  }
   const logout = useLogout()
   const startAsNewGuest = useStartAsNewGuest()
 
@@ -244,9 +255,9 @@ export default function App() {
                     stopping={stopAction.isPending}
                   />
                 )}
-                {(startAction.isError || stopAction.isError) && (
+                {commandError && (
                   <p role="alert" className="text-[15px] font-medium text-danger">
-                    {t('app.actionFailed')}
+                    {commandErrorText(commandError)}
                   </p>
                 )}
               </div>
@@ -278,9 +289,9 @@ export default function App() {
               stopping={stopAction.isPending}
             />
 
-            {(startAction.isError || stopAction.isError) && (
+            {commandError && (
               <p role="alert" className="text-[15px] font-medium text-danger">
-                {t('app.actionFailed')}
+                {commandErrorText(commandError)}
               </p>
             )}
 

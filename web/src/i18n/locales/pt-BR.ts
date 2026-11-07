@@ -9,6 +9,10 @@ export const ptBR = {
     tryAgain: 'Tentar de novo',
     lostSave: 'Seu domínio anterior não foi encontrado, então um novo foi criado.',
     actionFailed: 'O servidor não aceitou isso. Confira sua conexão e tente de novo.',
+    actionBlocked: {
+      'missing-inputs': 'Ainda faltam materiais para isso.',
+      'tool-already-owned': 'Você já tem essa ferramenta ou uma melhor.',
+    },
     totalLevel: 'Nível total',
     pageTitle: '{{count}} {{item}} · {{verb}} · IdleHold',
   },

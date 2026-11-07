@@ -10,6 +10,10 @@ export const en = {
     tryAgain: 'Try again',
     lostSave: 'Your previous hold could not be found, so a new one was started.',
     actionFailed: 'The server did not accept that. Check your connection and try again.',
+    actionBlocked: {
+      'missing-inputs': 'Not enough materials for that yet.',
+      'tool-already-owned': 'You already have this tool or a better one.',
+    },
     totalLevel: 'Total level',
     pageTitle: '{{count}} {{item}} · {{verb}} · IdleHold',
   },
