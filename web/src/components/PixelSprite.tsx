@@ -1,3 +1,5 @@
+import { cn } from '../lib/cn'
+
 interface PixelSpriteProps {
   src: string
   /** Native size of the sprite in art pixels. */
@@ -9,7 +11,7 @@ interface PixelSpriteProps {
 }
 
 /** A decorative pixel-art image drawn at a whole-number scale with crisp pixels. */
-export function PixelSprite({ src, width, height, scale = 1, className = '' }: PixelSpriteProps) {
+export function PixelSprite({ src, width, height, scale = 1, className }: PixelSpriteProps) {
   return (
     <img
       src={src}
@@ -18,7 +20,7 @@ export function PixelSprite({ src, width, height, scale = 1, className = '' }: P
       width={width * scale}
       height={height * scale}
       draggable={false}
-      className={`shrink-0 [image-rendering:pixelated] ${className}`}
+      className={cn('shrink-0 [image-rendering:pixelated]', className)}
     />
   )
 }

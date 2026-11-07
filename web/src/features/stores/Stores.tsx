@@ -3,6 +3,7 @@ import { PixelSprite } from '../../components/PixelSprite'
 import { itemSprite } from '../../content/labels'
 import { useContentText } from '../../content/text'
 import { useFormat } from '../../lib/format'
+import { cn } from '../../lib/cn'
 
 interface StoresProps {
   inventory: Record<string, number>
@@ -35,9 +36,10 @@ export function Stores({ inventory, freshItemId }: StoresProps) {
                   {text.itemName(itemId)}
                 </span>
                 <span
-                  className={`text-xl font-extrabold tabular-nums transition-colors duration-700 ${
-                    itemId === freshItemId ? 'text-verdigris' : 'text-ink'
-                  }`}
+                  className={cn(
+                    'text-xl font-extrabold tabular-nums transition-colors duration-700',
+                    itemId === freshItemId ? 'text-verdigris' : 'text-ink',
+                  )}
                 >
                   {format.count(count)}
                 </span>

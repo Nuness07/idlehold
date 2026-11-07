@@ -2,6 +2,7 @@ import { useId, useState, type FormEvent } from 'react'
 import { Trans, useTranslation } from 'react-i18next'
 import { Button } from '../../components/Button'
 import type { AccountProblem } from './queries'
+import { cn } from '../../lib/cn'
 
 export type AccountFormMode = 'register' | 'login'
 
@@ -80,7 +81,7 @@ export function AccountForm({ mode, pending, problems, warnGuest, onSubmit, onSw
           className={inputClass}
         />
         {(passwordError || registering) && (
-          <p id={`${id}-password-note`} className={`text-[14px] ${passwordError ? 'font-medium text-danger' : 'text-muted'}`}>
+          <p id={`${id}-password-note`} className={cn('text-[14px]', passwordError ? 'font-medium text-danger' : 'text-muted')}>
             {passwordError ?? t('account.passwordHint')}
           </p>
         )}
