@@ -67,6 +67,25 @@ public sealed class GuestCleanupTests(PostgresFixture database) : IClassFixture<
     }
 
     [Fact]
+    public async Task ADeletedGuestStillPolling_Gets401NotAnError()
+    {
+        await using var factory = new ApiFactory(database.ConnectionString);
+        using var client = await factory.CreateGuestClientAsync();
+        factory.Clock.Advance(TimeSpan.FromDays(11));
+        // The tab polled just before the cleanup ran, so the cookie was checked moments ago.
+        (await client.GetAsync("/me/player")).EnsureSuccessStatusCode();
+
+        await factory.Services.GetRequiredService<GuestCleanup>().DeleteAbandonedAsync(CancellationToken.None);
+        // The next poll and command come a moment later, without asking /account/me first.
+        factory.Clock.Advance(TimeSpan.FromSeconds(1));
+        var read = await client.GetAsync("/me/player");
+        var start = await client.PostAsJsonAsync("/me/player/action", new StartActionRequest("cut-pine"));
+
+        Assert.Equal(HttpStatusCode.Unauthorized, read.StatusCode);
+        Assert.Equal(HttpStatusCode.Unauthorized, start.StatusCode);
+    }
+
+    [Fact]
     public async Task ADeletedGuestComingBack_StartsANewGuestSession()
     {
         await using var factory = new ApiFactory(database.ConnectionString);

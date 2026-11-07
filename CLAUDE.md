@@ -79,6 +79,7 @@ Record every decision here, with the reason in one line.
 - **The guest session starts with an explicit `POST /account/guest`**, never inside a `GET`: reads stay free of writes, and crawlers that only read create nothing.
 - **A guest that signs out or signs in to another account is deleted with its hold**: the cookie was its only key, so it could never be reached again.
 - **Only guests without any progress are cleaned up** (empty save, nothing working, 10 days old), straight in SQL on the `jsonb` save: reads never write, so an old save can still belong to someone who left an action running. Old guests with progress that never became accounts need a rule based on a last-visit record, later.
+- **The session's account is checked on every request** (`SecurityStampValidatorOptions.ValidationInterval = 0`, one lookup by key): a deleted guest or a changed password ends the session at once, instead of a cookie that still works for up to 30 minutes.
 - **Postgres is required** (no in-memory mode): accounts and guests need Identity's tables, and Docker already runs the local database.
 - **A recipe is an action with inputs**, not a separate system: one `Tick` serves gathering and crafting, and completions are the smallest of what time, inputs and the tool rule allow, so it stays constant-time.
 - **Tools are items with a family and tier, and the owned tier is derived from the stores**: no extra state to save or keep in sync; an upgrade recipe consumes the previous tier.

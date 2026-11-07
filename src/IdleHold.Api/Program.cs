@@ -65,6 +65,10 @@ builder.Services
 // Replaces Identity's user validator, which refuses a guest for having no e-mail.
 builder.Services.Replace(ServiceDescriptor.Scoped<IUserValidator<Account>, AccountValidator>());
 
+// Check the session's account on every request (one lookup by key), not every 30 minutes: a deleted
+// guest or a changed password ends the session at once, and no request reaches a deleted account's hold.
+builder.Services.Configure<SecurityStampValidatorOptions>(options => options.ValidationInterval = TimeSpan.Zero);
+
 // Deletes guests that never made any progress (settings under "GuestCleanup").
 builder.Services.Configure<GuestCleanupOptions>(builder.Configuration.GetSection("GuestCleanup"));
 builder.Services.AddSingleton<GuestCleanup>();
