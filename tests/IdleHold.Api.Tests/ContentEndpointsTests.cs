@@ -29,6 +29,6 @@ public sealed class ContentEndpointsTests : IDisposable
         var content = await client.GetFromJsonAsync<ContentResponse>("/content");
 
         var skills = content!.Actions.Select(action => action.SkillId).Distinct().Order();
-        Assert.Equal(["fishing", "mining", "woodcutting"], skills);
+        Assert.Equal(["fishing", "foraging", "mining", "woodcutting"], skills);
     }
 }
