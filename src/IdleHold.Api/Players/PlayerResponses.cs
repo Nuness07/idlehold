@@ -12,9 +12,10 @@ public sealed record PlayerResponse(
     ActiveActionResponse? ActiveAction,
     IReadOnlyDictionary<string, long> Inventory,
     IReadOnlyDictionary<string, SkillResponse> Skills,
+    IReadOnlyList<ToolProgressResponse> Tools,
     DateTimeOffset UpdatedAt)
 {
-    public static PlayerResponse From(PlayerSave save, GameContent content)
+    public static PlayerResponse From(PlayerSave save, GameEngine engine, GameContent content)
     {
         var state = save.State;
 
@@ -27,9 +28,19 @@ public sealed record PlayerResponse(
 
         var skills = state.SkillXp.ToDictionary(pair => pair.Key, pair => SkillResponse.From(pair.Value));
 
-        return new PlayerResponse(save.Id, activeAction, state.Inventory, skills, save.LastUpdated);
+        var tools = engine.ToolProgressOf(state)
+            .Select(tool => new ToolProgressResponse(tool.Family, tool.OwnedItemId, tool.NextActionId))
+            .ToList();
+
+        return new PlayerResponse(save.Id, activeAction, state.Inventory, skills, tools, save.LastUpdated);
     }
 }
+
+/// <summary>
+/// One tool family: the tool owned (null with bare hands) and the action that makes the next tier
+/// (null when there is nothing better to make). The server decides which tier comes next.
+/// </summary>
+public sealed record ToolProgressResponse(string Family, string? OwnedItemId, string? NextActionId);
 
 /// <summary>Progress and duration let the client animate the bar on its own between requests.</summary>
 public sealed record ActiveActionResponse(string ActionId, long ProgressMs, long DurationMs);

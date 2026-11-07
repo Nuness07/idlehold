@@ -38,6 +38,10 @@ public sealed class GameContent
     public ToolDefinition? FindTool(string itemId) =>
         _tools.GetValueOrDefault(itemId);
 
+    /// <summary>Returns the first action that makes this item, or <c>null</c> if none does.</summary>
+    public ActionDefinition? FindRecipeFor(string itemId) =>
+        _actions.Values.FirstOrDefault(action => action.OutputItemId == itemId);
+
     private void AddTool(ToolDefinition tool)
     {
         if (tool.Tier < 1)

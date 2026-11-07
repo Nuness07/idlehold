@@ -65,6 +65,24 @@ public sealed class GameEngine(GameContent content)
             .Max();
 
     /// <summary>
+    /// Every tool family, in catalog order, with the best tool the player owns and the recipe for the
+    /// next tier: the lowest tier above the owned one. The next recipe is <c>null</c> once the family is
+    /// at its best tool (or a tier has no recipe yet).
+    /// </summary>
+    public IReadOnlyList<ToolProgress> ToolProgressOf(GameState state) =>
+        content.Tools
+            .GroupBy(tool => tool.Family)
+            .Select(family =>
+            {
+                var ownedTier = ToolTierOf(state, family.Key);
+                var owned = family.FirstOrDefault(tool => tool.Tier == ownedTier);
+                var next = family.Where(tool => tool.Tier > ownedTier).MinBy(tool => tool.Tier);
+                var recipe = next is null ? null : content.FindRecipeFor(next.ItemId);
+                return new ToolProgress(family.Key, owned?.ItemId, recipe?.Id);
+            })
+            .ToList();
+
+    /// <summary>
     /// Advances the game by <paramref name="elapsed"/>. Runs in constant time no matter how long
     /// the period is: completions are computed with division instead of a loop. When the stores
     /// can only pay for fewer completions than the time allows (inputs run out, or the tool is made),
@@ -149,3 +167,9 @@ public enum ActionBlock
     /// <summary>The action makes a tool, and the player already owns that tier or a better one.</summary>
     ToolAlreadyOwned,
 }
+
+/// <summary>
+/// Where the player stands in one tool family: the tool they own (<c>null</c> with bare hands)
+/// and the action that makes the next tier (<c>null</c> when there is nothing better to make).
+/// </summary>
+public sealed record ToolProgress(string Family, string? OwnedItemId, string? NextActionId);

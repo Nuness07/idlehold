@@ -26,31 +26,31 @@ public static class PlayerEndpoints
     // (StartActionRequest) from JSON, and ClaimsPrincipal from the session cookie.
 
     private static async Task<Ok<PlayerResponse>> GetMyPlayer(
-        ClaimsPrincipal user, PlayerService players, GameContent content, CancellationToken cancellationToken)
+        ClaimsPrincipal user, PlayerService players, GameEngine engine, GameContent content, CancellationToken cancellationToken)
     {
         var player = await players.GetOrCreateForAccountAsync(AccountId(user), cancellationToken);
-        return TypedResults.Ok(PlayerResponse.From(player, content));
+        return TypedResults.Ok(PlayerResponse.From(player, engine, content));
     }
 
     private static async Task<Results<Ok<PlayerResponse>, NotFound, ValidationProblem, ProblemHttpResult>> StartMyAction(
-        ClaimsPrincipal user, StartActionRequest request, PlayerService players, GameContent content, CancellationToken cancellationToken)
+        ClaimsPrincipal user, StartActionRequest request, PlayerService players, GameEngine engine, GameContent content, CancellationToken cancellationToken)
     {
         if (InvalidAction(request, content) is { } invalid)
         {
             return invalid;
         }
 
-        return ToResponse(await players.StartActionAsync(AccountId(user), request.ActionId, cancellationToken), content);
+        return ToResponse(await players.StartActionAsync(AccountId(user), request.ActionId, cancellationToken), engine, content);
     }
 
     private static async Task<Results<Ok<PlayerResponse>, NotFound, ValidationProblem, ProblemHttpResult>> StopMyAction(
-        ClaimsPrincipal user, PlayerService players, GameContent content, CancellationToken cancellationToken) =>
-        ToResponse(await players.StopActionAsync(AccountId(user), cancellationToken), content);
+        ClaimsPrincipal user, PlayerService players, GameEngine engine, GameContent content, CancellationToken cancellationToken) =>
+        ToResponse(await players.StopActionAsync(AccountId(user), cancellationToken), engine, content);
 
     private static Results<Ok<PlayerResponse>, NotFound, ValidationProblem, ProblemHttpResult> ToResponse(
-        CommandResult result, GameContent content) => result.Status switch
+        CommandResult result, GameEngine engine, GameContent content) => result.Status switch
         {
-            CommandStatus.Done => TypedResults.Ok(PlayerResponse.From(result.Player!, content)),
+            CommandStatus.Done => TypedResults.Ok(PlayerResponse.From(result.Player!, engine, content)),
             CommandStatus.Blocked => Blocked(result.Block!.Value),
             _ => TypedResults.NotFound(),
         };
