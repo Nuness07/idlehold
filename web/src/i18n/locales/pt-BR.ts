@@ -112,6 +112,7 @@ export const ptBR = {
       fishing: 'Pescador',
       mining: 'Minerador',
       foraging: 'Coleta',
+      crafting: 'Artesanato',
     },
     actions: {
       'gather-twigs': { name: 'Gravetos', verb: 'Juntando gravetos' },
@@ -123,6 +124,9 @@ export const ptBR = {
       'mine-stone': { name: 'Pedra', verb: 'Minerando pedra' },
       'mine-copper': { name: 'Cobre', verb: 'Minerando cobre' },
       'pick-wild-berries': { name: 'Frutinhas silvestres', verb: 'Colhendo frutinhas silvestres' },
+      'pull-reeds': { name: 'Juncos', verb: 'Arrancando juncos' },
+      'craft-chipped-stone-axe': { name: 'Machado de pedra lascada', verb: 'Fazendo um machado de pedra lascada' },
+      'craft-reed-fishing-rod': { name: 'Vara de pesca de junco', verb: 'Fazendo uma vara de pesca de junco' },
     },
     items: {
       // `_many` is Portuguese's form for round millions ("2 milhões de toras"); here it reads like `_other`.
@@ -135,6 +139,9 @@ export const ptBR = {
       stone: { name: 'Pedra', count_one: 'pedra', count_many: 'pedras', count_other: 'pedras' },
       'copper-ore': { name: 'Minério de cobre', count_one: 'minério de cobre', count_many: 'minérios de cobre', count_other: 'minérios de cobre' },
       'wild-berry': { name: 'Frutinha silvestre', count_one: 'frutinha silvestre', count_many: 'frutinhas silvestres', count_other: 'frutinhas silvestres' },
+      reed: { name: 'Junco', count_one: 'junco', count_many: 'juncos', count_other: 'juncos' },
+      'chipped-stone-axe': { name: 'Machado de pedra lascada', count_one: 'machado de pedra lascada', count_many: 'machados de pedra lascada', count_other: 'machados de pedra lascada' },
+      'reed-fishing-rod': { name: 'Vara de pesca de junco', count_one: 'vara de pesca de junco', count_many: 'varas de pesca de junco', count_other: 'varas de pesca de junco' },
     },
   },
 } satisfies Translation

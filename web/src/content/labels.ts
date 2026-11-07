@@ -1,4 +1,4 @@
-import { Axe, Cherry, Fish, FishSymbol, Gem, Hand, Mountain, Pickaxe, TreeDeciduous, TreePine, type LucideIcon } from 'lucide-react'
+import { Axe, Cherry, Fish, FishSymbol, Gem, Hammer, Hand, Mountain, Pickaxe, Sprout, TreeDeciduous, TreePine, type LucideIcon } from 'lucide-react'
 import berryBush from '../assets/actions/berry-bush.png'
 import birchTree from '../assets/actions/birch-tree.png'
 import copperDeposit from '../assets/actions/copper.png'
@@ -48,6 +48,7 @@ const trades: Record<string, TradeLabel> = {
   fishing: { paint: 'var(--color-lake)', Icon: Fish, emblem: fishingEmblem },
   mining: { paint: 'var(--color-slate)', Icon: Pickaxe, emblem: miningEmblem },
   foraging: { paint: 'var(--color-bramble)', Icon: Cherry, emblem: foragingEmblem },
+  crafting: { paint: 'var(--color-moss)', Icon: Hammer },
 }
 
 const actions: Record<string, ActionLabel> = {
@@ -60,6 +61,9 @@ const actions: Record<string, ActionLabel> = {
   'mine-stone': { Icon: Mountain, sprite: stoneOutcrop },
   'mine-copper': { Icon: Gem, sprite: copperDeposit },
   'pick-wild-berries': { Icon: Cherry, sprite: berryBush },
+  'pull-reeds': { Icon: Sprout },
+  'craft-chipped-stone-axe': { Icon: Axe },
+  'craft-reed-fishing-rod': { Icon: Fish },
 }
 
 const itemSprites: Record<string, string> = {

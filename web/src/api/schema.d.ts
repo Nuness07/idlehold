@@ -511,6 +511,7 @@ export interface components {
             outputItemId: string;
             /** Format: int32 */
             outputQuantity: number;
+            inputs: components["schemas"]["ItemAmountResponse"][];
         };
         ActiveActionResponse: {
             actionId: string;
@@ -521,6 +522,7 @@ export interface components {
         };
         ContentResponse: {
             actions: components["schemas"]["ActionResponse"][];
+            tools: components["schemas"]["ToolResponse"][];
         };
         HttpValidationProblemDetails: {
             type?: null | string;
@@ -532,6 +534,11 @@ export interface components {
             errors?: {
                 [key: string]: string[];
             };
+        };
+        ItemAmountResponse: {
+            itemId: string;
+            /** Format: int32 */
+            quantity: number;
         };
         LoginRequest: {
             email: string;
@@ -568,6 +575,12 @@ export interface components {
         };
         StartActionRequest: {
             actionId: string;
+        };
+        ToolResponse: {
+            itemId: string;
+            family: string;
+            /** Format: int32 */
+            tier: number;
         };
     };
     responses: never;
