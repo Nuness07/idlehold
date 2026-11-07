@@ -34,15 +34,16 @@ The village is the differentiator. Skills feed the village; the village gives sk
 
 ### Gathering skills: Decided
 
-Three gathering skills exist, each with a quick starter action and a slower one that pays more XP per second:
+Four gathering skills exist. Woodcutting, Mining and Foraging start with a bare-hand action; each tree, fishing spot and rock after it pays more XP per second the slower it is:
 
 | Skill | Actions | Item |
 |---|---|---|
-| Woodcutting | Pine (3 s, 10 XP), Birch (5 s, 18 XP) | Pine log, Birch log |
+| Woodcutting | Twigs (2 s, 5 XP, by hand), Pine (3 s, 10 XP), Birch (5 s, 18 XP) | Twig, Pine log, Birch log |
 | Fishing | Perch (4 s, 12 XP), Pike (7 s, 28 XP) | Perch, Pike |
-| Mining | Stone (3 s, 9 XP), Copper (6 s, 22 XP) | Stone, Copper ore |
+| Mining | Pebbles (2 s, 5 XP, by hand), Stone (3 s, 9 XP), Copper (6 s, 22 XP) | Pebble, Stone, Copper ore |
+| Foraging | Wild berries (2 s, 5 XP, by hand) | Wild berry |
 
-Wood and stone are the village's building materials; fish feeds Cooking; copper feeds Smithing. A content test keeps the rule that a slower action never pays less XP per second. Level gates on the slower actions are not in yet.
+Wood and stone are the village's building materials; fish feeds Cooking; copper feeds Smithing. A content test keeps the rule that a slower action never pays less XP per second. Level and tool gates are not in yet, so every action is still open at level 1 (see "Bare hands and tools").
 
 Note on originality: Melvor Idle already has a village skill (Township). Here the village is not one skill among many; the skills exist to serve the village.
 

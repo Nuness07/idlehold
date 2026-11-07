@@ -31,15 +31,31 @@ public class GameContentTests
     }
 
     [Fact]
-    public void DefaultContent_HasTwoActionsPerGatheringSkill()
+    public void DefaultContent_HasExpectedActionsPerSkill()
     {
         var bySkill = DefaultContent.Create().Actions
             .GroupBy(action => action.SkillId)
             .ToDictionary(group => group.Key, group => group.Count());
 
         Assert.Equal(
-            new Dictionary<string, int> { ["woodcutting"] = 2, ["fishing"] = 2, ["mining"] = 2 },
+            new Dictionary<string, int> { ["woodcutting"] = 3, ["fishing"] = 2, ["mining"] = 3, ["foraging"] = 1 },
             bySkill);
+    }
+
+    [Theory]
+    [InlineData("gather-twigs", "woodcutting")]
+    [InlineData("pick-pebbles", "mining")]
+    [InlineData("pick-wild-berries", "foraging")]
+    public void DefaultContent_HasABareHandActionInEveryStartingTrade(string actionId, string skillId)
+    {
+        // Hand actions are the quickest in their trade: the player starts with nothing.
+        var content = DefaultContent.Create();
+        var action = content.GetAction(actionId);
+
+        Assert.Equal(skillId, action.SkillId);
+        Assert.All(
+            content.Actions.Where(other => other.SkillId == skillId),
+            other => Assert.True(action.Duration <= other.Duration));
     }
 
     [Fact]
