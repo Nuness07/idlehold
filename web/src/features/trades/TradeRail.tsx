@@ -1,7 +1,6 @@
-import { Flame } from 'lucide-react'
 import { useTranslation } from 'react-i18next'
 import type { Skill, SkillCategory } from '../../api/client'
-import { tradeLabel } from '../../content/labels'
+import { tradeLabel, villageLabel } from '../../content/labels'
 import { useContentText } from '../../content/text'
 import { TradeEmblem } from './TradeEmblem'
 import { cn } from '../../lib/cn'
@@ -56,9 +55,7 @@ export function TradeRail({ trades, selected, onSelect, onSelectVillage }: Trade
           aria-pressed={selected === null}
           className={cn(railButton(selected === null), 'w-auto shrink-0 lg:w-full')}
         >
-          <span aria-hidden className="grid size-8 place-items-center rounded bg-oxblood text-oxblood-ink">
-            <Flame className="size-[18px]" strokeWidth={2} />
-          </span>
+          <TradeEmblem trade={villageLabel} scale={1} fallbackClassName="size-[18px]" />
           <span>{t('village.rail')}</span>
         </button>
 

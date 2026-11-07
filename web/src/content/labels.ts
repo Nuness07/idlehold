@@ -1,5 +1,6 @@
-import { Axe, Cherry, Fish, FishSymbol, Gem, Hammer, Hand, Mountain, Pickaxe, Sprout, TreeDeciduous, TreePine, type LucideIcon } from 'lucide-react'
+import { Axe, Castle, Cherry, Fish, FishSymbol, Gem, Hammer, Hand, Mountain, Pickaxe, Sprout, TreeDeciduous, TreePine, type LucideIcon } from 'lucide-react'
 import berryBush from '../assets/actions/berry-bush.png'
+import tower from '../assets/brand/tower.png'
 import birchTree from '../assets/actions/birch-tree.png'
 import copperDeposit from '../assets/actions/copper.png'
 import perchSpot from '../assets/actions/perch.png'
@@ -47,6 +48,12 @@ interface ActionLabel {
   /** URL of the action's 32x32 pixel-art sprite. */
   sprite?: string
 }
+
+/** The village's emblem: the hold's stone tower, also the mark beside the wordmark. */
+export const villageLabel: TradeLabel = { paint: 'var(--color-oxblood)', Icon: Castle, emblem: tower }
+
+/** The tower on its own, 32x32 art pixels. */
+export const towerSprite = tower
 
 const trades: Record<string, TradeLabel> = {
   woodcutting: { paint: 'var(--color-verdigris)', Icon: Axe, emblem: woodcuttingEmblem },

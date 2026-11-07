@@ -4,6 +4,8 @@ import { useTranslation } from 'react-i18next'
 import { isApiError, type Skill } from './api/client'
 import { Button } from './components/Button'
 import { LanguageSwitch } from './components/LanguageSwitch'
+import { PixelSprite } from './components/PixelSprite'
+import { towerSprite } from './content/labels'
 import { useContentText } from './content/text'
 import { AccountDialog } from './features/account/AccountDialog'
 import type { AccountFormMode } from './features/account/AccountForm'
@@ -326,9 +328,12 @@ function Shell({ totalLevel, menu, children }: ShellProps) {
     <div className="flex min-h-dvh flex-col">
       <header className="flex h-16 shrink-0 items-center gap-6 bg-oxblood px-4 text-oxblood-ink sm:px-8">
         {/* Grenze's blackletter capital I reads as a J, so the I is set in the sans. */}
-        <span className="font-gothic text-[34px] leading-none font-extrabold" role="img" aria-label="IdleHold">
-          <span aria-hidden className="mr-px font-sans font-extrabold">I</span>
-          <span aria-hidden>dleHold</span>
+        <span className="flex items-center gap-2" role="img" aria-label="IdleHold">
+          <PixelSprite src={towerSprite} width={32} height={32} />
+          <span aria-hidden className="font-gothic text-[34px] leading-none font-extrabold">
+            <span className="mr-px font-sans font-extrabold">I</span>
+            <span>dleHold</span>
+          </span>
         </span>
         <div className="ml-auto flex items-center gap-3 sm:gap-5">
           {totalLevel !== null && (

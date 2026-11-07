@@ -101,6 +101,8 @@ Decided: the village is a scene you look at and the home screen (the hub), seen 
 
 Open: how buildings appear in the scene, and whether it is also a list of buildings.
 
+Idea: the Village's emblem (the stone tower on its entry) grows as the village is rebuilt, a new drawing per stage. The game's logo keeps the first tower.
+
 ### Villagers: Later (core)
 
 Villagers are unlocked through the village and story. Each one can be assigned to a skill and works it alongside the player.

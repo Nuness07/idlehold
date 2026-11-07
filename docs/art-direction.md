@@ -58,7 +58,7 @@ Tool: PixelLab, `create_image_pro` (one call returns 64 candidates at 32x32 for
 
 ## Using sprites in the client
 
-- Files live in `web/src/assets/<kind>/`: `emblems/`, `frames/`, `actions/`, `items/`.
+- Files live in `web/src/assets/<kind>/`: `emblems/`, `frames/`, `actions/`, `items/`, `brand/`.
 - Render them with `PixelSprite` (`web/src/components/PixelSprite.tsx`): whole-number
   scale only (1x, 2x, 3x) and `image-rendering: pixelated`, so pixels never smear.
 - Sprites are decorative (`alt=""`); the name next to them carries the meaning.
@@ -161,3 +161,4 @@ it becomes a button once clicking it does something, and changes art as it is re
 - The sprites are not palette-locked yet (the base uses about 160 colours). A fixed
   palette derived from the UI tokens can be passed to `create_image_pro` (`palette`) once
   the set grows.
+| `brand/tower.png` | a single small medieval stone fortress tower, round keep of grey fieldstone blocks with crenellated battlements, a small arched wooden door, not too detailed, village emblem and game logo icon | Candidate 11 (red banner). The Village's emblem and the mark beside the wordmark; the Village's emblem will grow as it is rebuilt, the logo keeps this one |
