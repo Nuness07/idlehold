@@ -1,4 +1,4 @@
-import { Axe, Fish, FishSymbol, Gem, Mountain, Pickaxe, TreeDeciduous, TreePine, type LucideIcon } from 'lucide-react'
+import { Axe, Cherry, Fish, FishSymbol, Gem, Hand, Mountain, Pickaxe, TreeDeciduous, TreePine, type LucideIcon } from 'lucide-react'
 import birchTree from '../assets/actions/birch-tree.png'
 import copperDeposit from '../assets/actions/copper.png'
 import perchSpot from '../assets/actions/perch.png'
@@ -40,15 +40,19 @@ const trades: Record<string, TradeLabel> = {
   woodcutting: { paint: 'var(--color-verdigris)', Icon: Axe, emblem: woodcuttingEmblem },
   fishing: { paint: 'var(--color-lake)', Icon: Fish, emblem: fishingEmblem },
   mining: { paint: 'var(--color-slate)', Icon: Pickaxe, emblem: miningEmblem },
+  foraging: { paint: 'var(--color-bramble)', Icon: Cherry },
 }
 
 const actions: Record<string, ActionLabel> = {
+  'gather-twigs': { Icon: Hand },
   'cut-pine': { Icon: TreePine, sprite: pineTree },
   'cut-birch': { Icon: TreeDeciduous, sprite: birchTree },
   'catch-perch': { Icon: Fish, sprite: perchSpot },
   'catch-pike': { Icon: FishSymbol, sprite: pikeSpot },
+  'pick-pebbles': { Icon: Hand },
   'mine-stone': { Icon: Mountain, sprite: stoneOutcrop },
   'mine-copper': { Icon: Gem, sprite: copperDeposit },
+  'pick-wild-berries': { Icon: Cherry },
 }
 
 const itemSprites: Record<string, string> = {
