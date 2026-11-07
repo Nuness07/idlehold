@@ -18,18 +18,18 @@ export function Stores({ inventory, freshItemId }: StoresProps) {
   const entries = Object.entries(inventory).sort(([, a], [, b]) => b - a)
 
   return (
-    <section aria-labelledby="stores-title" className="px-6 py-6 lg:max-w-[880px] lg:px-10 xl:max-w-none xl:px-6">
-      <h2 id="stores-title" className="mb-3 text-xs font-extrabold tracking-[0.14em] text-muted uppercase">
+    <section aria-labelledby="stores-title" className="py-2">
+      <h2 id="stores-title" className="mb-3 px-1 text-xs font-extrabold tracking-[0.14em] text-parchment uppercase">
         {t('stores.heading')}
       </h2>
       {entries.length === 0 ? (
-        <p className="text-muted">{t('stores.empty')}</p>
+        <p className="paper rounded px-3 py-2.5 text-muted">{t('stores.empty')}</p>
       ) : (
-        <ul className="grid gap-x-10 sm:grid-cols-2 xl:grid-cols-1">
+        <ul className="grid gap-2 sm:grid-cols-2 xl:grid-cols-1">
           {entries.map(([itemId, count]) => {
             const sprite = itemSprite(itemId)
             return (
-              <li key={itemId} className="flex items-center justify-between gap-4 border-t border-rule py-2">
+              <li key={itemId} className="paper flex items-center justify-between gap-4 rounded px-3 py-1.5">
                 <span className="flex items-center gap-3 text-[16px]">
                   {sprite && <PixelSprite src={sprite} width={32} height={32} />}
                   {text.itemName(itemId)}

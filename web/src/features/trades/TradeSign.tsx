@@ -22,7 +22,7 @@ function Bracket() {
       aria-hidden
       viewBox="0 0 640 44"
       preserveAspectRatio="none"
-      className="block h-11 w-full text-ink"
+      className="block h-11 w-full text-iron drop-shadow-[0_2px_0_rgb(0_0_0/0.6)]"
       fill="none"
       stroke="currentColor"
       strokeLinecap="round"
