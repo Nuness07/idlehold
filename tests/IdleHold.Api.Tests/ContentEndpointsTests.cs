@@ -22,13 +22,26 @@ public sealed class ContentEndpointsTests : IDisposable
     }
 
     [Fact]
-    public async Task GetContent_ListsEveryGatheringSkill()
+    public async Task GetContent_ListsEverySkill()
     {
         using var client = _factory.CreateClient();
 
         var content = await client.GetFromJsonAsync<ContentResponse>("/content");
 
         var skills = content!.Actions.Select(action => action.SkillId).Distinct().Order();
-        Assert.Equal(["fishing", "foraging", "mining", "woodcutting"], skills);
+        Assert.Equal(["crafting", "fishing", "foraging", "mining", "woodcutting"], skills);
+    }
+
+    [Fact]
+    public async Task GetContent_ListsRecipeInputsAndTools()
+    {
+        using var client = _factory.CreateClient();
+
+        var content = await client.GetFromJsonAsync<ContentResponse>("/content");
+
+        var axe = Assert.Single(content!.Actions, action => action.Id == "craft-chipped-stone-axe");
+        Assert.Equal([new ItemAmountResponse("twig", 3), new ItemAmountResponse("pebble", 2)], axe.Inputs);
+        Assert.Contains(new ToolResponse("chipped-stone-axe", "axe", 1), content.Tools);
+        Assert.Empty(Assert.Single(content.Actions, action => action.Id == "cut-pine").Inputs);
     }
 }

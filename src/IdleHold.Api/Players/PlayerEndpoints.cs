@@ -1,4 +1,5 @@
 using System.Security.Claims;
+using IdleHold.Engine;
 using IdleHold.Engine.Content;
 using Microsoft.AspNetCore.Http.HttpResults;
 
@@ -105,8 +106,30 @@ public static class PlayerEndpoints
         {
             CommandStatus.Done => TypedResults.Ok(PlayerResponse.From(result.Player!, content)),
             CommandStatus.Forbidden => OwnedByAccount(),
+            CommandStatus.Blocked => Blocked(result.Block!.Value),
             _ => TypedResults.NotFound(),
         };
+
+    /// <summary>
+    /// 409: the request was fine, but the game state does not allow it now. <c>reason</c> is a stable code
+    /// the client can translate; the title is for people reading the raw response.
+    /// </summary>
+    private static ProblemHttpResult Blocked(ActionBlock block) => TypedResults.Problem(
+        statusCode: StatusCodes.Status409Conflict,
+        title: block switch
+        {
+            ActionBlock.MissingInputs => "Not enough materials to start this action.",
+            ActionBlock.ToolAlreadyOwned => "You already own this tool or a better one.",
+            _ => "This action cannot start now.",
+        },
+        extensions: new Dictionary<string, object?> { ["reason"] = ReasonCode(block) });
+
+    private static string ReasonCode(ActionBlock block) => block switch
+    {
+        ActionBlock.MissingInputs => "missing-inputs",
+        ActionBlock.ToolAlreadyOwned => "tool-already-owned",
+        _ => "blocked",
+    };
 
     /// <summary>The body comes from the browser, so never trust it: validate before touching the engine.</summary>
     private static ValidationProblem? InvalidAction(StartActionRequest request, GameContent content) =>

@@ -5,8 +5,8 @@ import type { GameAction } from '../../api/client'
 import { ActionList } from './ActionList'
 
 const actions: GameAction[] = [
-  { id: 'cut-pine', skillId: 'woodcutting', durationMs: 3000, xpPerCompletion: 10, outputItemId: 'pine-log', outputQuantity: 1 },
-  { id: 'cut-birch', skillId: 'woodcutting', durationMs: 5000, xpPerCompletion: 18, outputItemId: 'birch-log', outputQuantity: 1 },
+  { id: 'cut-pine', skillId: 'woodcutting', durationMs: 3000, xpPerCompletion: 10, outputItemId: 'pine-log', outputQuantity: 1, inputs: [] },
+  { id: 'cut-birch', skillId: 'woodcutting', durationMs: 5000, xpPerCompletion: 18, outputItemId: 'birch-log', outputQuantity: 1, inputs: [] },
 ]
 
 describe('ActionList', () => {

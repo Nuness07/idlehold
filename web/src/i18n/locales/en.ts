@@ -10,6 +10,10 @@ export const en = {
     tryAgain: 'Try again',
     lostSave: 'Your previous hold could not be found, so a new one was started.',
     actionFailed: 'The server did not accept that. Check your connection and try again.',
+    actionBlocked: {
+      'missing-inputs': 'Not enough materials for that yet.',
+      'tool-already-owned': 'You already have this tool or a better one.',
+    },
     totalLevel: 'Total level',
     pageTitle: '{{count}} {{item}} · {{verb}} · IdleHold',
   },
@@ -113,6 +117,7 @@ export const en = {
       fishing: 'Fishing',
       mining: 'Mining',
       foraging: 'Foraging',
+      crafting: 'Crafting',
     },
     actions: {
       'gather-twigs': { name: 'Twigs', verb: 'Gathering twigs' },
@@ -124,6 +129,9 @@ export const en = {
       'mine-stone': { name: 'Stone', verb: 'Mining stone' },
       'mine-copper': { name: 'Copper', verb: 'Mining copper' },
       'pick-wild-berries': { name: 'Wild berries', verb: 'Picking wild berries' },
+      'pull-reeds': { name: 'Reeds', verb: 'Pulling reeds' },
+      'craft-chipped-stone-axe': { name: 'Chipped stone axe', verb: 'Making a chipped stone axe' },
+      'craft-reed-fishing-rod': { name: 'Reed fishing rod', verb: 'Making a reed fishing rod' },
     },
     items: {
       twig: { name: 'Twig', count_one: 'twig', count_other: 'twigs' },
@@ -135,6 +143,9 @@ export const en = {
       stone: { name: 'Stone', count_one: 'stone', count_other: 'stone' },
       'copper-ore': { name: 'Copper ore', count_one: 'copper ore', count_other: 'copper ore' },
       'wild-berry': { name: 'Wild berry', count_one: 'wild berry', count_other: 'wild berries' },
+      reed: { name: 'Reed', count_one: 'reed', count_other: 'reeds' },
+      'chipped-stone-axe': { name: 'Chipped stone axe', count_one: 'chipped stone axe', count_other: 'chipped stone axes' },
+      'reed-fishing-rod': { name: 'Reed fishing rod', count_one: 'reed fishing rod', count_other: 'reed fishing rods' },
     },
   },
 }

@@ -136,6 +136,11 @@ it becomes a button once clicking it does something, and changes art as it is re
 | `actions/berry-bush.png` | a small round wild berry bush, dark green leaves dotted with dark purple-red berries | Candidate 3 (realigned); `actions/stone.png` as composition reference |
 | `board/planks.png` | seamless tileable texture of weathered horizontal wooden planks, a medieval village notice board, warm medium-dark brown wood | Candidate 6, made seamless by hand (see The board) |
 | `board/frame.png` | a plain square wooden picture frame made of thick dark brown planks, small iron nails at the four corners | Candidate 9 (iron corner brackets); `frames/wood.png` as reference; edge outline extended |
+| `emblems/crafting.png` | a medieval wooden mallet and a small iron chisel crossed diagonally, leaning against a short wooden workbench stump | Candidate 0; `emblems/woodcutting.png` as composition reference |
+| `items/chipped-stone-axe.png` | a single chipped stone hand axe: a short stick handle with a knapped grey flint head lashed on with plant fibre cord | Candidate 41; `items/twig.png` for wood and cord colour. Also the recipe's action sprite |
+| `items/reed-fishing-rod.png` | a simple primitive fishing rod: a thin bare wooden pole, a pale twisted reed line and a small bone hook, about 30 px long | Candidate 15; `items/twig.png` as reference. Also the recipe's action sprite |
+| `items/reed.png` | a small bundle of long pale green and straw-yellow reed stalks tied in the middle, about 26 px long | Candidate 3; `items/twig.png` for the bundle composition |
+| `actions/reeds.png` | a small clump of tall green reeds with brown cattail heads on a patch of muddy riverbank | Candidate 2; `actions/berry-bush.png` as composition reference |
 | `emblems/foraging.png` | a small woven wicker basket full of wild berries, a leafy sprig leaning diagonally against it | Candidate 24 (realigned); `emblems/mining.png` as composition reference |
 
 

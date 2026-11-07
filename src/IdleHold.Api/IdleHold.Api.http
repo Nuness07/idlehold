@@ -21,5 +21,11 @@ Content-Type: application/json
 
 { "actionId": "cut-pine" }
 
+### Craft the chipped stone axe (needs 3 twigs and 2 pebbles; 409 without them or once you own it)
+POST {{host}}/players/{{playerId}}/action
+Content-Type: application/json
+
+{ "actionId": "craft-chipped-stone-axe" }
+
 ### Stop the current action
 DELETE {{host}}/players/{{playerId}}/action

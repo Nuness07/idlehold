@@ -18,11 +18,15 @@ public static class GameContentEndpoints
                 (long)action.Duration.TotalMilliseconds,
                 action.XpPerCompletion,
                 action.OutputItemId,
-                action.OutputQuantity))
+                action.OutputQuantity,
+                action.Inputs.Select(input => new ItemAmountResponse(input.ItemId, input.Quantity)).ToList()))
+            .ToList(),
+        content.Tools
+            .Select(tool => new ToolResponse(tool.ItemId, tool.Family, tool.Tier))
             .ToList());
 }
 
-public sealed record ContentResponse(IReadOnlyList<ActionResponse> Actions);
+public sealed record ContentResponse(IReadOnlyList<ActionResponse> Actions, IReadOnlyList<ToolResponse> Tools);
 
 public sealed record ActionResponse(
     string Id,
@@ -30,4 +34,14 @@ public sealed record ActionResponse(
     long DurationMs,
     long XpPerCompletion,
     string OutputItemId,
-    int OutputQuantity);
+    long OutputQuantity,
+    IReadOnlyList<ItemAmountResponse> Inputs);
+
+/// <summary>An action's input: taken from the stores at the end of each completion.</summary>
+public sealed record ItemAmountResponse(string ItemId, long Quantity);
+
+/// <summary>
+/// Marks an item as a tool. The player owns one per family and upgrades its tier; a recipe that makes
+/// a tool is refused (409) once that tier or a better one is owned.
+/// </summary>
+public sealed record ToolResponse(string ItemId, string Family, int Tier);

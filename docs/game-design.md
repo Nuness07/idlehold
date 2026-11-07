@@ -41,7 +41,7 @@ Four gathering skills exist. Woodcutting, Mining and Foraging start with a bare-
 | Woodcutting | Twigs (2 s, 5 XP, by hand), Pine (3 s, 10 XP), Birch (5 s, 18 XP) | Twig, Pine log, Birch log |
 | Fishing | Perch (4 s, 12 XP), Pike (7 s, 28 XP) | Perch, Pike |
 | Mining | Pebbles (2 s, 5 XP, by hand), Stone (3 s, 9 XP), Copper (6 s, 22 XP) | Pebble, Stone, Copper ore |
-| Foraging | Wild berries (2 s, 5 XP, by hand) | Wild berry |
+| Foraging | Wild berries (2 s, 5 XP, by hand), Reeds (3 s, 8 XP, by hand) | Wild berry, Reed |
 
 Wood and stone are the village's building materials; fish feeds Cooking; copper feeds Smithing. A content test keeps the rule that a slower action never pays less XP per second. Level and tool gates are not in yet, so every action is still open at level 1 (see "Bare hands and tools").
 
@@ -62,14 +62,30 @@ The player starts with nothing, not even an axe. Some trades have something you 
 - **Crafting** is a skill that turns materials into things, starting with the first tools. It is how the player gets from bare hands to the axe, the pickaxe and the rod.
 - A pebble is not the quarry's stone: pebbles are picked up by hand, stone is mined with a pickaxe.
 
-Open: the exact recipes (does the crude axe need a binding, and where does it come from?), how tools act (gate only, or gate plus speed), and the numbers (see Progression and balancing).
+Open: how tools act (gate only, or gate plus speed), and the numbers (see Progression and balancing).
+
+### Crafting and tools: Decided
+
+Crafting is a skill with XP and levels. A recipe is an action with inputs: it takes time like any other action, and each completion takes its inputs from the stores. When the stores cannot pay for the next completion, the action stops, including while the player is away.
+
+**Tools are unique and upgraded, never collected.** The player owns one tool per family (axe, fishing rod) and makes it better by tier. Each tier keeps the same slot and icon on screen and costs more to make. A tool recipe makes exactly one tool and is refused once the player owns that tier or a better one; an upgrade recipe takes the previous tier as an input. Tools do not break: durability would punish the absent player.
+
+The first recipes:
+
+| Recipe | Inputs | Time, XP | Tool |
+|---|---|---|---|
+| Chipped stone axe | 3 twigs, 2 pebbles | 30 s, 40 XP | Axe, tier 1 |
+| Reed fishing rod | 2 pine logs, 4 reeds (the line) | 40 s, 55 XP | Fishing rod, tier 1 |
+
+Tool recipes take a while and pay well because each is made once. Reasons to keep crafting come later: repeatable goods for the village (cord, baskets, handles, building parts), and villagers who each need their own tool.
+
+Not in yet: tools gating actions (the axe opening the pine), the next tiers (stone axe, then copper), recipe categories (by material and by use: tool, weapon), a "make N" queue, and the crafting table screen (the inputs filling the recipe, then the tool appearing).
 
 ### Processing skills: Next
 
-Cooking, Smithing (smelting ore into bars, bars into tools), Leatherworking. These need two engine features that do not exist yet:
+Cooking, Smithing (smelting ore into bars, bars into tools), Leatherworking. Recipes that consume inputs exist (see Crafting and tools); what is still missing:
 
 - **An item catalog**: real items with names and categories instead of string ids.
-- **Recipes that consume inputs**: an action that takes items from the stores and stops cleanly when inputs run out, including while the player is away.
 
 ### The village: Later (core)
 
@@ -119,7 +135,7 @@ A shared market for trading goods. Requires accounts, persistent saves, an econo
 
 1. **Content as data**: item and skill catalogs in content files, validated on load.
 2. ~~**Mining and Fishing**~~: done (see Gathering skills).
-3. **Recipes**: the first processing skill (Cooking or Smithing), with input consumption in the engine.
+3. ~~**Recipes**~~: done with Crafting (see Crafting and tools); Cooking and Smithing reuse it.
 4. **Persistent saves**: Postgres behind `IPlayerStore`, so progress survives server restarts.
 5. **Accounts**: sign up and log in; `/players/{id}` becomes `/me`.
 6. **Village v1**: a few buildings and the first villager, with parallel activities in the engine.
