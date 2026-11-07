@@ -46,6 +46,23 @@ Wood and stone are the village's building materials; fish feeds Cooking; copper 
 
 Note on originality: Melvor Idle already has a village skill (Township). Here the village is not one skill among many; the skills exist to serve the village.
 
+### Bare hands and tools: Decided
+
+The player starts with nothing, not even an axe. Some trades have something you can gather by hand; the rest stay closed until the player owns the right tool.
+
+| Skill | By hand | Item | Needs a tool for the rest |
+|---|---|---|---|
+| Woodcutting | Gather twigs | Twig | Axe for trees |
+| Mining | Pick up pebbles | Pebble | Pickaxe for the quarry and ore |
+| Foraging (new) | Pick wild berries | Wild berry (the first food) | Later content: mushrooms, herbs, seeds |
+| Fishing | Nothing | | Closed until the player has a fishing rod |
+
+- **Foraging** is a skill of its own, not a tutorial step: its finds feed Cooking later, and planting may grow out of it (possibly as a separate Farming skill).
+- **Crafting** is a skill that turns materials into things, starting with the first tools. It is how the player gets from bare hands to the axe, the pickaxe and the rod.
+- A pebble is not the quarry's stone: pebbles are picked up by hand, stone is mined with a pickaxe.
+
+Open: the exact recipes (does the crude axe need a binding, and where does it come from?), how tools act (gate only, or gate plus speed), and the numbers (see Progression and balancing).
+
 ### Processing skills: Next
 
 Cooking, Smithing (smelting ore into bars, bars into tools), Leatherworking. These need two engine features that do not exist yet:
