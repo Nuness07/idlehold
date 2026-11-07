@@ -1,3 +1,4 @@
+using IdleHold.Api.Accounts;
 using IdleHold.Api.Persistence;
 using Microsoft.EntityFrameworkCore;
 using Testcontainers.PostgreSql;
@@ -24,6 +25,18 @@ public sealed class PostgresFixture : IAsyncLifetime
     public Task DisposeAsync() => _container.DisposeAsync().AsTask();
 
     public GameDbContext CreateContext() => new(Options());
+
+    /// <summary>Adds an account straight to the database (a guest by default), for tests that need an owner for a hold.</summary>
+    public async Task<Guid> CreateAccountAsync(bool guest = true)
+    {
+        var account = Account.NewGuest();
+        account.IsAnonymous = guest;
+        account.NormalizedUserName = account.UserName!.ToUpperInvariant();
+        await using var db = CreateContext();
+        db.Users.Add(account);
+        await db.SaveChangesAsync();
+        return account.Id;
+    }
 
     public IDbContextFactory<GameDbContext> CreateFactory() => new Factory(Options());
 

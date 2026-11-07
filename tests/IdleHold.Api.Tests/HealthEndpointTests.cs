@@ -2,9 +2,9 @@ using System.Net;
 
 namespace IdleHold.Api.Tests;
 
-public sealed class HealthEndpointTests : IDisposable
+public sealed class HealthEndpointTests(PostgresFixture database) : IClassFixture<PostgresFixture>, IDisposable
 {
-    private readonly ApiFactory _factory = new();
+    private readonly ApiFactory _factory = new(database.ConnectionString);
 
     public void Dispose() => _factory.Dispose();
 

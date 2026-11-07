@@ -36,7 +36,7 @@ dotnet test
 - `Tick(state, elapsed)` must run in constant time with respect to `elapsed`. Compute completions with arithmetic, never with a loop per cycle.
 - The API gets the current time only from the injected `TimeProvider`.
 - Never trust client input. Validate request bodies and route values before calling the engine.
-- Guest routes (`/players/{id}`) must refuse a hold that belongs to an account; owned holds are reachable only through the signed-in `/me/player` routes.
+- Players are identified only by the session cookie, never by an id in a route or body. A guest is an anonymous Identity account; signing up promotes that same account, so no hold ever changes owner.
 - Login errors never reveal whether an e-mail has an account. Passwords are handled only by ASP.NET Core Identity.
 - No real secret is ever committed. Local-only Docker credentials are fine; production values come from environment variables (for example `ConnectionStrings__Game`).
 - Storage is accessed only through `IPlayerStore`. Endpoints and services must not depend on a concrete store.

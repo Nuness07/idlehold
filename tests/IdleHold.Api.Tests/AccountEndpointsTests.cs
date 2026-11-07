@@ -3,12 +3,13 @@ using System.Net.Http.Json;
 using IdleHold.Api.Accounts;
 using IdleHold.Api.Players;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.Extensions.DependencyInjection;
 
 namespace IdleHold.Api.Tests;
 
 /// <summary>
-/// Accounts need the database, so these run against a real Postgres in Docker. The test client
-/// keeps cookies between requests, like a browser, so signing in carries over.
+/// Guest sessions, sign-up, sign-in and sign-out. The test client keeps cookies between requests,
+/// like a browser, so a session carries over from one request to the next.
 /// </summary>
 public sealed class AccountEndpointsTests(PostgresFixture database) : IClassFixture<PostgresFixture>, IDisposable
 {
@@ -23,68 +24,214 @@ public sealed class AccountEndpointsTests(PostgresFixture database) : IClassFixt
     private static async Task<string?> TitleOf(HttpResponseMessage response) =>
         (await response.Content.ReadFromJsonAsync<ProblemDetails>())?.Title;
 
-    private static RegisterRequest Register(string email, Guid? guest = null) => new(email, Password, guest);
+    private static RegisterRequest Register(string email) => new(email, Password);
+
+    private static async Task<PlayerResponse> MyPlayer(HttpClient client) =>
+        (await client.GetFromJsonAsync<PlayerResponse>("/me/player"))!;
+
+    /// <summary>A full account made in its own browser, which then signs out.</summary>
+    private async Task<string> ExistingAccountAsync()
+    {
+        var email = NewEmail();
+        using var setup = _factory.CreateClient();
+        (await setup.PostAsJsonAsync("/account/register", Register(email))).EnsureSuccessStatusCode();
+        return email;
+    }
+
+    private Task<PlayerSave?> SavedPlayer(Guid playerId) =>
+        _factory.Services.GetRequiredService<IPlayerStore>().GetAsync(playerId, CancellationToken.None);
 
     [Fact]
-    public async Task Register_SignsInAndGivesTheAccountAHold()
+    public async Task Guest_StartsASessionWithItsOwnHold()
     {
         using var client = _factory.CreateClient();
+
+        var started = await client.PostAsync("/account/guest", content: null);
+        var me = await client.GetFromJsonAsync<AccountResponse>("/account/me");
+        var player = await client.GetAsync("/me/player");
+
+        Assert.Equal(HttpStatusCode.OK, started.StatusCode);
+        Assert.Contains("idlehold.session", started.Headers.GetValues("Set-Cookie").Single());
+        Assert.Equal(new AccountResponse(Email: null, IsGuest: true), me);
+        Assert.Equal(HttpStatusCode.OK, player.StatusCode);
+    }
+
+    [Fact]
+    public async Task Guest_WithASessionAlready_KeepsThatSession()
+    {
+        using var client = await _factory.CreateGuestClientAsync();
+        var before = await MyPlayer(client);
+
+        var again = await client.PostAsync("/account/guest", content: null);
+
+        Assert.Equal(HttpStatusCode.OK, again.StatusCode);
+        Assert.Equal(before.Id, (await MyPlayer(client)).Id);
+    }
+
+    [Fact]
+    public async Task Register_AsAGuest_KeepsTheHoldAndItsProgress()
+    {
+        using var client = await _factory.CreateGuestClientAsync();
+        var guestHold = await MyPlayer(client);
+        await client.PostAsJsonAsync("/me/player/action", new StartActionRequest("cut-pine"));
+        _factory.Clock.Advance(TimeSpan.FromSeconds(9));
         var email = NewEmail();
 
         var registered = await client.PostAsJsonAsync("/account/register", Register(email));
         var me = await client.GetFromJsonAsync<AccountResponse>("/account/me");
+        var mine = await MyPlayer(client);
 
         Assert.Equal(HttpStatusCode.OK, registered.StatusCode);
-        Assert.Contains("idlehold.session", registered.Headers.GetValues("Set-Cookie").Single());
-        Assert.Equal(email, me!.Email);
-        Assert.NotEqual(Guid.Empty, me.PlayerId);
-    }
-
-    [Fact]
-    public async Task Register_WithAGuest_KeepsTheGuestProgress()
-    {
-        using var client = _factory.CreateClient();
-        var guest = await (await client.PostAsync("/players", content: null)).Content.ReadFromJsonAsync<PlayerResponse>();
-        await client.PostAsJsonAsync($"/players/{guest!.Id}/action", new StartActionRequest("cut-pine"));
-        _factory.Clock.Advance(TimeSpan.FromSeconds(9));
-
-        var account = await (await client.PostAsJsonAsync("/account/register", Register(NewEmail(), guest.Id)))
-            .Content.ReadFromJsonAsync<AccountResponse>();
-        var mine = await client.GetFromJsonAsync<PlayerResponse>("/me/player");
-
-        Assert.Equal(guest.Id, account!.PlayerId);
-        Assert.Equal(guest.Id, mine!.Id);
+        Assert.Equal(new AccountResponse(email, IsGuest: false), me);
+        Assert.Equal(guestHold.Id, mine.Id);
         Assert.Equal(3, mine.Inventory["pine-log"]);
         Assert.Equal("cut-pine", mine.ActiveAction!.ActionId);
     }
 
     [Fact]
-    public async Task GuestRoutes_RefuseAHoldThatBelongsToAnAccount()
+    public async Task Register_AsAGuest_ThenSignInAgain_OpensTheSameHold()
+    {
+        var email = NewEmail();
+        using var client = await _factory.CreateGuestClientAsync();
+        var guestHold = await MyPlayer(client);
+        await client.PostAsJsonAsync("/account/register", Register(email));
+        await client.PostAsync("/account/logout", content: null);
+
+        using var elsewhere = _factory.CreateClient();
+        var login = await elsewhere.PostAsJsonAsync("/account/login", new LoginRequest(email, Password));
+
+        Assert.Equal(HttpStatusCode.OK, login.StatusCode);
+        Assert.Equal(guestHold.Id, (await MyPlayer(elsewhere)).Id);
+    }
+
+    [Fact]
+    public async Task Register_WithoutASession_MakesANewAccountWithAHold()
     {
         using var client = _factory.CreateClient();
-        var guest = await (await client.PostAsync("/players", content: null)).Content.ReadFromJsonAsync<PlayerResponse>();
-        await client.PostAsJsonAsync("/account/register", Register(NewEmail(), guest!.Id));
+        var email = NewEmail();
 
-        // Someone who only knows the id, without the session cookie.
-        using var stranger = _factory.CreateClient();
-        var read = await stranger.GetAsync($"/players/{guest.Id}");
-        var start = await stranger.PostAsJsonAsync($"/players/{guest.Id}/action", new StartActionRequest("cut-pine"));
-        var stop = await stranger.DeleteAsync($"/players/{guest.Id}/action");
-        var mine = await client.GetFromJsonAsync<PlayerResponse>("/me/player");
+        var registered = await client.PostAsJsonAsync("/account/register", Register(email));
 
-        Assert.Equal(HttpStatusCode.Forbidden, read.StatusCode);
-        Assert.Equal(HttpStatusCode.Forbidden, start.StatusCode);
-        Assert.Equal(HttpStatusCode.Forbidden, stop.StatusCode);
-        Assert.Null(mine!.ActiveAction);
+        Assert.Equal(HttpStatusCode.OK, registered.StatusCode);
+        Assert.Equal(new AccountResponse(email, IsGuest: false), await registered.Content.ReadFromJsonAsync<AccountResponse>());
+        Assert.Empty((await MyPlayer(client)).Inventory);
+    }
+
+    [Fact]
+    public async Task Register_AsAGuest_WithAnEmailInUse_LeavesTheGuestAsItWas()
+    {
+        var taken = await ExistingAccountAsync();
+        using var client = await _factory.CreateGuestClientAsync();
+        var guestHold = await MyPlayer(client);
+
+        var response = await client.PostAsJsonAsync("/account/register", Register(taken));
+        var me = await client.GetFromJsonAsync<AccountResponse>("/account/me");
+
+        Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
+        Assert.Equal(new AccountResponse(Email: null, IsGuest: true), me);
+        Assert.Equal(guestHold.Id, (await MyPlayer(client)).Id);
+    }
+
+    [Theory]
+    [InlineData("short")]
+    [InlineData("")]
+    public async Task Register_AsAGuest_WithAWeakPassword_LeavesTheGuestAsItWas(string password)
+    {
+        using var client = await _factory.CreateGuestClientAsync();
+
+        var response = await client.PostAsJsonAsync("/account/register", new RegisterRequest(NewEmail(), password));
+        var me = await client.GetFromJsonAsync<AccountResponse>("/account/me");
+
+        Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
+        Assert.True(me!.IsGuest);
+    }
+
+    [Fact]
+    public async Task Register_TwiceWithTheSameEmail_IsRejected()
+    {
+        var email = await ExistingAccountAsync();
+        using var other = _factory.CreateClient();
+
+        var second = await other.PostAsJsonAsync("/account/register", Register(email));
+
+        Assert.Equal(HttpStatusCode.BadRequest, second.StatusCode);
+    }
+
+    [Fact]
+    public async Task Login_FromAGuest_OpensTheAccountAndDeletesTheGuestHold()
+    {
+        var email = await ExistingAccountAsync();
+        using var client = await _factory.CreateGuestClientAsync();
+        var guestHold = await MyPlayer(client);
+
+        var login = await client.PostAsJsonAsync("/account/login", new LoginRequest(email, Password));
+        var me = await client.GetFromJsonAsync<AccountResponse>("/account/me");
+
+        Assert.Equal(HttpStatusCode.OK, login.StatusCode);
+        Assert.Equal(new AccountResponse(email, IsGuest: false), me);
+        Assert.NotEqual(guestHold.Id, (await MyPlayer(client)).Id);
+        Assert.Null(await SavedPlayer(guestHold.Id));
+    }
+
+    [Fact]
+    public async Task Login_FromAGuest_WithAWrongPassword_KeepsTheGuest()
+    {
+        var email = await ExistingAccountAsync();
+        using var client = await _factory.CreateGuestClientAsync();
+        var guestHold = await MyPlayer(client);
+
+        var login = await client.PostAsJsonAsync("/account/login", new LoginRequest(email, "not the password"));
+
+        Assert.Equal(HttpStatusCode.Unauthorized, login.StatusCode);
+        Assert.Equal(guestHold.Id, (await MyPlayer(client)).Id);
+    }
+
+    [Fact]
+    public async Task Logout_AsAGuest_EndsTheSessionAndDeletesTheGuestHold()
+    {
+        using var client = await _factory.CreateGuestClientAsync();
+        var guestHold = await MyPlayer(client);
+
+        var logout = await client.PostAsync("/account/logout", content: null);
+        var me = await client.GetAsync("/account/me");
+
+        Assert.Equal(HttpStatusCode.NoContent, logout.StatusCode);
+        Assert.Equal(HttpStatusCode.Unauthorized, me.StatusCode);
+        Assert.Null(await SavedPlayer(guestHold.Id));
+    }
+
+    [Fact]
+    public async Task Login_ThenLogout_EndsTheSessionAndKeepsTheHold()
+    {
+        var email = await ExistingAccountAsync();
+        using var client = _factory.CreateClient();
+
+        var login = await client.PostAsJsonAsync("/account/login", new LoginRequest(email, Password));
+        var hold = await MyPlayer(client);
+        await client.PostAsync("/account/logout", content: null);
+        var signedOut = await client.GetAsync("/account/me");
+
+        Assert.Equal(HttpStatusCode.OK, login.StatusCode);
+        Assert.Equal(HttpStatusCode.Unauthorized, signedOut.StatusCode);
+        Assert.NotNull(await SavedPlayer(hold.Id));
+    }
+
+    [Fact]
+    public async Task Login_WithAWrongPassword_Returns401()
+    {
+        var email = await ExistingAccountAsync();
+        using var client = _factory.CreateClient();
+
+        var response = await client.PostAsJsonAsync("/account/login", new LoginRequest(email, "not the password"));
+
+        Assert.Equal(HttpStatusCode.Unauthorized, response.StatusCode);
     }
 
     [Fact]
     public async Task Login_WhenLockedOut_LooksLikeAnUnknownEmail()
     {
-        var email = NewEmail();
+        var email = await ExistingAccountAsync();
         using var client = _factory.CreateClient();
-        await client.PostAsJsonAsync("/account/register", Register(email));
-        await client.PostAsync("/account/logout", content: null);
         for (var attempt = 0; attempt < 5; attempt++)
         {
             await client.PostAsJsonAsync("/account/login", new LoginRequest(email, "not the password"));
@@ -100,99 +247,12 @@ public sealed class AccountEndpointsTests(PostgresFixture database) : IClassFixt
     }
 
     [Fact]
-    public async Task Register_WithAnAlreadyClaimedGuest_IsRejected()
-    {
-        using var client = _factory.CreateClient();
-        var guest = await (await client.PostAsync("/players", content: null)).Content.ReadFromJsonAsync<PlayerResponse>();
-        await client.PostAsJsonAsync("/account/register", Register(NewEmail(), guest!.Id));
-
-        using var other = _factory.CreateClient();
-        var second = await other.PostAsJsonAsync("/account/register", Register(NewEmail(), guest.Id));
-
-        Assert.Equal(HttpStatusCode.BadRequest, second.StatusCode);
-    }
-
-    [Theory]
-    [InlineData("short")]
-    [InlineData("")]
-    public async Task Register_WithAWeakPassword_IsRejected(string password)
+    public async Task Me_WithoutASession_Returns401()
     {
         using var client = _factory.CreateClient();
 
-        var response = await client.PostAsJsonAsync("/account/register", new RegisterRequest(NewEmail(), password, null));
-
-        Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
-    }
-
-    [Fact]
-    public async Task Register_TwiceWithTheSameEmail_IsRejected()
-    {
-        using var client = _factory.CreateClient();
-        var email = NewEmail();
-        await client.PostAsJsonAsync("/account/register", Register(email));
-
-        using var other = _factory.CreateClient();
-        var second = await other.PostAsJsonAsync("/account/register", Register(email));
-
-        Assert.Equal(HttpStatusCode.BadRequest, second.StatusCode);
-    }
-
-    [Fact]
-    public async Task Login_ThenLogout_EndsTheSession()
-    {
-        var email = NewEmail();
-        using (var setup = _factory.CreateClient())
-        {
-            await setup.PostAsJsonAsync("/account/register", Register(email));
-        }
-
-        using var client = _factory.CreateClient();
-        var login = await client.PostAsJsonAsync("/account/login", new LoginRequest(email, Password));
-        var signedIn = await client.GetAsync("/account/me");
-        await client.PostAsync("/account/logout", content: null);
-        var signedOut = await client.GetAsync("/account/me");
-
-        Assert.Equal(HttpStatusCode.OK, login.StatusCode);
-        Assert.Equal(HttpStatusCode.OK, signedIn.StatusCode);
-        Assert.Equal(HttpStatusCode.Unauthorized, signedOut.StatusCode);
-    }
-
-    [Fact]
-    public async Task Login_WithAWrongPassword_Returns401()
-    {
-        var email = NewEmail();
-        using var client = _factory.CreateClient();
-        await client.PostAsJsonAsync("/account/register", Register(email));
-        await client.PostAsync("/account/logout", content: null);
-
-        var response = await client.PostAsJsonAsync("/account/login", new LoginRequest(email, "not the password"));
+        var response = await client.GetAsync("/account/me");
 
         Assert.Equal(HttpStatusCode.Unauthorized, response.StatusCode);
-    }
-
-    [Fact]
-    public async Task MyPlayer_WithoutASession_Returns401()
-    {
-        using var client = _factory.CreateClient();
-
-        var response = await client.GetAsync("/me/player");
-
-        Assert.Equal(HttpStatusCode.Unauthorized, response.StatusCode);
-    }
-
-    [Fact]
-    public async Task MyPlayer_ActionsWorkThroughTheSession()
-    {
-        using var client = _factory.CreateClient();
-        await client.PostAsJsonAsync("/account/register", Register(NewEmail()));
-
-        var started = await client.PostAsJsonAsync("/me/player/action", new StartActionRequest("mine-stone"));
-        _factory.Clock.Advance(TimeSpan.FromSeconds(6));
-        var mine = await client.GetFromJsonAsync<PlayerResponse>("/me/player");
-        var stopped = await client.DeleteAsync("/me/player/action");
-
-        Assert.Equal(HttpStatusCode.OK, started.StatusCode);
-        Assert.Equal(2, mine!.Inventory["stone"]);
-        Assert.Equal(HttpStatusCode.OK, stopped.StatusCode);
     }
 }

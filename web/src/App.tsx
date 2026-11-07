@@ -8,21 +8,18 @@ import { useContentText } from './content/text'
 import { AccountDialog } from './features/account/AccountDialog'
 import type { AccountFormMode } from './features/account/AccountForm'
 import { AccountMenu } from './features/account/AccountMenu'
-import { switchAccount, useAccount, useLogout } from './features/account/queries'
+import { endSession, useAccount, useLogout } from './features/account/queries'
 import { hasProgressWorthSaving, useNudgeDismissed } from './features/account/nudge'
 import { SaveNudge } from './features/account/SaveNudge'
-import { SignedOut } from './features/account/SignedOut'
 import { ActionList } from './features/actions/ActionList'
 import { WorkingAction } from './features/actions/WorkingAction'
 import {
   ActionBlockedError,
-  HoldOwnedError,
-  playerQueryRoot,
+  playerQueryKey,
   SessionEndedError,
   useContent,
   usePlayer,
   useStartAction,
-  useStartAsNewGuest,
   useStopAction,
 } from './features/player/queries'
 import { SinceYouLeft } from './features/player/SinceYouLeft'
@@ -43,14 +40,13 @@ export default function App() {
   const queryClient = useQueryClient()
   const content = useContent()
   const accountQuery = useAccount()
-  const accountState = accountQuery.data
-  const mode = accountState ? (accountState.account ? 'account' : 'guest') : undefined
-  const playerQuery = usePlayer(mode)
+  const account = accountQuery.data
+  const playerQuery = usePlayer(account !== undefined)
   const snapshot = playerQuery.data
   const player = snapshot?.player
 
-  const startAction = useStartAction(mode ?? 'guest', player?.id)
-  const stopAction = useStopAction(mode ?? 'guest', player?.id)
+  const startAction = useStartAction(player?.id)
+  const stopAction = useStopAction(player?.id)
   const commandError = startAction.error ?? stopAction.error
 
   /** A refusal from the game says why; anything else is a connection or server problem. */
@@ -62,7 +58,6 @@ export default function App() {
     return t('app.actionFailed')
   }
   const logout = useLogout()
-  const startAsNewGuest = useStartAsNewGuest()
 
   const [dialog, setDialog] = useState<AccountFormMode | null>(null)
   const [nudgeDismissed, dismissNudge] = useNudgeDismissed()
@@ -128,31 +123,32 @@ export default function App() {
   }, [player, activeDefinition, t, text, format])
 
   const refreshPlayer = useCallback(
-    () => queryClient.invalidateQueries({ queryKey: playerQueryRoot }),
+    () => queryClient.invalidateQueries({ queryKey: playerQueryKey }),
     [queryClient],
   )
 
-  // The session ended while playing (expired, or signed out elsewhere): fall back to the guest view,
-  // which finds the browser's hold owned and asks to sign in.
+  // The session ended while playing (expired, or signed out in another tab). The browser starts over
+  // as a new guest; someone who had an account is offered the sign-in form to get back to it.
   const sessionEnded =
     playerQuery.error instanceof SessionEndedError ||
     startAction.error instanceof SessionEndedError ||
     stopAction.error instanceof SessionEndedError
+  const hadAccount = account?.isGuest === false
   useEffect(() => {
-    if (sessionEnded) switchAccount(queryClient, null)
-  }, [sessionEnded, queryClient])
+    if (!sessionEnded) return
+    void endSession(queryClient).then(() => {
+      if (hadAccount) setDialog('login')
+    })
+  }, [sessionEnded, hadAccount, queryClient])
 
-  // The browser's hold belongs to an account: there is no guest hold to save, only one to sign in to.
-  const holdOwned = playerQuery.error instanceof HoldOwnedError
-  const guestPlayer = mode === 'guest' && !holdOwned ? player : undefined
-  const guestHasXp = guestPlayer ? Object.values(guestPlayer.skills).some((skill) => skill.xp > 0) : false
+  const guestHasXp = account?.isGuest === true && player ? Object.values(player.skills).some((skill) => skill.xp > 0) : false
   const shell = (totalLevel: number | null, children: React.ReactNode) => (
     <Shell
       totalLevel={totalLevel}
       menu={
-        accountState?.enabled && !holdOwned ? (
+        account ? (
           <AccountMenu
-            account={accountState.account}
+            account={account}
             onSaveProgress={() => setDialog('register')}
             onSignOut={() => logout.mutate()}
             signingOut={logout.isPending}
@@ -165,14 +161,10 @@ export default function App() {
         mode={dialog}
         onModeChange={setDialog}
         onClose={() => setDialog(null)}
-        guest={guestPlayer ? { playerId: guestPlayer.id, hasProgress: guestHasXp } : null}
+        guestHasProgress={guestHasXp}
       />
     </Shell>
   )
-
-  if (holdOwned) {
-    return shell(null, <SignedOut onSignIn={() => setDialog('login')} onNewGuest={startAsNewGuest} />)
-  }
 
   if ((playerQuery.isError && !sessionEnded) || content.isError || accountQuery.isError) {
     return shell(
@@ -207,8 +199,7 @@ export default function App() {
   const totalLevel = skillIds.reduce((sum, skillId) => sum + skillOf(skillId).level, 0)
   const tradeActions = actions.filter((action) => action.skillId === selectedSkillId)
 
-  const showNudge =
-    mode === 'guest' && accountState?.enabled === true && !nudgeDismissed && hasProgressWorthSaving(player.skills)
+  const showNudge = account?.isGuest === true && !nudgeDismissed && hasProgressWorthSaving(player.skills)
 
   return shell(
     totalLevel,
@@ -238,11 +229,6 @@ export default function App() {
             <VillageView />
             <div className="wood-board wood-frame wood-panel">
               <div className="flex w-full max-w-3xl flex-col gap-3">
-                {snapshot.replacedLostSave && (
-                  <p role="status" className="rounded-md border border-danger/40 bg-white px-4 py-3 text-[15px]">
-                    {t('app.lostSave')}
-                  </p>
-                )}
                 {away && <SinceYouLeft summary={away} onDismiss={() => setAway(null)} />}
                 {showNudge && <SaveNudge onCreateAccount={() => setDialog('register')} onDismiss={dismissNudge} />}
                 {activeAction && (
@@ -272,11 +258,6 @@ export default function App() {
               swingKey={swingKey}
             />
 
-            {snapshot.replacedLostSave && (
-              <p role="status" className="rounded-md border border-danger/40 bg-white px-4 py-3 text-[15px]">
-                {t('app.lostSave')}
-              </p>
-            )}
             {away && <SinceYouLeft summary={away} onDismiss={() => setAway(null)} />}
             {showNudge && <SaveNudge onCreateAccount={() => setDialog('register')} onDismiss={dismissNudge} />}
 
@@ -314,7 +295,7 @@ export default function App() {
 
 interface ShellProps {
   totalLevel: number | null
-  /** The account controls, or `null` when the server has no accounts. */
+  /** The account controls, or `null` until the session is known. */
   menu: React.ReactNode
   children: React.ReactNode
 }

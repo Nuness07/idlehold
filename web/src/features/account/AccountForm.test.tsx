@@ -30,10 +30,10 @@ describe('AccountForm', () => {
     expect(screen.getByRole('alert')).toHaveTextContent('Wrong e-mail or password, or too many attempts.')
   })
 
-  it('warns that signing in leaves the guest hold behind', () => {
+  it('warns that signing in deletes the guest hold', () => {
     render(<AccountForm {...defaults} mode="login" warnGuest />)
 
-    expect(screen.getByText(/guest hold in this browser is left behind/)).toBeInTheDocument()
+    expect(screen.getByText(/guest hold in this browser will be deleted/)).toBeInTheDocument()
   })
 
   it('switches between creating an account and signing in', async () => {

@@ -1,6 +1,6 @@
 import { useMutation, useQuery, useQueryClient, type QueryClient } from '@tanstack/react-query'
 import { api, type Account } from '../../api/client'
-import { playerQueryRoot, rememberPlayerId } from '../player/queries'
+import { playerQueryKey } from '../player/queries'
 
 export const accountQueryKey = ['account'] as const
 
@@ -24,32 +24,37 @@ export function problemsFromValidation(errors: Record<string, string[]> | undefi
   return problems.length > 0 ? problems : ['failed']
 }
 
-export interface AccountState {
-  /** `false` when the server runs without a database: it has no accounts and everyone is a guest. */
-  enabled: boolean
-  /** The signed-in account, or `null` for a guest. */
-  account: Account | null
-}
-
+/**
+ * Who this browser plays as. A first visit has no session, so it starts one as a guest: the server
+ * makes an anonymous account and sets the session cookie, and the client never sees a player id.
+ */
 export function useAccount() {
   return useQuery({
     queryKey: accountQueryKey,
-    queryFn: async (): Promise<AccountState> => {
-      const { data, response } = await api.GET('/account/me')
-      if (data) return { enabled: true, account: data }
-      if (response.status === 401) return { enabled: true, account: null }
-      if (response.status === 404) return { enabled: false, account: null }
-      throw new Error(`Loading the account failed (${response.status}).`)
+    queryFn: async (): Promise<Account> => {
+      const me = await api.GET('/account/me')
+      if (me.data) return me.data
+      if (me.response.status !== 401) throw new Error(`Loading the session failed (${me.response.status}).`)
+
+      const guest = await api.POST('/account/guest')
+      if (guest.data) return guest.data
+      throw new Error(`Starting a guest session failed (${guest.response.status}).`)
     },
     staleTime: Infinity,
     retry: 2,
   })
 }
 
-/** Switches the screen to another owner: the old hold is dropped and the new one loads fresh. */
-export function switchAccount(queryClient: QueryClient, account: Account | null): void {
-  queryClient.removeQueries({ queryKey: playerQueryRoot })
-  queryClient.setQueryData<AccountState>(accountQueryKey, { enabled: true, account })
+/** Switches the screen to another session: the old hold is dropped and the new one loads fresh. */
+export function switchAccount(queryClient: QueryClient, account: Account): void {
+  queryClient.removeQueries({ queryKey: playerQueryKey })
+  queryClient.setQueryData<Account>(accountQueryKey, account)
+}
+
+/** The session is gone (signed out or expired): forget it, which starts a new guest session. */
+export function endSession(queryClient: QueryClient): Promise<void> {
+  queryClient.removeQueries({ queryKey: playerQueryKey })
+  return queryClient.resetQueries({ queryKey: accountQueryKey })
 }
 
 interface Credentials {
@@ -57,21 +62,24 @@ interface Credentials {
   password: string
 }
 
+/** A guest that signs up keeps its hold: the server turns the guest's own account into a full one. */
 export function useRegister() {
   const queryClient = useQueryClient()
   return useMutation({
-    mutationFn: async ({ email, password, guestPlayerId }: Credentials & { guestPlayerId: string | null }) => {
-      const { data, error } = await api.POST('/account/register', { body: { email, password, guestPlayerId } })
+    mutationFn: async ({ email, password }: Credentials) => {
+      const { data, error } = await api.POST('/account/register', { body: { email, password } })
       if (data) return data
       throw new AccountError(problemsFromValidation(error?.errors))
     },
+    // Same hold, so it stays on screen while it refreshes.
     onSuccess: (account) => {
-      rememberPlayerId(account.playerId)
-      switchAccount(queryClient, account)
+      queryClient.setQueryData<Account>(accountQueryKey, account)
+      void queryClient.invalidateQueries({ queryKey: playerQueryKey })
     },
   })
 }
 
+/** Signing in from a guest session opens the account's hold; the server deletes the guest's. */
 export function useLogin() {
   const queryClient = useQueryClient()
   return useMutation({
@@ -81,13 +89,11 @@ export function useLogin() {
       // One answer for every refused sign-in: the server does not say which part was wrong.
       throw new AccountError([response.status === 401 ? 'login' : 'failed'])
     },
-    onSuccess: (account) => {
-      rememberPlayerId(account.playerId)
-      switchAccount(queryClient, account)
-    },
+    onSuccess: (account) => switchAccount(queryClient, account),
   })
 }
 
+/** Only accounts sign out (a guest would lose its hold for good); the browser then starts as a new guest. */
 export function useLogout() {
   const queryClient = useQueryClient()
   return useMutation({
@@ -95,7 +101,6 @@ export function useLogout() {
       const { response } = await api.POST('/account/logout')
       if (!response.ok) throw new Error(`Signing out failed (${response.status}).`)
     },
-    // The browser keeps the hold's id, so the guest view finds an owned hold and asks to sign in.
-    onSuccess: () => switchAccount(queryClient, null),
+    onSuccess: () => void endSession(queryClient),
   })
 }

@@ -69,7 +69,6 @@ public sealed class PostgresPlayerStore(IDbContextFactory<GameDbContext> context
 
             record.State = StateDocument.From(updated.State).Serialize();
             record.LastUpdated = updated.LastUpdated;
-            record.AccountId = updated.AccountId;
 
             try
             {

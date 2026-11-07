@@ -9,8 +9,8 @@ interface AccountDialogProps {
   mode: AccountFormMode | null
   onModeChange: (mode: AccountFormMode) => void
   onClose: () => void
-  /** The guest hold on screen. Creating an account keeps it; signing in leaves it behind. */
-  guest: { playerId: string; hasProgress: boolean } | null
+  /** A guest hold with progress is on screen. Creating an account keeps it; signing in deletes it. */
+  guestHasProgress: boolean
 }
 
 function problemsOf(error: Error | null): AccountProblem[] {
@@ -22,7 +22,7 @@ function problemsOf(error: Error | null): AccountProblem[] {
  * Sign-up and sign-in in a native modal dialog over the game. The browser handles focus, Escape
  * and the inert page behind it.
  */
-export function AccountDialog({ mode, onModeChange, onClose, guest }: AccountDialogProps) {
+export function AccountDialog({ mode, onModeChange, onClose, guestHasProgress }: AccountDialogProps) {
   const { t } = useTranslation()
   const dialog = useRef<HTMLDialogElement>(null)
   const register = useRegister()
@@ -45,7 +45,7 @@ export function AccountDialog({ mode, onModeChange, onClose, guest }: AccountDia
   const submit = (email: string, password: string) => {
     const done = { onSuccess: onClose }
     if (mode === 'login') login.mutate({ email, password }, done)
-    else register.mutate({ email, password, guestPlayerId: guest?.playerId ?? null }, done)
+    else register.mutate({ email, password }, done)
   }
 
   return (
@@ -83,7 +83,7 @@ export function AccountDialog({ mode, onModeChange, onClose, guest }: AccountDia
             mode={mode}
             pending={active.isPending}
             problems={problemsOf(active.error)}
-            warnGuest={guest?.hasProgress ?? false}
+            warnGuest={guestHasProgress}
             onSubmit={submit}
             onSwitch={() => switchTo(mode === 'login' ? 'register' : 'login')}
           />

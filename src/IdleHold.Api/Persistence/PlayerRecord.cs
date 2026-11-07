@@ -13,8 +13,8 @@ public sealed class PlayerRecord
 
     public DateTimeOffset LastUpdated { get; set; }
 
-    /// <summary>The owning account, or <c>null</c> while the player is a guest. Unique: one hold per account.</summary>
-    public Guid? AccountId { get; set; }
+    /// <summary>The owning account (a guest's anonymous account or a full one). Unique: one hold per account.</summary>
+    public Guid AccountId { get; set; }
 
     /// <summary>
     /// Mapped to Postgres' hidden <c>xmin</c> column, which changes on every update. EF Core uses it

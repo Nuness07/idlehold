@@ -9,7 +9,7 @@ interface AccountFormProps {
   mode: AccountFormMode
   pending: boolean
   problems: AccountProblem[]
-  /** Signing in from a guest hold with progress leaves that hold behind, so the form says so. */
+  /** Signing in from a guest hold with progress deletes that hold, so the form says so. */
   warnGuest: boolean
   onSubmit: (email: string, password: string) => void
   onSwitch: () => void

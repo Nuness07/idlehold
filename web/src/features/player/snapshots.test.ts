@@ -2,7 +2,7 @@ import { describe, expect, it } from 'vitest'
 import type { Player } from '../../api/client'
 import { keepNewest, type PlayerSnapshot } from './snapshots'
 
-function snap(updatedAt: string, actionId: string | null, id = 'p1', replacedLostSave = false): PlayerSnapshot {
+function snap(updatedAt: string, actionId: string | null, id = 'p1'): PlayerSnapshot {
   const player: Player = {
     id,
     activeAction: actionId ? { actionId, progressMs: 0, durationMs: 3000 } : null,
@@ -10,7 +10,7 @@ function snap(updatedAt: string, actionId: string | null, id = 'p1', replacedLos
     skills: {},
     updatedAt,
   }
-  return { player, receivedAt: 0, replacedLostSave }
+  return { player, receivedAt: 0 }
 }
 
 describe('keepNewest', () => {
@@ -32,13 +32,6 @@ describe('keepNewest', () => {
     const next = snap('2026-11-05T12:00:03Z', 'cut-pine')
 
     expect(keepNewest(previous, next).player).toBe(next.player)
-  })
-
-  it('keeps the lost-save notice for the rest of the session', () => {
-    const previous = snap('2026-11-05T12:00:00Z', null, 'p1', true)
-    const next = snap('2026-11-05T12:00:03Z', null)
-
-    expect(keepNewest(previous, next).replacedLostSave).toBe(true)
   })
 
   it('replaces the snapshot when the player itself changed', () => {
