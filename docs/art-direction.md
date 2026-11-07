@@ -74,11 +74,16 @@ Three layers, placed in art pixels:
 - **Scene** (`village/scene.png`, 320x180): the approved sketch ("sketch A": `create_image_pro` with the
   project owner's reference for composition, then `edit_image` for crisper, more detailed props), with
   every sky pixel cut out so the drifting sky shows behind the trees and hills.
-- **Campfire** (`village/fire.png`, 8 frames of 64x96): `animate_image` on a crop of the fire and its
-  smoke; each frame keeps only the pixels that change, drawn over the fire painted in the scene.
+- **Campfire**: two pieces that brighten together on hover.
+  - `village/campfire.png` (41x32): the stone ring and flames cut out of the scene pixel for pixel, so
+    it sits over the painted fire unchanged until the pointer is on it. Cut with a mask: the span between
+    the ring's dark outline on each row, plus the flame-coloured pixels above it.
+  - `village/fire.png` (8 frames of 64x96): `animate_image` on a crop of the fire and its smoke; each
+    frame keeps only the pixels that change.
 
-Motion stops for players who ask for reduced motion. Later, each building becomes its own layer so it
-can brighten on hover, open a screen and change art as it is rebuilt.
+Motion stops for players who ask for reduced motion. Each piece that reacts to the pointer is cut out
+the same way (an exact copy of its pixels, so no repainting), with a hit shape that follows its outline;
+it becomes a button once clicking it does something, and changes art as it is rebuilt.
 
 ## Asset log
 
