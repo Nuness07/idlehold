@@ -5,6 +5,7 @@ import { PixelSprite } from '../../components/PixelSprite'
 import { actionLabel, tradeLabel } from '../../content/labels'
 import { useContentText } from '../../content/text'
 import { formatDuration } from '../../lib/format'
+import { cn } from '../../lib/cn'
 
 interface ActionListProps {
   actions: GameAction[]
@@ -31,9 +32,10 @@ export function ActionList({ actions, activeActionId, pendingActionId, onStart }
           return (
             <li
               key={action.id}
-              className={`flex items-center gap-4 rounded-md border px-4 py-4 ${
-                working ? 'border-ochre bg-ochre-wash' : 'border-rule bg-limewash'
-              }`}
+              className={cn(
+                'flex items-center gap-4 rounded-md border px-4 py-4',
+                working ? 'border-ochre bg-ochre-wash' : 'border-rule bg-limewash',
+              )}
             >
               {label.sprite ? (
                 <PixelSprite src={label.sprite} width={32} height={32} scale={2} />

@@ -1,5 +1,6 @@
 import { useTranslation } from 'react-i18next'
 import { languages, type Language } from '../i18n'
+import { cn } from '../lib/cn'
 
 const short: Record<Language, string> = { en: 'EN', 'pt-BR': 'PT' }
 
@@ -19,9 +20,10 @@ export function LanguageSwitch() {
             aria-pressed={active}
             title={t(`language.${language}`)}
             onClick={() => void i18n.changeLanguage(language)}
-            className={`min-h-8 rounded-sm px-2.5 text-[13px] font-extrabold tracking-[0.08em] transition-colors ${
-              active ? 'bg-oxblood-ink text-oxblood' : 'text-oxblood-soft hover:text-oxblood-ink'
-            }`}
+            className={cn(
+              'min-h-8 rounded-sm px-2.5 text-[13px] font-extrabold tracking-[0.08em] transition-colors',
+              active ? 'bg-oxblood-ink text-oxblood' : 'text-oxblood-soft hover:text-oxblood-ink',
+            )}
           >
             <span aria-hidden>{short[language]}</span>
             <span className="sr-only">{t(`language.${language}`)}</span>

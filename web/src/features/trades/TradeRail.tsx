@@ -4,6 +4,7 @@ import type { Skill } from '../../api/client'
 import { tradeLabel } from '../../content/labels'
 import { useContentText } from '../../content/text'
 import { TradeEmblem } from './TradeEmblem'
+import { cn } from '../../lib/cn'
 
 interface TradeRailProps {
   trades: { skillId: string; skill: Skill; working: boolean }[]
@@ -11,6 +12,14 @@ interface TradeRailProps {
   selected: string | null
   onSelect: (skillId: string) => void
   onSelectVillage: () => void
+}
+
+/** A rail entry: the selected one is lifted off the paper. */
+function railButton(selected: boolean) {
+  return cn(
+    'flex w-full items-center gap-3 rounded border px-3 py-2.5 text-left text-[16px] font-bold text-ink transition-colors',
+    selected ? 'border-ink/40 bg-white' : 'paper border-transparent hover:bg-white',
+  )
 }
 
 /** The list of trades. A column on wide screens, a row of tabs on phones. */
@@ -29,9 +38,7 @@ export function TradeRail({ trades, selected, onSelect, onSelectVillage }: Trade
             type="button"
             onClick={onSelectVillage}
             aria-pressed={selected === null}
-            className={`flex w-full items-center gap-3 rounded border px-3 py-2.5 text-left text-[16px] font-bold text-ink transition-colors ${
-              selected === null ? 'border-ink/40 bg-white' : 'paper border-transparent hover:bg-white'
-            }`}
+            className={railButton(selected === null)}
           >
             <span aria-hidden className="grid size-8 place-items-center rounded bg-oxblood text-oxblood-ink">
               <Flame className="size-[18px]" strokeWidth={2} />
@@ -48,9 +55,7 @@ export function TradeRail({ trades, selected, onSelect, onSelectVillage }: Trade
                 type="button"
                 onClick={() => onSelect(skillId)}
                 aria-pressed={isSelected}
-                className={`flex w-full items-center gap-3 rounded border px-3 py-2.5 text-left text-[16px] font-bold text-ink transition-colors ${
-                  isSelected ? 'border-ink/40 bg-white' : 'paper border-transparent hover:bg-white'
-                }`}
+                className={railButton(isSelected)}
               >
                 {trade.emblem ? (
                   <TradeEmblem trade={trade} scale={1} fallbackClassName="size-[18px]" />
