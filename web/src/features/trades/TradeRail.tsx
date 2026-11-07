@@ -22,13 +22,15 @@ interface TradeRailProps {
   onSelectVillage: () => void
 }
 
-/** A rail entry: the selected one is lifted off the paper. */
-function railButton(selected: boolean) {
-  return cn(
-    'flex w-full items-center gap-3 rounded border px-3 py-2.5 text-left text-[16px] font-bold text-ink transition-colors',
-    selected ? 'border-ink/40 bg-white' : 'paper border-transparent hover:bg-white',
-  )
+/**
+ * A rail entry, a signboard pointing right. On wide screens it reaches past the panel's frame
+ * (36px) by 20px, and the one on screen pokes out a little further.
+ */
+function railSign(selected: boolean) {
+  return cn('rail-sign block shrink-0 text-left lg:w-[calc(100%+56px)]', selected && 'lg:translate-x-2')
 }
+
+const signBoard = 'rail-sign-board flex h-13 items-center gap-3 text-[16px] font-bold'
 
 /** The trades split by group, keeping the server's order for the groups and the trades in them. */
 function byCategory(trades: RailTrade[]) {
@@ -54,13 +56,15 @@ export function TradeRail({ trades, selected, onSelect, onSelectVillage }: Trade
           type="button"
           onClick={onSelectVillage}
           aria-pressed={selected === null}
-          className={cn(railButton(selected === null), 'w-auto shrink-0 lg:w-full')}
+          className={railSign(selected === null)}
         >
-          {/* The tower stands on its own, unframed, in a box as wide as a framed emblem so the names line up. */}
-          <span aria-hidden className="grid h-12 w-[46px] shrink-0 place-items-center">
-            <PixelSprite src={towerSprite} width={32} height={32} />
+          <span className={signBoard}>
+            {/* The tower stands on its own, unframed, in a box as wide as a framed emblem so the names line up. */}
+            <span aria-hidden className="grid h-12 w-[46px] shrink-0 place-items-center">
+              <PixelSprite src={towerSprite} width={32} height={32} />
+            </span>
+            <span>{t('village.rail')}</span>
           </span>
-          <span>{t('village.rail')}</span>
         </button>
 
         {byCategory(trades).map(([category, group]) => (
@@ -71,7 +75,7 @@ export function TradeRail({ trades, selected, onSelect, onSelectVillage }: Trade
             >
               {t(`trades.groups.${category}`)}
             </h2>
-            <ul className="flex gap-2 lg:flex-col">
+            <ul className="flex gap-2 lg:flex-col lg:gap-1.5">
               {group.map(({ skillId, skill, working }) => {
                 const trade = tradeLabel(skillId)
                 const isSelected = skillId === selected
@@ -81,24 +85,26 @@ export function TradeRail({ trades, selected, onSelect, onSelectVillage }: Trade
                       type="button"
                       onClick={() => onSelect(skillId)}
                       aria-pressed={isSelected}
-                      className={railButton(isSelected)}
+                      className={railSign(isSelected)}
                     >
-                      {trade.emblem ? (
-                        <TradeEmblem trade={trade} scale={1} fallbackClassName="size-[18px]" />
-                      ) : (
-                        <span
-                          aria-hidden
-                          className="grid size-8 place-items-center rounded text-oxblood-ink"
-                          style={{ backgroundColor: trade.paint }}
-                        >
-                          <trade.Icon className="size-[18px]" strokeWidth={2} />
-                        </span>
-                      )}
-                      <span>{text.tradeName(skillId)}</span>
-                      {working && (
-                        <span aria-label={t('trades.working')} className="size-2 rounded-full bg-ochre" />
-                      )}
-                      <span className="ml-auto pl-4 tabular-nums">{skill.level}</span>
+                      <span className={signBoard}>
+                        {trade.emblem ? (
+                          <TradeEmblem trade={trade} scale={1} fallbackClassName="size-[18px]" />
+                        ) : (
+                          <span
+                            aria-hidden
+                            className="grid size-8 place-items-center rounded text-oxblood-ink"
+                            style={{ backgroundColor: trade.paint }}
+                          >
+                            <trade.Icon className="size-[18px]" strokeWidth={2} />
+                          </span>
+                        )}
+                        <span>{text.tradeName(skillId)}</span>
+                        {working && (
+                          <span aria-label={t('trades.working')} className="size-2 rounded-full bg-ochre" />
+                        )}
+                        <span className="ml-auto pl-4 tabular-nums">{skill.level}</span>
+                      </span>
                     </button>
                   </li>
                 )
