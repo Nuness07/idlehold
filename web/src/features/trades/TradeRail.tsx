@@ -16,8 +16,10 @@ interface RailTrade {
 interface TradeRailProps {
   /** Every trade, in the order the server lists them. */
   trades: RailTrade[]
-  /** The trade on screen, or `null` while the village is. */
+  /** The trade on screen, or `null` while the village or a menu screen is. */
   selected: string | null
+  /** Whether the village is on screen. */
+  villageSelected: boolean
   onSelect: (skillId: string) => void
   onSelectVillage: () => void
 }
@@ -45,18 +47,20 @@ function byCategory(trades: RailTrade[]) {
  * The village, then the trades under a heading per group (gathering, production).
  * A column on wide screens, a row of tabs on phones, where the group headings are left to screen readers.
  */
-export function TradeRail({ trades, selected, onSelect, onSelectVillage }: TradeRailProps) {
+export function TradeRail({ trades, selected, villageSelected, onSelect, onSelectVillage }: TradeRailProps) {
   const { t } = useTranslation()
   const text = useContentText()
 
   return (
     <nav aria-label={t('trades.heading')} className="lg:py-2">
-      <div className="flex gap-2 overflow-x-auto px-4 py-3 lg:flex-col lg:gap-5 lg:overflow-visible lg:px-0 lg:py-0">
+      {/* relative: the group headings are absolutely placed for screen readers on phones, and must stay
+          inside the scrolling row, or they widen the page. */}
+      <div className="relative flex gap-2 overflow-x-auto px-4 py-3 lg:flex-col lg:gap-5 lg:overflow-visible lg:px-0 lg:py-0">
         <button
           type="button"
           onClick={onSelectVillage}
-          aria-pressed={selected === null}
-          className={railSign(selected === null)}
+          aria-pressed={villageSelected}
+          className={railSign(villageSelected)}
         >
           <span className={signBoard}>
             {/* The tower stands on its own, unframed, in a box as wide as a framed emblem so the names line up. */}
