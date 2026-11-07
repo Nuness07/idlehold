@@ -8,6 +8,7 @@ public class RecipeTests
 {
     // "plank" is a repeatable recipe; the two axes are tools of one family, so each is made once.
     private static readonly GameContent Content = new(
+    TestSkills.All,
     [
         new ActionDefinition("chop", "woodcutting", TimeSpan.FromSeconds(3), XpPerCompletion: 10, OutputItemId: "log"),
         new ActionDefinition("saw-plank", "crafting", TimeSpan.FromSeconds(5), XpPerCompletion: 4, OutputItemId: "plank", OutputQuantity: 2)
@@ -98,6 +99,7 @@ public class RecipeTests
         // Late-game costs and stockpiles can pass int.MaxValue (about 2.1 billion).
         const long bigCost = 3_000_000_000;
         var content = new GameContent(
+        TestSkills.All,
         [
             new ActionDefinition("press", "crafting", TimeSpan.FromSeconds(1), XpPerCompletion: 1, OutputItemId: "brick", OutputQuantity: bigCost)
             {

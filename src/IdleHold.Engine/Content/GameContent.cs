@@ -1,16 +1,25 @@
 namespace IdleHold.Engine.Content;
 
 /// <summary>
-/// The static catalog of the game (actions and tools, and later items and skills).
+/// The static catalog of the game: skills, actions and tools (and later items).
 /// It is validated once at construction so the engine can trust it afterwards.
 /// </summary>
 public sealed class GameContent
 {
+    private readonly List<SkillDefinition> _skills = [];
     private readonly Dictionary<string, ActionDefinition> _actions = new(StringComparer.Ordinal);
     private readonly Dictionary<string, ToolDefinition> _tools = new(StringComparer.Ordinal);
 
-    public GameContent(IEnumerable<ActionDefinition> actions, IEnumerable<ToolDefinition>? tools = null)
+    public GameContent(
+        IEnumerable<SkillDefinition> skills,
+        IEnumerable<ActionDefinition> actions,
+        IEnumerable<ToolDefinition>? tools = null)
     {
+        foreach (var skill in skills)
+        {
+            AddSkill(skill);
+        }
+
         foreach (var tool in tools ?? [])
         {
             AddTool(tool);
@@ -21,6 +30,9 @@ public sealed class GameContent
             AddAction(action);
         }
     }
+
+    /// <summary>Every skill, in the order the game lists them.</summary>
+    public IReadOnlyList<SkillDefinition> Skills => _skills;
 
     public IReadOnlyCollection<ActionDefinition> Actions => _actions.Values;
 
@@ -42,8 +54,30 @@ public sealed class GameContent
     public ActionDefinition? FindRecipeFor(string itemId) =>
         _actions.Values.FirstOrDefault(action => action.OutputItemId == itemId);
 
+    private void AddSkill(SkillDefinition skill)
+    {
+        if (!Enum.IsDefined(skill.Category))
+        {
+            throw new ArgumentException($"Skill '{skill.Id}' has an unknown category.", "skills");
+        }
+
+        if (_skills.Any(other => other.Id == skill.Id))
+        {
+            throw new ArgumentException($"Duplicate skill '{skill.Id}'.", "skills");
+        }
+
+        _skills.Add(skill);
+    }
+
+    private bool HasSkill(string id) => _skills.Any(skill => skill.Id == id);
+
     private void AddTool(ToolDefinition tool)
     {
+        if (!HasSkill(tool.SkillId))
+        {
+            throw new ArgumentException($"Tool '{tool.ItemId}' serves the unknown skill '{tool.SkillId}'.", "tools");
+        }
+
         if (tool.Tier < 1)
         {
             throw new ArgumentException($"Tool '{tool.ItemId}' must have a tier of at least 1.", "tools");
@@ -67,6 +101,11 @@ public sealed class GameContent
 
     private void AddAction(ActionDefinition action)
     {
+        if (!HasSkill(action.SkillId))
+        {
+            throw new ArgumentException($"Action '{action.Id}' belongs to the unknown skill '{action.SkillId}'.", "actions");
+        }
+
         if (action.Duration <= TimeSpan.Zero)
         {
             throw new ArgumentException($"Action '{action.Id}' must have a positive duration.", "actions");

@@ -1,4 +1,5 @@
 using System.Net.Http.Json;
+using IdleHold.Engine.Content;
 
 namespace IdleHold.Api.Tests;
 
@@ -22,14 +23,32 @@ public sealed class ContentEndpointsTests(PostgresFixture database) : IClassFixt
     }
 
     [Fact]
-    public async Task GetContent_ListsEverySkill()
+    public async Task GetContent_ListsEverySkillInOrderWithItsCategory()
     {
         using var client = _factory.CreateClient();
 
         var content = await client.GetFromJsonAsync<ContentResponse>("/content");
 
-        var skills = content!.Actions.Select(action => action.SkillId).Distinct().Order();
-        Assert.Equal(["crafting", "fishing", "foraging", "mining", "woodcutting"], skills);
+        Assert.Equal(
+            [
+                new SkillDefinitionResponse("woodcutting", SkillCategory.Gathering),
+                new SkillDefinitionResponse("fishing", SkillCategory.Gathering),
+                new SkillDefinitionResponse("mining", SkillCategory.Gathering),
+                new SkillDefinitionResponse("foraging", SkillCategory.Gathering),
+                new SkillDefinitionResponse("crafting", SkillCategory.Production),
+            ],
+            content!.Skills);
+    }
+
+    [Fact]
+    public async Task GetContent_WritesCategoriesAsNames()
+    {
+        using var client = _factory.CreateClient();
+
+        var json = await client.GetStringAsync("/content");
+
+        Assert.Contains("\"category\":\"gathering\"", json);
+        Assert.Contains("\"category\":\"production\"", json);
     }
 
     [Fact]

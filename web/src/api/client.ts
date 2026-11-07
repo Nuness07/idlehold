@@ -9,6 +9,7 @@ export type Content = components['schemas']['ContentResponse']
 export type Account = components['schemas']['AccountResponse']
 export type ToolProgress = components['schemas']['ToolProgressResponse']
 export type ToolDefinition = components['schemas']['ToolResponse']
+export type SkillCategory = components['schemas']['SkillCategory']
 
 /** The body of an error answer (RFC 9457 problem details), with the fields this API adds. */
 export interface Problem {

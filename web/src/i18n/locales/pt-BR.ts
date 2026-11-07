@@ -62,8 +62,12 @@ export const ptBR = {
     sceneLabel: 'Uma fogueira numa clareira da floresta ao pôr do sol, entre as ruínas da antiga vila: uma casa meio de pé, uma casa desabada e muros de pedra caídos, com a floresta de pinheiros e os morros no horizonte.',
   },
   trades: {
-    heading: 'Ofícios',
+    heading: 'Vila e ofícios',
     working: 'trabalhando',
+    groups: {
+      gathering: 'Ofício',
+      production: 'Produção',
+    },
   },
   sign: {
     level: 'Nível {{level}}',

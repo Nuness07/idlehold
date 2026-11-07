@@ -9,7 +9,7 @@ public class GameContentTests
     {
         var action = new ActionDefinition("chop", "woodcutting", TimeSpan.FromSeconds(3), 10, "log");
 
-        Assert.Throws<ArgumentException>(() => new GameContent([action, action]));
+        Assert.Throws<ArgumentException>(() => new GameContent(TestSkills.All, [action, action]));
     }
 
     [Theory]
@@ -19,7 +19,7 @@ public class GameContentTests
     {
         var action = new ActionDefinition("chop", "woodcutting", TimeSpan.FromSeconds(seconds), 10, "log");
 
-        Assert.Throws<ArgumentException>(() => new GameContent([action]));
+        Assert.Throws<ArgumentException>(() => new GameContent(TestSkills.All, [action]));
     }
 
     [Fact]
@@ -27,7 +27,7 @@ public class GameContentTests
     {
         var action = new ActionDefinition("saw", "crafting", TimeSpan.FromSeconds(3), 10, "plank") { Inputs = [new ItemAmount("log", 0)] };
 
-        Assert.Throws<ArgumentException>(() => new GameContent([action]));
+        Assert.Throws<ArgumentException>(() => new GameContent(TestSkills.All, [action]));
     }
 
     [Fact]
@@ -38,7 +38,7 @@ public class GameContentTests
             Inputs = [new ItemAmount("log", 1), new ItemAmount("log", 2)],
         };
 
-        Assert.Throws<ArgumentException>(() => new GameContent([action]));
+        Assert.Throws<ArgumentException>(() => new GameContent(TestSkills.All, [action]));
     }
 
     [Fact]
@@ -46,13 +46,14 @@ public class GameContentTests
     {
         var action = new ActionDefinition("craft-axe", "crafting", TimeSpan.FromSeconds(3), 10, "axe", OutputQuantity: 2);
 
-        Assert.Throws<ArgumentException>(() => new GameContent([action], [new ToolDefinition("axe", "axe", 1, "woodcutting")]));
+        Assert.Throws<ArgumentException>(() => new GameContent(TestSkills.All, [action], [new ToolDefinition("axe", "axe", 1, "woodcutting")]));
     }
 
     [Fact]
     public void Constructor_ToolsOfOneFamilyServingDifferentTrades_Throws()
     {
         Assert.Throws<ArgumentException>(() => new GameContent(
+            TestSkills.All,
             [],
             [new ToolDefinition("axe", "axe", 1, "woodcutting"), new ToolDefinition("good-axe", "axe", 2, "mining")]));
     }
@@ -69,6 +70,7 @@ public class GameContentTests
     public void Constructor_TwoToolsWithTheSameFamilyAndTier_Throws()
     {
         Assert.Throws<ArgumentException>(() => new GameContent(
+            TestSkills.All,
             [],
             [new ToolDefinition("axe", "axe", 1, "woodcutting"), new ToolDefinition("other-axe", "axe", 1, "woodcutting")]));
     }
@@ -142,5 +144,57 @@ public class GameContentTests
         var content = DefaultContent.Create();
 
         Assert.All(content.Tools, tool => Assert.Contains(content.Actions, action => action.OutputItemId == tool.ItemId));
+    }
+
+    [Fact]
+    public void Constructor_DuplicateSkill_Throws()
+    {
+        var skill = new SkillDefinition("woodcutting", SkillCategory.Gathering);
+
+        Assert.Throws<ArgumentException>(() => new GameContent([skill, skill], []));
+    }
+
+    [Fact]
+    public void Constructor_SkillWithUnknownCategory_Throws()
+    {
+        Assert.Throws<ArgumentException>(() => new GameContent([new SkillDefinition("woodcutting", (SkillCategory)99)], []));
+    }
+
+    [Fact]
+    public void Constructor_ActionOfAnUnknownSkill_Throws()
+    {
+        var action = new ActionDefinition("chop", "lumberjacking", TimeSpan.FromSeconds(3), 10, "log");
+
+        Assert.Throws<ArgumentException>(() => new GameContent(TestSkills.All, [action]));
+    }
+
+    [Fact]
+    public void Constructor_ToolForAnUnknownSkill_Throws()
+    {
+        Assert.Throws<ArgumentException>(() => new GameContent(
+            TestSkills.All,
+            [],
+            [new ToolDefinition("rod", "fishing-rod", 1, "fishing")]));
+    }
+
+    [Fact]
+    public void Skills_KeepTheOrderTheyWereGiven()
+    {
+        var content = new GameContent(TestSkills.All, []);
+
+        Assert.Equal(["woodcutting", "mining", "crafting"], content.Skills.Select(skill => skill.Id));
+    }
+
+    [Theory]
+    [InlineData("woodcutting", SkillCategory.Gathering)]
+    [InlineData("fishing", SkillCategory.Gathering)]
+    [InlineData("mining", SkillCategory.Gathering)]
+    [InlineData("foraging", SkillCategory.Gathering)]
+    [InlineData("crafting", SkillCategory.Production)]
+    public void DefaultContent_GroupsEveryTrade(string skillId, SkillCategory category)
+    {
+        var skill = Assert.Single(DefaultContent.Create().Skills, skill => skill.Id == skillId);
+
+        Assert.Equal(category, skill.Category);
     }
 }

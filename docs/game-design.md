@@ -83,6 +83,10 @@ On screen, each tool family is one card in its trade, always showing the next ti
 
 Not in yet: tools gating actions (the axe opening the pine), the next tiers (stone axe, then copper), recipe categories (by material and by use: tool, weapon), a "make N" queue, an inventory of owned tools, and the crafting table screen (the inputs filling the recipe, then the tool appearing).
 
+### Trade groups: Decided
+
+Trades are split in two groups: **Gathering** (Woodcutting, Fishing, Mining, Foraging), which takes from the world, and **Production** (Crafting, and later Leatherworking, Smithing, Cooking), which turns what was gathered into goods. The side panel lists the Village first, then each group under its heading. In Brazilian Portuguese the groups are "Ofício" and "Produção".
+
 ### Processing skills: Next
 
 Cooking, Smithing (smelting ore into bars, bars into tools), Leatherworking. Recipes that consume inputs exist (see Crafting and tools); what is still missing:
@@ -96,6 +100,8 @@ Buildings cost goods and give something back: unlock a skill, unlock a villager,
 Decided: the village is a scene you look at and the home screen (the hub), seen in first person from the camp looking out to the horizon. It starts as a campfire among the ruins of the old village, with the forest behind. The village has a name ("Idle Road" for now; the player will choose it later); how it is shown is not decided. Its pieces will be animated over time.
 
 Open: how buildings appear in the scene, and whether it is also a list of buildings.
+
+Idea: the Village's emblem (the stone tower on its entry) grows as the village is rebuilt, a new drawing per stage. The game's logo keeps the first tower.
 
 ### Villagers: Later (core)
 

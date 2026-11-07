@@ -1,3 +1,5 @@
+using System.Text.Json;
+using System.Text.Json.Serialization;
 using IdleHold.Engine.Content;
 
 namespace IdleHold.Api;
@@ -11,6 +13,9 @@ public static class GameContentEndpoints
     }
 
     private static ContentResponse GetContent(GameContent content) => new(
+        content.Skills
+            .Select(skill => new SkillDefinitionResponse(skill.Id, skill.Category))
+            .ToList(),
         content.Actions
             .Select(action => new ActionResponse(
                 action.Id,
@@ -26,7 +31,19 @@ public static class GameContentEndpoints
             .ToList());
 }
 
-public sealed record ContentResponse(IReadOnlyList<ActionResponse> Actions, IReadOnlyList<ToolResponse> Tools);
+public sealed record ContentResponse(
+    IReadOnlyList<SkillDefinitionResponse> Skills,
+    IReadOnlyList<ActionResponse> Actions,
+    IReadOnlyList<ToolResponse> Tools);
+
+/// <summary>A trade, in the order the game lists them, with the group it belongs to.</summary>
+public sealed record SkillDefinitionResponse(
+    string Id,
+    [property: JsonConverter(typeof(CamelCaseEnumConverter<SkillCategory>))] SkillCategory Category);
+
+/// <summary>Writes an enum as its camelCase name ("gathering"), so the OpenAPI document lists the names.</summary>
+public sealed class CamelCaseEnumConverter<TEnum>() : JsonStringEnumConverter<TEnum>(JsonNamingPolicy.CamelCase)
+    where TEnum : struct, Enum;
 
 public sealed record ActionResponse(
     string Id,
