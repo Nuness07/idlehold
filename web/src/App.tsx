@@ -1,7 +1,7 @@
 import { useQueryClient } from '@tanstack/react-query'
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { useTranslation } from 'react-i18next'
-import type { Skill } from './api/client'
+import { isApiError, type Skill } from './api/client'
 import { Button } from './components/Button'
 import { LanguageSwitch } from './components/LanguageSwitch'
 import { useContentText } from './content/text'
@@ -14,9 +14,8 @@ import { SaveNudge } from './features/account/SaveNudge'
 import { ActionList } from './features/actions/ActionList'
 import { WorkingAction } from './features/actions/WorkingAction'
 import {
-  ActionBlockedError,
   playerQueryKey,
-  SessionEndedError,
+  isSessionEnded,
   useContent,
   usePlayer,
   useStartAction,
@@ -49,12 +48,11 @@ export default function App() {
   const stopAction = useStopAction(player?.id)
   const commandError = startAction.error ?? stopAction.error
 
-  /** A refusal from the game says why; anything else is a connection or server problem. */
+  /** A refusal from the game (409) says why; anything else is a connection or server problem. */
   const commandErrorText = (error: Error) => {
-    if (error instanceof ActionBlockedError) {
-      if (error.reason === 'missing-inputs') return t('app.actionBlocked.missing-inputs')
-      if (error.reason === 'tool-already-owned') return t('app.actionBlocked.tool-already-owned')
-    }
+    const reason = isApiError(error, 409) ? error.problem.reason : undefined
+    if (reason === 'missing-inputs') return t('app.actionBlocked.missing-inputs')
+    if (reason === 'tool-already-owned') return t('app.actionBlocked.tool-already-owned')
     return t('app.actionFailed')
   }
   const logout = useLogout()
@@ -130,9 +128,7 @@ export default function App() {
   // The session ended while playing (expired, or signed out in another tab). The browser starts over
   // as a new guest; someone who had an account is offered the sign-in form to get back to it.
   const sessionEnded =
-    playerQuery.error instanceof SessionEndedError ||
-    startAction.error instanceof SessionEndedError ||
-    stopAction.error instanceof SessionEndedError
+    isSessionEnded(playerQuery.error) || isSessionEnded(startAction.error) || isSessionEnded(stopAction.error)
   const hadAccount = account?.isGuest === false
   useEffect(() => {
     if (!sessionEnded) return
