@@ -131,6 +131,38 @@
     }
   }
 
+  /* Wrought-iron frame around a tool (9-slice, 8-pixel corners at 2x): the corners never stretch. The well
+     behind it stays inside the band, so the notched corners show the paper. */
+  .iron-frame {
+    border-style: solid;
+    border-width: 16px;
+    border-image: url('./assets/frames/iron.png') 8 / 16px stretch;
+    background-clip: padding-box;
+    image-rendering: pixelated;
+  }
+
+  /* A wooden plank button at 3x (9-slice: the nailed ends stay whole, the plank between them stretches). */
+  .wood-button {
+    border-style: solid;
+    border-width: 12px 27px;
+    border-image: url('./assets/frames/wood-button.png') 4 9 fill / 12px 27px stretch;
+    image-rendering: pixelated;
+    color: var(--color-parchment);
+    text-shadow: 0 1px 0 rgb(0 0 0 / 0.6);
+
+    &:hover:not(:disabled) {
+      filter: brightness(1.1);
+    }
+
+    &:active:not(:disabled) {
+      transform: translateY(1px);
+    }
+
+    &:disabled {
+      filter: grayscale(0.8) brightness(0.85);
+    }
+  }
+
   /* A paper pinned to the board: every button and entry on a wooden panel. */
   .paper {
     background-color: var(--color-parchment);

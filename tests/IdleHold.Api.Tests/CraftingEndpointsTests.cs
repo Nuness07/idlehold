@@ -80,6 +80,28 @@ public sealed class CraftingEndpointsTests(PostgresFixture database) : IClassFix
         Assert.Equal(HttpStatusCode.OK, response.StatusCode);
     }
 
+    [Fact]
+    public async Task NewPlayer_IsOfferedTheFirstTierOfEveryTool()
+    {
+        var player = await GetPlayerAsync();
+
+        Assert.Contains(new ToolProgressResponse("axe", OwnedItemId: null, NextActionId: "craft-chipped-stone-axe"), player.Tools);
+        Assert.Contains(new ToolProgressResponse("fishing-rod", OwnedItemId: null, NextActionId: "craft-reed-fishing-rod"), player.Tools);
+    }
+
+    [Fact]
+    public async Task CraftedTool_IsOwnedAndItsRecipeIsNoLongerOffered()
+    {
+        await GatherAxeMaterialsAsync();
+        (await StartAsync("craft-chipped-stone-axe")).EnsureSuccessStatusCode();
+        _factory.Clock.Advance(TimeSpan.FromSeconds(30));
+
+        var player = await GetPlayerAsync();
+
+        // The stone axe is the only axe so far, so there is nothing better to make yet.
+        Assert.Contains(new ToolProgressResponse("axe", "chipped-stone-axe", NextActionId: null), player.Tools);
+    }
+
     /// <summary>3 twigs (2 s each) and 2 pebbles (2 s each), read back so the save holds them.</summary>
     private async Task<PlayerResponse> GatherAxeMaterialsAsync()
     {

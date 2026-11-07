@@ -38,6 +38,10 @@ public sealed class GameContent
     public ToolDefinition? FindTool(string itemId) =>
         _tools.GetValueOrDefault(itemId);
 
+    /// <summary>Returns the first action that makes this item, or <c>null</c> if none does.</summary>
+    public ActionDefinition? FindRecipeFor(string itemId) =>
+        _actions.Values.FirstOrDefault(action => action.OutputItemId == itemId);
+
     private void AddTool(ToolDefinition tool)
     {
         if (tool.Tier < 1)
@@ -48,6 +52,11 @@ public sealed class GameContent
         if (_tools.Values.Any(other => other.Family == tool.Family && other.Tier == tool.Tier))
         {
             throw new ArgumentException($"Two '{tool.Family}' tools share tier {tool.Tier}.", "tools");
+        }
+
+        if (_tools.Values.Any(other => other.Family == tool.Family && other.SkillId != tool.SkillId))
+        {
+            throw new ArgumentException($"The '{tool.Family}' tools must all serve the same trade.", "tools");
         }
 
         if (!_tools.TryAdd(tool.ItemId, tool))

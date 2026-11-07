@@ -22,7 +22,7 @@ public static class GameContentEndpoints
                 action.Inputs.Select(input => new ItemAmountResponse(input.ItemId, input.Quantity)).ToList()))
             .ToList(),
         content.Tools
-            .Select(tool => new ToolResponse(tool.ItemId, tool.Family, tool.Tier))
+            .Select(tool => new ToolResponse(tool.ItemId, tool.Family, tool.Tier, tool.SkillId))
             .ToList());
 }
 
@@ -44,4 +44,4 @@ public sealed record ItemAmountResponse(string ItemId, long Quantity);
 /// Marks an item as a tool. The player owns one per family and upgrades its tier; a recipe that makes
 /// a tool is refused (409) once that tier or a better one is owned.
 /// </summary>
-public sealed record ToolResponse(string ItemId, string Family, int Tier);
+public sealed record ToolResponse(string ItemId, string Family, int Tier, string SkillId);

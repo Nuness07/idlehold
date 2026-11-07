@@ -8,6 +8,7 @@ function snap(updatedAt: string, actionId: string | null, id = 'p1'): PlayerSnap
     activeAction: actionId ? { actionId, progressMs: 0, durationMs: 3000 } : null,
     inventory: {},
     skills: {},
+    tools: [],
     updatedAt,
   }
   return { player, receivedAt: 0 }

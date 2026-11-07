@@ -24,8 +24,8 @@ public class RecipeTests
         },
     ],
     [
-        new ToolDefinition("axe", Family: "axe", Tier: 1),
-        new ToolDefinition("good-axe", Family: "axe", Tier: 2),
+        new ToolDefinition("axe", Family: "axe", Tier: 1, SkillId: "woodcutting"),
+        new ToolDefinition("good-axe", Family: "axe", Tier: 2, SkillId: "woodcutting"),
     ]);
 
     private readonly GameEngine _engine = new(Content);
@@ -184,5 +184,29 @@ public class RecipeTests
     public void ToolTierOf_WithBareHands_IsZero()
     {
         Assert.Equal(0, _engine.ToolTierOf(GameState.New, "axe"));
+    }
+
+    [Fact]
+    public void ToolProgressOf_WithBareHands_OffersTheFirstTier()
+    {
+        var progress = Assert.Single(_engine.ToolProgressOf(GameState.New));
+
+        Assert.Equal(new ToolProgress("axe", OwnedItemId: null, NextActionId: "craft-axe"), progress);
+    }
+
+    [Fact]
+    public void ToolProgressOf_AfterTheFirstTier_OffersTheUpgrade()
+    {
+        var progress = Assert.Single(_engine.ToolProgressOf(With(("axe", 1))));
+
+        Assert.Equal(new ToolProgress("axe", "axe", "craft-good-axe"), progress);
+    }
+
+    [Fact]
+    public void ToolProgressOf_AtTheBestTier_OffersNothing()
+    {
+        var progress = Assert.Single(_engine.ToolProgressOf(With(("good-axe", 1))));
+
+        Assert.Equal(new ToolProgress("axe", "good-axe", NextActionId: null), progress);
     }
 }

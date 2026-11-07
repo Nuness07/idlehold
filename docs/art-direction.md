@@ -2,8 +2,8 @@
 
 IdleHold uses a hybrid style: **pixel art for world objects** (trade emblems, frames,
 action sprites, items) and for the **board** the screen is built on (the plank wall and the
-wooden panel frames), inside a clean "Guild Signboards" UI (see `DESIGN.md`). Text, buttons
-and bars are never pixel art.
+wooden panel frames), inside a clean "Guild Signboards" UI (see `DESIGN.md`). Buttons and
+frames may be pixel art too, as 9-slice images around an HTML label; text and bars never are.
 
 ## The style base
 
@@ -108,6 +108,16 @@ Motion stops for players who ask for reduced motion. Each piece that reacts to t
 the same way (an exact copy of its pixels, so no repainting), with a hit shape that follows its outline;
 it becomes a button once clicking it does something, and changes art as it is rebuilt.
 
+## Buttons and tool frames
+
+- **Wooden button** (`frames/wood-button.png`, 54x13): one nailed plank, used by `.wood-button` as a
+  9-slice at 3x (4-pixel top and bottom, 9-pixel ends that hold the nails), so it fits any label.
+  Hover brightens it, pressing moves it down a pixel, and disabled greys it.
+- **Iron frame** (`frames/iron.png`, 38x38): wrought iron with corner pieces and a 24x24 opening,
+  used as a 9-slice with 8-pixel corners: `.iron-frame` at 2x around a tool (a 32x32 sprite at 2x).
+  The dark well behind it stays inside the band (`background-clip: padding-box`). Material slots
+  are plain squares with a thin black border, so the tool stays the one framed thing on the card.
+
 ## Asset log
 
 | File | Prompt (short) | Notes |
@@ -142,6 +152,8 @@ it becomes a button once clicking it does something, and changes art as it is re
 | `items/reed.png` | a small bundle of long pale green and straw-yellow reed stalks tied in the middle, about 26 px long | Candidate 3; `items/twig.png` for the bundle composition |
 | `actions/reeds.png` | a small clump of tall green reeds with brown cattail heads on a patch of muddy riverbank | Candidate 2; `actions/berry-bush.png` as composition reference |
 | `emblems/foraging.png` | a small woven wicker basket full of wild berries, a leafy sprig leaning diagonally against it | Candidate 24 (realigned); `emblems/mining.png` as composition reference |
+| `frames/iron.png` | a plain square medieval frame of dark grey wrought iron, a thin flat band with small rivets, slightly ornate corner pieces, empty hollow middle | Candidate 11 at 48x48, cropped to 38x38; `board/frame.png` as shape reference |
+| `frames/wood-button.png` | a wide flat rectangular wooden button, one horizontal warm brown plank, a small iron nail at each end, plain empty face | Candidate 10 at 64x24, cropped to 54x13; `frames/wood.png` for wood and nails |
 
 
 ## Open points

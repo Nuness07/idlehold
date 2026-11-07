@@ -40,7 +40,7 @@ public static class DefaultContent
         },
     ],
     [
-        new ToolDefinition("chipped-stone-axe", Family: "axe", Tier: 1),
-        new ToolDefinition("reed-fishing-rod", Family: "fishing-rod", Tier: 1),
+        new ToolDefinition("chipped-stone-axe", Family: "axe", Tier: 1, SkillId: "woodcutting"),
+        new ToolDefinition("reed-fishing-rod", Family: "fishing-rod", Tier: 1, SkillId: "fishing"),
     ]);
 }

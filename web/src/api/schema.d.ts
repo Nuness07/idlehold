@@ -415,6 +415,7 @@ export interface components {
             skills: {
                 [key: string]: components["schemas"]["SkillResponse"];
             };
+            tools: components["schemas"]["ToolProgressResponse"][];
             /** Format: date-time */
             updatedAt: string;
         };
@@ -435,11 +436,17 @@ export interface components {
         StartActionRequest: {
             actionId: string;
         };
+        ToolProgressResponse: {
+            family: string;
+            ownedItemId: null | string;
+            nextActionId: null | string;
+        };
         ToolResponse: {
             itemId: string;
             family: string;
             /** Format: int32 */
             tier: number;
+            skillId: string;
         };
     };
     responses: never;

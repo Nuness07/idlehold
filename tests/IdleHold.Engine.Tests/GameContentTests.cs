@@ -46,7 +46,23 @@ public class GameContentTests
     {
         var action = new ActionDefinition("craft-axe", "crafting", TimeSpan.FromSeconds(3), 10, "axe", OutputQuantity: 2);
 
-        Assert.Throws<ArgumentException>(() => new GameContent([action], [new ToolDefinition("axe", "axe", 1)]));
+        Assert.Throws<ArgumentException>(() => new GameContent([action], [new ToolDefinition("axe", "axe", 1, "woodcutting")]));
+    }
+
+    [Fact]
+    public void Constructor_ToolsOfOneFamilyServingDifferentTrades_Throws()
+    {
+        Assert.Throws<ArgumentException>(() => new GameContent(
+            [],
+            [new ToolDefinition("axe", "axe", 1, "woodcutting"), new ToolDefinition("good-axe", "axe", 2, "mining")]));
+    }
+
+    [Fact]
+    public void DefaultContent_EveryToolServesATradeWithActions()
+    {
+        var content = DefaultContent.Create();
+
+        Assert.All(content.Tools, tool => Assert.Contains(content.Actions, action => action.SkillId == tool.SkillId));
     }
 
     [Fact]
@@ -54,7 +70,7 @@ public class GameContentTests
     {
         Assert.Throws<ArgumentException>(() => new GameContent(
             [],
-            [new ToolDefinition("axe", "axe", 1), new ToolDefinition("other-axe", "axe", 1)]));
+            [new ToolDefinition("axe", "axe", 1, "woodcutting"), new ToolDefinition("other-axe", "axe", 1, "woodcutting")]));
     }
 
     [Fact]
