@@ -85,22 +85,34 @@ public sealed class PlayerService(IPlayerStore store, GameEngine engine, TimePro
     }
 
     /// <param name="owner">Who is asking: <c>null</c> for a guest, or the signed-in account.</param>
+    /// The game checks the caught-up state, so materials gathered while away count.
     public Task<CommandResult> StartActionAsync(Guid playerId, Guid? owner, string actionId, CancellationToken cancellationToken) =>
-        ApplyAsync(playerId, owner, state => engine.StartAction(state, actionId), cancellationToken);
+        ApplyAsync(
+            playerId,
+            owner,
+            state => state.ActiveAction?.ActionId == actionId ? null : engine.CheckStart(state, actionId),
+            state => engine.StartAction(state, actionId),
+            cancellationToken);
 
     /// <param name="owner">Who is asking: <c>null</c> for a guest, or the signed-in account.</param>
     public Task<CommandResult> StopActionAsync(Guid playerId, Guid? owner, CancellationToken cancellationToken) =>
-        ApplyAsync(playerId, owner, engine.StopAction, cancellationToken);
+        ApplyAsync(playerId, owner, check: _ => null, engine.StopAction, cancellationToken);
 
     /// <summary>
     /// Applies a command only if <paramref name="owner"/> owns the player. The check runs inside the
     /// store's atomic update, so it is repeated on every concurrency retry: a hold claimed by an
     /// account between two attempts is refused, never changed by the guest request.
+    /// <paramref name="check"/> runs on the caught-up state; when the game refuses the command, nothing is written.
     /// </summary>
     private async Task<CommandResult> ApplyAsync(
-        Guid playerId, Guid? owner, Func<GameState, GameState> command, CancellationToken cancellationToken)
+        Guid playerId,
+        Guid? owner,
+        Func<GameState, ActionBlock?> check,
+        Func<GameState, GameState> command,
+        CancellationToken cancellationToken)
     {
         var denied = false;
+        ActionBlock? block = null;
         var updated = await store.UpdateAsync(playerId, save =>
         {
             denied = save.AccountId != owner;
@@ -110,11 +122,13 @@ public sealed class PlayerService(IPlayerStore store, GameEngine engine, TimePro
             }
 
             var caughtUp = CatchUp(save, time.GetUtcNow());
-            return caughtUp with { State = command(caughtUp.State) };
+            block = check(caughtUp.State);
+            return block is null ? caughtUp with { State = command(caughtUp.State) } : save;
         }, cancellationToken);
 
         return updated is null ? CommandResult.NotFound
             : denied ? CommandResult.Forbidden
+            : block is { } blocked ? CommandResult.Blocked(blocked)
             : CommandResult.Done(updated);
     }
 
@@ -132,10 +146,15 @@ public enum CommandStatus
     Done,
     NotFound,
     Forbidden,
+
+    /// <summary>The game refused the command (see <see cref="CommandResult.Block"/>); nothing was saved.</summary>
+    Blocked,
 }
 
-public sealed record CommandResult(CommandStatus Status, PlayerSave? Player)
+public sealed record CommandResult(CommandStatus Status, PlayerSave? Player, ActionBlock? Block = null)
 {
+    public static CommandResult Blocked(ActionBlock block) => new(CommandStatus.Blocked, null, block);
+
     public static CommandResult NotFound { get; } = new(CommandStatus.NotFound, null);
 
     public static CommandResult Forbidden { get; } = new(CommandStatus.Forbidden, null);
