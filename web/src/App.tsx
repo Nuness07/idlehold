@@ -74,7 +74,8 @@ export default function App() {
   const lastTotals = useRef<{ playerId: string; xp: number; levels: number } | null>(null)
 
   const actions = useMemo(() => content.data?.actions ?? [], [content.data])
-  const skillIds = useMemo(() => [...new Set(actions.map((action) => action.skillId))], [actions])
+  const skills = useMemo(() => content.data?.skills ?? [], [content.data])
+  const skillIds = useMemo(() => skills.map((skill) => skill.id), [skills])
   const activeAction = player?.activeAction ?? null
   const activeDefinition = actions.find((action) => action.id === activeAction?.actionId)
   const selectedSkillId = viewedSkillId ?? activeDefinition?.skillId ?? skillIds[0]
@@ -221,8 +222,9 @@ export default function App() {
               setVillageOpen(false)
             }}
             onSelectVillage={() => setVillageOpen(true)}
-            trades={skillIds.map((skillId) => ({
+            trades={skills.map(({ id: skillId, category }) => ({
               skillId,
+              category,
               skill: skillOf(skillId),
               working: skillId === activeDefinition?.skillId,
             }))}

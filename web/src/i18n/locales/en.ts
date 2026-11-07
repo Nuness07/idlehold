@@ -63,8 +63,12 @@ export const en = {
     sceneLabel: 'A campfire in a forest clearing at sunset, among the ruins of the old village: a half-standing cottage, a collapsed house and crumbled stone walls, with a pine forest and hills on the horizon.',
   },
   trades: {
-    heading: 'Trades',
+    heading: 'Village and trades',
     working: 'working',
+    groups: {
+      gathering: 'Gathering',
+      production: 'Production',
+    },
   },
   sign: {
     level: 'Level {{level}}',

@@ -83,6 +83,10 @@ On screen, each tool family is one card in its trade, always showing the next ti
 
 Not in yet: tools gating actions (the axe opening the pine), the next tiers (stone axe, then copper), recipe categories (by material and by use: tool, weapon), a "make N" queue, an inventory of owned tools, and the crafting table screen (the inputs filling the recipe, then the tool appearing).
 
+### Trade groups: Decided
+
+Trades are split in two groups: **Gathering** (Woodcutting, Fishing, Mining, Foraging), which takes from the world, and **Production** (Crafting, and later Leatherworking, Smithing, Cooking), which turns what was gathered into goods. The side panel lists the Village first, then each group under its heading. In Brazilian Portuguese the groups are "Ofício" and "Produção".
+
 ### Processing skills: Next
 
 Cooking, Smithing (smelting ore into bars, bars into tools), Leatherworking. Recipes that consume inputs exist (see Crafting and tools); what is still missing:

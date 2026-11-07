@@ -382,6 +382,7 @@ export interface components {
             durationMs: number;
         };
         ContentResponse: {
+            skills: components["schemas"]["SkillDefinitionResponse"][];
             actions: components["schemas"]["ActionResponse"][];
             tools: components["schemas"]["ToolResponse"][];
         };
@@ -422,6 +423,12 @@ export interface components {
         RegisterRequest: {
             email: string;
             password: string;
+        };
+        /** @enum {unknown} */
+        SkillCategory: "gathering" | "production";
+        SkillDefinitionResponse: {
+            id: string;
+            category: components["schemas"]["SkillCategory"];
         };
         SkillResponse: {
             /** Format: int64 */
