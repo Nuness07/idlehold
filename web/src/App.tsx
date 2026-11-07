@@ -3,13 +3,11 @@ import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { isApiError, type Skill } from './api/client'
 import { Button } from './components/Button'
-import { LanguageSwitch } from './components/LanguageSwitch'
 import { PixelSprite } from './components/PixelSprite'
 import { towerSprite } from './content/labels'
 import { useContentText } from './content/text'
 import { AccountDialog } from './features/account/AccountDialog'
 import type { AccountFormMode } from './features/account/AccountForm'
-import { AccountMenu } from './features/account/AccountMenu'
 import { endSession, useAccount, useLogout } from './features/account/queries'
 import { hasProgressWorthSaving, useNudgeDismissed } from './features/account/nudge'
 import { SaveNudge } from './features/account/SaveNudge'
@@ -25,6 +23,11 @@ import {
 } from './features/player/queries'
 import { SinceYouLeft } from './features/player/SinceYouLeft'
 import { rememberLastSeen, summarizeAway, type AwaySummary } from './features/player/awaySummary'
+import type { Screen } from './features/menu/menu'
+import { ComingSoon, ScreenPage } from './features/menu/ScreenPage'
+import { MenuBar, SideMenu } from './features/menu/SideMenu'
+import { Settings } from './features/settings/Settings'
+import { Statistics } from './features/statistics/Statistics'
 import { Stores } from './features/stores/Stores'
 import { ToolCards } from './features/tools/ToolCards'
 import { toolCardsFor, tradeToolFor } from './features/tools/tools'
@@ -70,8 +73,8 @@ export default function App() {
   const [freshItemId, setFreshItemId] = useState<string>()
   /** The trade the player chose to look at; until they choose, the screen follows the working trade. */
   const [viewedSkillId, setViewedSkillId] = useState<string>()
-  /** The village is the home screen; choosing a trade leaves it, and the rail's Village entry comes back. */
-  const [villageOpen, setVillageOpen] = useState(true)
+  /** What the middle shows. The village is the home screen; the rail opens trades, the hold menu its screens. */
+  const [screen, setScreen] = useState<Screen>('village')
   const summarized = useRef(false)
   const lastTotals = useRef<{ playerId: string; xp: number; levels: number } | null>(null)
 
@@ -145,19 +148,7 @@ export default function App() {
 
   const guestHasXp = account?.isGuest === true && player ? Object.values(player.skills).some((skill) => skill.xp > 0) : false
   const shell = (totalLevel: number | null, children: React.ReactNode) => (
-    <Shell
-      totalLevel={totalLevel}
-      menu={
-        account ? (
-          <AccountMenu
-            account={account}
-            onSaveProgress={() => setDialog('register')}
-            onSignOut={() => logout.mutate()}
-            signingOut={logout.isPending}
-          />
-        ) : null
-      }
-    >
+    <Shell totalLevel={totalLevel}>
       {children}
       <AccountDialog
         mode={dialog}
@@ -210,20 +201,43 @@ export default function App() {
 
   const showNudge = account?.isGuest === true && !nudgeDismissed && hasProgressWorthSaving(player.skills)
 
+  const openTrade = (skillId: string) => {
+    setViewedSkillId(skillId)
+    setScreen('trade')
+  }
+
+  /** The middle column for a screen opened from the hold menu. */
+  const menuScreen = (opened: Exclude<Screen, 'village' | 'trade'>) => (
+    <ScreenPage screen={opened}>
+      {opened === 'storehouse' && <Stores inventory={player.inventory} freshItemId={freshItemId} />}
+      {opened === 'achievements' && <ComingSoon>{t('comingSoon.achievements')}</ComingSoon>}
+      {opened === 'history' && <ComingSoon>{t('comingSoon.history')}</ComingSoon>}
+      {opened === 'statistics' && <Statistics skills={skillIds.map(skillOf)} inventory={player.inventory} />}
+      {opened === 'settings' && account && (
+        <Settings
+          account={account}
+          onSaveProgress={() => setDialog('register')}
+          onSignIn={() => setDialog('login')}
+          onSignOut={() => logout.mutate()}
+          signingOut={logout.isPending}
+        />
+      )}
+    </ScreenPage>
+  )
+
   return shell(
     totalLevel,
     <>
       {/* grid-cols-1 is minmax(0, 1fr): on phones the trade row scrolls instead of widening the page. */}
       {/* The darkened board is the wall behind the screen; the wooden side panels hang in front of it. */}
-      <div className="wood-board-back grid flex-1 grid-cols-1 content-start lg:content-normal lg:grid-cols-[280px_minmax(0,1fr)] xl:grid-cols-[300px_minmax(0,1fr)_340px]">
-        <aside className="wood-board wood-frame wood-panel min-w-0 lg:row-span-2 xl:row-span-1">
+      {/* Below xl the hold menu is a bar fixed to the bottom, so the page leaves room for it. */}
+      <div className="wood-board-back grid flex-1 grid-cols-1 content-start pb-[68px] lg:content-normal lg:grid-cols-[280px_minmax(0,1fr)] xl:grid-cols-[300px_minmax(0,1fr)_320px] xl:pb-0">
+        <aside className="wood-board wood-frame wood-panel min-w-0">
           <TradeRail
-            selected={villageOpen ? null : selectedSkillId}
-            onSelect={(skillId) => {
-              setViewedSkillId(skillId)
-              setVillageOpen(false)
-            }}
-            onSelectVillage={() => setVillageOpen(true)}
+            selected={screen === 'trade' ? selectedSkillId : null}
+            villageSelected={screen === 'village'}
+            onSelect={openTrade}
+            onSelectVillage={() => setScreen('village')}
             trades={skills.map(({ id: skillId, category }) => ({
               skillId,
               category,
@@ -233,7 +247,7 @@ export default function App() {
           />
         </aside>
 
-        {villageOpen ? (
+        {screen === 'village' ? (
           // The village fills the middle column; the wooden bar below it holds notices and the worked action.
           <main className="flex min-w-0 flex-col">
             <VillageView />
@@ -259,6 +273,8 @@ export default function App() {
               </div>
             </div>
           </main>
+        ) : screen !== 'trade' ? (
+          menuScreen(screen)
         ) : (
           <main className="flex w-full max-w-[880px] min-w-0 flex-col gap-7 justify-self-center px-4 pb-10 sm:px-8 lg:px-10">
             <TradeSign
@@ -268,7 +284,7 @@ export default function App() {
               swingKey={swingKey}
             />
 
-            {tradeTool && <TradeToolNotice tool={tradeTool} onOpenTrade={setViewedSkillId} />}
+            {tradeTool && <TradeToolNotice tool={tradeTool} onOpenTrade={openTrade} />}
 
             {away && <SinceYouLeft summary={away} onDismiss={() => setAway(null)} />}
             {showNudge && <SaveNudge onCreateAccount={() => setDialog('register')} onDismiss={dismissNudge} />}
@@ -307,9 +323,19 @@ export default function App() {
           </main>
         )}
 
-        <aside className="wood-board wood-frame wood-panel lg:col-start-2 xl:col-start-auto">
-          <Stores inventory={player.inventory} freshItemId={freshItemId} />
-        </aside>
+        {account && (
+          <aside className="wood-board wood-frame wood-panel hidden xl:block">
+            <SideMenu
+              screen={screen}
+              onOpen={setScreen}
+              account={account}
+              onSaveProgress={() => setDialog('register')}
+            />
+          </aside>
+        )}
+      </div>
+      <div className="xl:hidden">
+        <MenuBar screen={screen} onOpen={setScreen} />
       </div>
     </>,
   )
@@ -317,12 +343,10 @@ export default function App() {
 
 interface ShellProps {
   totalLevel: number | null
-  /** The account controls, or `null` until the session is known. */
-  menu: React.ReactNode
   children: React.ReactNode
 }
 
-function Shell({ totalLevel, menu, children }: ShellProps) {
+function Shell({ totalLevel, children }: ShellProps) {
   const { t } = useTranslation()
   return (
     <div className="flex min-h-dvh flex-col">
@@ -341,8 +365,6 @@ function Shell({ totalLevel, menu, children }: ShellProps) {
               {t('app.totalLevel')} <span className="font-extrabold text-oxblood-ink">{totalLevel}</span>
             </span>
           )}
-          {menu}
-          <LanguageSwitch />
         </div>
       </header>
       {children}
