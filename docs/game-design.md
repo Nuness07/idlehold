@@ -137,7 +137,7 @@ A shared market for trading goods. Requires accounts, persistent saves, an econo
 2. ~~**Mining and Fishing**~~: done (see Gathering skills).
 3. ~~**Recipes**~~: done with Crafting (see Crafting and tools); Cooking and Smithing reuse it.
 4. **Persistent saves**: Postgres behind `IPlayerStore`, so progress survives server restarts.
-5. **Accounts**: sign up and log in; `/players/{id}` becomes `/me`.
+5. ~~**Accounts**~~: done; guests are anonymous accounts and every player plays through `/me/player`.
 6. **Village v1**: a few buildings and the first villager, with parallel activities in the engine.
 7. **Story opening and contextual tutorial.**
 8. **Achievements.**
