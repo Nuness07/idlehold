@@ -1,8 +1,9 @@
 # Art direction
 
 IdleHold uses a hybrid style: **pixel art for world objects** (trade emblems, frames,
-action sprites, items) inside a clean "Guild Signboards" UI (see `DESIGN.md`). Text,
-buttons, bars and layout are never pixel art.
+action sprites, items) and for the **board** the screen is built on (the plank wall and the
+wooden panel frames), inside a clean "Guild Signboards" UI (see `DESIGN.md`). Text, buttons
+and bars are never pixel art.
 
 ## The style base
 
@@ -65,6 +66,24 @@ Tool: PixelLab, `create_image_pro` (one call returns 64 candidates at 32x32 for
   the first frame tier; later tiers (stone, gold, ...) reuse the same 46x48 shape with a
   32x32 opening at (7, 8), so they swap in without layout changes.
 
+## The board
+
+The screen is a notice board (`web/src/assets/board/`, used from `web/src/index.css`):
+
+- **Planks** (`board/planks.png`, 116x59): a seamless tile drawn at 3x. Generated with
+  `create_image_pro` at 64x64 on an opaque background. No candidate tiled cleanly (each had an
+  outline around the canvas), so the chosen one was made seamless by hand: the outline cropped
+  off, the crop placed next to its mirror image (so the left and right edges meet), each plank
+  row rolled by a different amount, and one board end (a dark joint) cut into each row, so the
+  board ends stagger like real planks.
+- **Frame** (`board/frame.png`, 58x58): a wooden frame with iron corner brackets, used as a CSS
+  `border-image` 9-slice with 18-pixel slices (1x on phones, 2x from tablets up): the corners stay
+  fixed and the plain edges repeat. The candidate was cropped to its drawing, and the outline of the
+  plain edges was carried out to the image edge, where the corners overhang by one pixel; otherwise
+  the panel's own wood shows through a thin gap between the frame and the wall.
+- **The wall** is the planks under a 45% black veil, so it recedes; the framed panels show the same
+  planks undimmed and cast a soft shadow on it.
+
 ## Village scene
 
 The village is the game's hub, seen in first person from the camp, looking out to the horizon
@@ -115,6 +134,8 @@ it becomes a button once clicking it does something, and changes art as it is re
 | `actions/twigs.png` | fallen dry twigs and small broken branches on a little patch of grass and dirt | Candidate 17 (realigned); `actions/stone.png` as composition reference |
 | `actions/pebbles.png` | a few small loose grey pebbles on a little oval patch of grass and dirt | Candidate 2; the twigs action for the ground patch, `items/stone.png` for colour |
 | `actions/berry-bush.png` | a small round wild berry bush, dark green leaves dotted with dark purple-red berries | Candidate 3 (realigned); `actions/stone.png` as composition reference |
+| `board/planks.png` | seamless tileable texture of weathered horizontal wooden planks, a medieval village notice board, warm medium-dark brown wood | Candidate 6, made seamless by hand (see The board) |
+| `board/frame.png` | a plain square wooden picture frame made of thick dark brown planks, small iron nails at the four corners | Candidate 9 (iron corner brackets); `frames/wood.png` as reference; edge outline extended |
 | `emblems/foraging.png` | a small woven wicker basket full of wild berries, a leafy sprig leaning diagonally against it | Candidate 24 (realigned); `emblems/mining.png` as composition reference |
 
 

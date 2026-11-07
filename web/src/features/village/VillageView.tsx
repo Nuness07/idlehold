@@ -1,12 +1,12 @@
 import { useTranslation } from 'react-i18next'
 import { VillageScene } from './VillageScene'
 
-/** The village screen, the game's hub: the scene across the middle column. */
+/** The village screen, the game's hub: the scene filling the middle column. */
 export function VillageView() {
   const { t } = useTranslation()
 
   return (
-    <section aria-labelledby="village-name">
+    <section aria-labelledby="village-name" className="flex flex-col lg:flex-1">
       {/* The name stays as the screen's heading for assistive tech; its painted board is not decided yet. */}
       <h1 id="village-name" className="sr-only">
         {t('village.defaultName')}

@@ -15,6 +15,9 @@ colors:
   ochre-wash: "#f3e6c8"
   verdigris: "#2f6b58"
   danger: "#9b2c23"
+  board: "#5a3a22"
+  parchment: "#f1e8d4"
+  iron: "#9a928a"
 typography:
   wordmark:
     fontFamily: "Grenze Gotisch, Alegreya Sans, serif"
@@ -151,23 +154,23 @@ components:
 
 **Creative North Star: "Guild Signboards"**
 
-Every skill is a trade, and every trade hangs its own painted sign from a wrought-iron bracket. The screen is a guild street seen in daylight: a pale limestone ground, an oxblood band across the top carrying the wordmark, and the active trade's board hung large in the main column. The world is medieval in its lettering and its one piece of ironwork, and plainly modern everywhere else: a clean sans with tabular figures, 1px rules, small radii, generous space.
+Every skill is a trade, and every trade hangs its own painted sign from a wrought-iron bracket. The screen is a guild notice board: an oxblood band across the top carrying the wordmark, a wall of dark wooden planks behind everything, two framed wooden panels (trades on the left, stores on the right) where every entry is a paper pinned to the wood, and the active trade's board hung large in the middle. The world is medieval in its lettering and its one piece of ironwork, and plainly modern everywhere else: a clean sans with tabular figures, 1px rules, small radii, generous space.
 
 It is a deliberate refusal of the genre's dark dashboard of identical panels and number walls. Density stays low; a player glancing at a background tab or a phone should read what is being worked, what accrued while they were away, and what to do next, in that order. Ornament is rationed to the bracket and the painted board. Colour carries meaning: each trade owns one paint, ochre means "working right now", and nothing else is decorated.
 
 Motion is rare and earned. The working bar fills continuously; a confirmed reward briefly tints the stored count; a confirmed level-up makes the sign swing once from its bracket. Reduced motion holds everything still.
 
 **Key Characteristics:**
-- Limestone ground, oxblood header band, ink text.
+- A darkened plank wall behind, framed wooden side panels in front, papers on the panels; oxblood header band, ink text.
 - One paint per trade, used wherever that trade appears (sign, rail chip, action tiles).
 - Gilded ochre reserved for the action being worked.
 - Blackletter only for painted lettering: the wordmark and the sign.
-- 1px rules, 4-6px radii, no glow, no gradients.
+- 4-6px radii, no glow, no decorative gradients (the only one is the black veil that darkens the back wall).
 - A single signature motion: the damped sign swing on a confirmed level-up.
 
 ## Colors
 
-A pale mineral ground with two heraldic anchors (oxblood and ink), one paint per trade, and a gilded accent that only marks live work.
+Wood and paper with two heraldic anchors (oxblood and ink), one paint per trade, and a gilded accent that only marks live work.
 
 ### Primary
 - **Guild Oxblood** (oxblood): the header band behind the wordmark and total level. It frames the whole screen and appears nowhere else as a fill; at 25% opacity it borders the "since you left" notice.
@@ -182,11 +185,14 @@ A pale mineral ground with two heraldic anchors (oxblood and ink), one paint per
 - **Gilt Wash** (ochre-wash): the cycle bar's track and the working action card's background.
 
 ### Neutral
-- **Limestone** (limestone): the page ground.
-- **Limewash** (limewash): side rails (trades, stores), resting action cards, the empty-state panel, the away notice. Also the primary button's label colour.
+- **Board** (board): the plank wall and the wooden panels, under the pixel-art texture (`.wood-board`). The wall behind is the same wood under a 45% black veil (`.wood-board-back`).
+- **Parchment** (parchment): the papers pinned to the panels: every trade entry and stored item (`.paper`).
+- **Wrought Iron** (iron): the sign's bracket on the dark wall.
+- **Limestone** (limestone): the ground of screens without the board (signed out, errors, loading).
+- **Limewash** (limewash): resting action cards, the empty-state panel, the away notice. Also the primary button's label colour.
 - **Lifted White** (lifted-white): the one or two surfaces that sit above the ground: the working panel, the selected rail entry, the lost-save notice.
 - **Rule** (rule): every 1px divider and card border; the disabled button fill.
-- **Iron Ink** (ink): text, the bracket, the primary button, the focus ring.
+- **Iron Ink** (ink): text, the primary button, the focus ring.
 - **Weathered Ink** (muted): secondary text, section labels, meta lines.
 - **Warning Red** (danger): server-rejection messages and, at 40% opacity, the lost-save notice border.
 
@@ -236,13 +242,15 @@ Spacing is a 4px-based rhythm: 8px and 12px inside lists and between tiles, 16px
 
 ## Elevation & Depth
 
-The world is flat limestone with painted boards; depth is mostly tonal. The ground is Limestone, rails and resting cards are a half-step lighter (Limewash), and the few surfaces that matter most right now are Lifted White. Exactly one surface carries a shadow: the working panel, lifted softly off the ground because it is the thing the player is watching.
+Three layers. At the back, the plank wall, darkened so it recedes. In front of it, the framed wooden panels, which cast a soft shadow on the wall; on the village screen the scene fills the middle instead of the wall. On top, the papers and cards that carry the information. Among the cards, the few surfaces that matter most right now are Lifted White, and the working panel is lifted softly because it is the thing the player is watching.
 
 ### Shadow Vocabulary
-- **Working lift** (`box-shadow: 0 1px 2px rgb(27 23 18 / 0.06), 0 8px 24px -12px rgb(27 23 18 / 0.18)`): the working action panel only. A soft, ink-tinted ambient drop, never a hard offset.
+- **Working lift** (`box-shadow: 0 1px 2px rgb(27 23 18 / 0.06), 0 8px 24px -12px rgb(27 23 18 / 0.18)`): the working action panel. A soft, ink-tinted ambient drop.
+- **Panel shadow** (`box-shadow: 0 0 28px 6px rgb(0 0 0 / 0.55)`): a framed wooden panel over the dark wall (`.wood-panel`).
+- **Pinned paper** (`box-shadow: 0 2px 0 rgb(0 0 0 / 0.35)`): a paper on a wooden panel (`.paper`).
 
 ### Named Rules
-**The One Lifted Thing Rule.** Only the action being worked is lifted with a shadow. Everything else separates by tone and 1px rules.
+**The Layer Rule.** Shadows only say which layer something is on: panels over the wall, papers on the panels, the working panel above the other cards. Nothing gets a shadow for decoration.
 
 **The No Glow Rule.** No glows, no gradients, no blurred backdrops. Gilt and paint read as flat colour.
 
@@ -300,16 +308,16 @@ A list of stored items, largest first. Each row is a 1px top rule with the item 
 ### Do:
 - **Do** give every new trade exactly one paint that reaches 4.5:1 against Board Cream (#f4f1ea), and use it for its sign, rail chip and action tiles.
 - **Do** keep ochre for the action being worked: its bar, its tile, its rail dot.
-- **Do** hang each trade's sign from the iron bracket; the bracket and the painted board are the world's only ornament.
+- **Do** hang each trade's sign from the iron bracket; the bracket, the painted board and the wooden frames are the world's only ornament.
 - **Do** set the trade name and "Level N" on the sign in Grenze Gotisch, and everything else in Alegreya Sans with tabular figures.
-- **Do** separate surfaces with tone (Limestone, Limewash, Lifted White) and 1px Rule borders.
+- **Do** put information on paper or cards, never as bare text on the wood (section labels on the wood are Parchment).
 - **Do** tie motion to server-confirmed events only: the count tint on a confirmed reward, the sign swing on a confirmed level-up.
 - **Do** honour reduced motion by holding the sign still and collapsing transitions.
 
 ### Don't:
 - **Don't** build the genre's dark dashboard: no dark theme of identical panels, no walls of numbers.
 - **Don't** set rail entries, buttons or any text under 1.875rem in Grenze Gotisch, and don't use its capital I in the wordmark.
-- **Don't** add glows, gradients or hard offset shadows; the working panel's soft lift is the only shadow.
-- **Don't** add ornament beyond the bracket and the sign's painted lining: no borders of knotwork, parchment textures or faux-aged effects.
+- **Don't** add glows or decorative gradients, or shadows outside the layer vocabulary above.
+- **Don't** add ornament beyond the bracket, the sign's painted lining and the wooden frames: no knotwork, paper textures or faux-aged effects.
 - **Don't** swing the sign on every cycle or animate anything for a reward the server has not confirmed.
 - **Don't** round corners beyond 6px on panels or 4px on controls, except capsule progress bars.

@@ -203,8 +203,9 @@ export default function App() {
     totalLevel,
     <>
       {/* grid-cols-1 is minmax(0, 1fr): on phones the trade row scrolls instead of widening the page. */}
-      <div className="grid flex-1 grid-cols-1 content-start lg:content-normal lg:grid-cols-[240px_minmax(0,1fr)] xl:grid-cols-[260px_minmax(0,1fr)_320px]">
-        <aside className="min-w-0 border-b border-rule bg-limewash lg:row-span-2 lg:border-r lg:border-b-0 xl:row-span-1">
+      {/* The darkened board is the wall behind the screen; the wooden side panels hang in front of it. */}
+      <div className="wood-board-back grid flex-1 grid-cols-1 content-start lg:content-normal lg:grid-cols-[280px_minmax(0,1fr)] xl:grid-cols-[300px_minmax(0,1fr)_340px]">
+        <aside className="wood-board wood-frame wood-panel min-w-0 lg:row-span-2 xl:row-span-1">
           <TradeRail
             selected={villageOpen ? null : selectedSkillId}
             onSelect={(skillId) => {
@@ -221,10 +222,10 @@ export default function App() {
         </aside>
 
         {villageOpen ? (
-          // The village spans the middle column; the blocks below it hold notices and the worked action.
-          <main className="min-w-0">
+          // The village fills the middle column; the wooden bar below it holds notices and the worked action.
+          <main className="flex min-w-0 flex-col">
             <VillageView />
-            <div className="p-4 sm:p-6">
+            <div className="wood-board wood-frame wood-panel">
               <div className="flex w-full max-w-3xl flex-col gap-3">
                 {snapshot.replacedLostSave && (
                   <p role="status" className="rounded-md border border-danger/40 bg-white px-4 py-3 text-[15px]">
@@ -292,7 +293,7 @@ export default function App() {
           </main>
         )}
 
-        <aside className="border-t border-rule bg-limewash lg:col-start-2 xl:col-start-auto xl:border-t-0 xl:border-l">
+        <aside className="wood-board wood-frame wood-panel lg:col-start-2 xl:col-start-auto">
           <Stores inventory={player.inventory} freshItemId={freshItemId} />
         </aside>
       </div>

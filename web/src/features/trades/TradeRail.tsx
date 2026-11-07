@@ -19,18 +19,18 @@ export function TradeRail({ trades, selected, onSelect, onSelectVillage }: Trade
   const text = useContentText()
 
   return (
-    <nav aria-label={t('trades.heading')} className="lg:py-6">
-      <h2 className="sr-only lg:not-sr-only lg:mb-3 lg:block lg:px-6 lg:text-xs lg:font-extrabold lg:tracking-[0.14em] lg:text-muted lg:uppercase">
+    <nav aria-label={t('trades.heading')} className="lg:py-2">
+      <h2 className="sr-only lg:not-sr-only lg:mb-3 lg:block lg:px-1 lg:text-xs lg:font-extrabold lg:tracking-[0.14em] lg:text-parchment lg:uppercase">
         {t('trades.heading')}
       </h2>
-      <ul className="flex gap-2 overflow-x-auto px-4 py-3 lg:flex-col lg:gap-1 lg:px-3 lg:py-0">
+      <ul className="flex gap-2 overflow-x-auto px-4 py-3 lg:flex-col lg:gap-2 lg:px-0 lg:py-0">
         <li className="shrink-0 lg:mb-2">
           <button
             type="button"
             onClick={onSelectVillage}
             aria-pressed={selected === null}
             className={`flex w-full items-center gap-3 rounded border px-3 py-2.5 text-left text-[16px] font-bold text-ink transition-colors ${
-              selected === null ? 'border-ink/30 bg-white' : 'border-transparent hover:bg-ink/5'
+              selected === null ? 'border-ink/40 bg-white' : 'paper border-transparent hover:bg-white'
             }`}
           >
             <span aria-hidden className="grid size-8 place-items-center rounded bg-oxblood text-oxblood-ink">
@@ -49,7 +49,7 @@ export function TradeRail({ trades, selected, onSelect, onSelectVillage }: Trade
                 onClick={() => onSelect(skillId)}
                 aria-pressed={isSelected}
                 className={`flex w-full items-center gap-3 rounded border px-3 py-2.5 text-left text-[16px] font-bold text-ink transition-colors ${
-                  isSelected ? 'border-ink/30 bg-white' : 'border-transparent hover:bg-ink/5'
+                  isSelected ? 'border-ink/40 bg-white' : 'paper border-transparent hover:bg-white'
                 }`}
               >
                 {trade.emblem ? (

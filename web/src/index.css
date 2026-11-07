@@ -25,6 +25,11 @@
   --color-danger: #9b2c23;
   /* Dark backing behind a framed pixel-art emblem, so dark wood reads on any paint. */
   --color-frame-well: #2a221b;
+  /* Paper pinned to the wooden board: the side panels and the notices on it. */
+  --color-parchment: #f1e8d4;
+  --color-board: #5a3a22;
+  /* Wrought iron on the dark board, a step lighter than the frame corners so it reads. */
+  --color-iron: #9a928a;
 
   --font-sans: 'Alegreya Sans', ui-sans-serif, system-ui, sans-serif;
   --font-gothic: 'Grenze Gotisch', 'Alegreya Sans', serif;
@@ -79,6 +84,56 @@
 
   button:disabled {
     cursor: default;
+  }
+}
+
+@layer components {
+  /* Wooden planks, seamless, drawn at 3x on the pixel grid: the framed panels. */
+  .wood-board {
+    background-color: var(--color-board);
+    background-image: url('./assets/board/planks.png');
+    background-size: calc(116px * 3) calc(59px * 3);
+    image-rendering: pixelated;
+  }
+
+  /*
+   * The same planks darkened across the whole screen, so they read as the wall behind the panels and the
+   * papers in front come forward.
+   */
+  .wood-board-back {
+    background-color: var(--color-board);
+    background-image: linear-gradient(rgb(0 0 0 / 0.45)), url('./assets/board/planks.png');
+    background-size: auto, calc(116px * 3) calc(59px * 3);
+    image-rendering: pixelated;
+  }
+
+  /* A framed panel hangs in front of the dark wall and casts a shadow on it. */
+  .wood-panel {
+    position: relative;
+    z-index: 1;
+    box-shadow: 0 0 28px 6px rgb(0 0 0 / 0.55);
+  }
+
+  /*
+   * A wooden frame with iron corners, 9-sliced so the corners never stretch: 18 art pixels at 1x on
+   * phones, 2x from tablets up.
+   */
+  .wood-frame {
+    border-style: solid;
+    border-width: 18px;
+    border-image: url('./assets/board/frame.png') 18 / 18px round;
+    image-rendering: pixelated;
+
+    @media (width >= 64rem) {
+      border-width: 36px;
+      border-image-width: 36px;
+    }
+  }
+
+  /* A paper pinned to the board: every button and entry on a wooden panel. */
+  .paper {
+    background-color: var(--color-parchment);
+    box-shadow: 0 2px 0 rgb(0 0 0 / 0.35);
   }
 }
 

@@ -20,7 +20,7 @@ export function ActionList({ actions, activeActionId, pendingActionId, onStart }
 
   return (
     <section aria-labelledby="actions-title">
-      <h2 id="actions-title" className="mb-3 text-xs font-extrabold tracking-[0.14em] text-muted uppercase">
+      <h2 id="actions-title" className="mb-3 text-xs font-extrabold tracking-[0.14em] text-parchment uppercase">
         {t('actions.heading')}
       </h2>
       <ul className="grid gap-3 sm:grid-cols-2">

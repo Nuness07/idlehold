@@ -38,7 +38,9 @@ const CAMPFIRE_SHAPE = `polygon(${[
  * piece (a cutout of the painted fire plus its flicker), so it can brighten under the pointer without
  * touching the rest of the scene. Motion stops for players who ask for reduced motion.
  *
- * The scene spans the width of its column at 16:9; `--px` is that width over 320.
+ * The scene covers its box like a cover image: `--px` is the larger of width/320 and height/180, so it
+ * fills the box with no empty edge, and the overflow is cropped evenly around the middle. On phones the
+ * box is 16:9, so nothing is cropped.
  */
 export function VillageScene() {
   const { t } = useTranslation()
@@ -47,9 +49,12 @@ export function VillageScene() {
     <div
       role="img"
       aria-label={t('village.sceneLabel')}
-      className="relative aspect-[16/9] w-full overflow-hidden [container-type:inline-size]"
+      className="relative aspect-[16/9] w-full overflow-hidden [container-type:size] lg:aspect-auto lg:min-h-[320px] lg:flex-1"
     >
-      <div className="absolute inset-0 [--px:calc(100cqw/320)] [&_*]:[image-rendering:pixelated]">
+      <div
+        className="absolute top-1/2 left-1/2 -translate-1/2 [--px:max(100cqw/320,100cqh/180)] [&_*]:[image-rendering:pixelated]"
+        style={{ width: 'calc(320 * var(--px))', height: 'calc(180 * var(--px))' }}
+      >
         {/* Sky: one art pixel per step, so the clouds stay on the pixel grid. */}
         <div
           aria-hidden

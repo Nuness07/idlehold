@@ -56,7 +56,7 @@ Browser idle game (genre inspiration: Melvor Idle — skills, progression, resou
   - Accounts in the client: `features/account` holds the `/account/*` queries, the sign-up/sign-in dialog (native `<dialog>`), the header menu, the save nudge (shown to a guest once a trade passes level 1, dismissal kept in localStorage) and the signed-out screen. The player query is keyed by mode (`['player', 'guest' | 'account']`): guests use `/players/{id}`, signed-in players `/me/player`. After signing out the browser keeps the hold's id, so the guest view gets 403 and asks to sign in.
   - The client never computes rewards or XP rules. It animates the working bar locally and refetches when a cycle ends; numbers on screen come from the server.
   - Commands (in `web/`): `pnpm dev` (http://localhost:5173, proxies `/api` to the API), `pnpm test`, `pnpm typecheck`, `pnpm lint`, `pnpm build`, `pnpm gen:api` (regenerates types from a running API).
-- Visual design: PRODUCT.md holds product context. The visual direction is "Guild Signboards": each trade hangs a painted sign; limestone ground, oxblood band, one paint per trade, ochre only for what is working; Grenze Gotisch for the wordmark and trade names only, Alegreya Sans for everything else.
+- Visual design: PRODUCT.md holds product context. The visual direction is "Guild Signboards": each trade hangs a painted sign; a dark wooden plank wall with framed wooden side panels and paper entries (pixel art; `.wood-board`, `.wood-frame`, `.paper` in `web/src/index.css`), oxblood band, one paint per trade, ochre only for what is working; Grenze Gotisch for the wordmark and trade names only, Alegreya Sans for everything else.
 - Run the API: `dotnet run --project src/IdleHold.Api` → http://localhost:5085. Interactive docs (Scalar) at http://localhost:5085/scalar, Development only. Manual requests live in `src/IdleHold.Api/IdleHold.Api.http`.
 
 ## Technical decisions
@@ -84,7 +84,8 @@ Record every decision here, with the reason in one line.
 - **Server state via TanStack Query; types via OpenAPI** (`openapi-fetch` + generated `schema.d.ts`).
 - **Self-hosted fonts** through Fontsource; icons from Lucide.
 - **i18n with react-i18next** (English + pt-BR): the market standard, with plural rules from `Intl` per language and typed keys.
-- **Pixel art for world objects only**, generated with PixelLab Pro against `art/style-reference.png` (the tree and log sprites): one style base keeps every sprite consistent. Rules and the asset log live in `docs/art-direction.md`.
+- **Pixel art for world objects**, generated with PixelLab Pro against `art/style-reference.png` (the tree and log sprites): one style base keeps every sprite consistent. Rules and the asset log live in `docs/art-direction.md`.
+- **The board is pixel art too** (plank wall and wooden frames): it gives the screen a world, while text, buttons and bars stay crisp HTML. The frame is a CSS `border-image` 9-slice, so the iron corners never stretch and one image frames any panel.
 - **The village scene is drawn in layers** (sky, painted scene, animated pieces) placed in art pixels in `web/src/features/village/`: each piece can be animated, made clickable or swapped as it is rebuilt without repainting the scene; animation is CSS `steps()` so it stays on the pixel grid.
 - **Before deploying:** persist ASP.NET Data Protection keys (they sign the session cookie; if they live only in the container, every restart signs everyone out), send e-mail for confirmation and password reset, and serve over HTTPS so the cookie is Secure.
 - **Open questions:** hosting, real time (SignalR, when multiplayer arrives).
