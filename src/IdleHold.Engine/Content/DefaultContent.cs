@@ -11,6 +11,13 @@ public static class DefaultContent
 {
     public static GameContent Create() => new(
     [
+        new SkillDefinition("woodcutting", SkillCategory.Gathering),
+        new SkillDefinition("fishing", SkillCategory.Gathering),
+        new SkillDefinition("mining", SkillCategory.Gathering),
+        new SkillDefinition("foraging", SkillCategory.Gathering),
+        new SkillDefinition("crafting", SkillCategory.Production),
+    ],
+    [
         // Woodcutting
         new ActionDefinition("gather-twigs", "woodcutting", TimeSpan.FromSeconds(2), XpPerCompletion: 5, OutputItemId: "twig"),
         new ActionDefinition("cut-pine", "woodcutting", TimeSpan.FromSeconds(3), XpPerCompletion: 10, OutputItemId: "pine-log"),

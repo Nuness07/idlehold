@@ -7,6 +7,7 @@ public class GameEngineTests
 {
     // Test content is separate from DefaultContent so balancing the real game never breaks these tests.
     private static readonly GameContent Content = new(
+    TestSkills.All,
     [
         new ActionDefinition("chop", "woodcutting", TimeSpan.FromSeconds(3), XpPerCompletion: 10, OutputItemId: "log"),
         new ActionDefinition("mine", "mining", TimeSpan.FromSeconds(4), XpPerCompletion: 7, OutputItemId: "ore", OutputQuantity: 2),
