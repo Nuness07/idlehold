@@ -24,8 +24,8 @@ public class RecipeTests
         },
     ],
     [
-        new ToolDefinition("axe", Family: "axe", Tier: 1),
-        new ToolDefinition("good-axe", Family: "axe", Tier: 2),
+        new ToolDefinition("axe", Family: "axe", Tier: 1, SkillId: "woodcutting"),
+        new ToolDefinition("good-axe", Family: "axe", Tier: 2, SkillId: "woodcutting"),
     ]);
 
     private readonly GameEngine _engine = new(Content);

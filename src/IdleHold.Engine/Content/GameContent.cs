@@ -54,6 +54,11 @@ public sealed class GameContent
             throw new ArgumentException($"Two '{tool.Family}' tools share tier {tool.Tier}.", "tools");
         }
 
+        if (_tools.Values.Any(other => other.Family == tool.Family && other.SkillId != tool.SkillId))
+        {
+            throw new ArgumentException($"The '{tool.Family}' tools must all serve the same trade.", "tools");
+        }
+
         if (!_tools.TryAdd(tool.ItemId, tool))
         {
             throw new ArgumentException($"Duplicate tool '{tool.ItemId}'.", "tools");

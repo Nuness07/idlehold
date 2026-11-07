@@ -41,7 +41,7 @@ public sealed class ContentEndpointsTests(PostgresFixture database) : IClassFixt
 
         var axe = Assert.Single(content!.Actions, action => action.Id == "craft-chipped-stone-axe");
         Assert.Equal([new ItemAmountResponse("twig", 3), new ItemAmountResponse("pebble", 2)], axe.Inputs);
-        Assert.Contains(new ToolResponse("chipped-stone-axe", "axe", 1), content.Tools);
+        Assert.Contains(new ToolResponse("chipped-stone-axe", "axe", 1, "woodcutting"), content.Tools);
         Assert.Empty(Assert.Single(content.Actions, action => action.Id == "cut-pine").Inputs);
     }
 }
