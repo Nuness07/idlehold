@@ -446,6 +446,7 @@ export interface components {
             family: string;
             /** Format: int32 */
             tier: number;
+            skillId: string;
         };
     };
     responses: never;

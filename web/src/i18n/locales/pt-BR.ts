@@ -110,6 +110,10 @@ export const ptBR = {
     showFewer: 'Mostrar menos materiais',
     build: 'Construir',
     building: 'Construindo',
+    tradeTool: 'Ferramenta deste ofício',
+    inUse: 'Ferramenta em uso',
+    noneYet: 'Nenhuma ferramenta para este ofício ainda.',
+    goMake: 'Fazer em {{trade}}',
   },
   stores: {
     heading: 'Estoque',

@@ -79,7 +79,7 @@ The first recipes:
 
 Tool recipes take a while and pay well because each is made once. Reasons to keep crafting come later: repeatable goods for the village (cord, baskets, handles, building parts), and villagers who each need their own tool.
 
-On screen, each tool family is one card in its trade, always showing the next tier: the tool in an iron frame, its name, a slot per material with what the player has and what it takes, and a wooden Build button below. Building starts the recipe like any action (it takes its time and occupies the worker). Once the family is at its best tool, the card shows it with nothing to build. A recipe with more than six materials shows five and a "+N" slot that expands the card. The server says which tier comes next.
+On screen, each tool family is one card in its trade, always showing the next tier: the tool in an iron frame, its name, a slot per material with what the player has and what it takes, and a wooden Build button below. Building starts the recipe like any action (it takes its time and occupies the worker). Once the family is at its best tool, the card shows it with nothing to build. A recipe with more than six materials shows five and a "+N" slot that expands the card. The server says which tier comes next. Each tool serves one trade (the axe Woodcutting, the rod Fishing), and that trade shows the tool in use, or that it has none yet with a button to Crafting.
 
 Not in yet: tools gating actions (the axe opening the pine), the next tiers (stone axe, then copper), recipe categories (by material and by use: tool, weapon), a "make N" queue, an inventory of owned tools, and the crafting table screen (the inputs filling the recipe, then the tool appearing).
 

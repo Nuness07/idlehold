@@ -25,7 +25,8 @@ import { SinceYouLeft } from './features/player/SinceYouLeft'
 import { rememberLastSeen, summarizeAway, type AwaySummary } from './features/player/awaySummary'
 import { Stores } from './features/stores/Stores'
 import { ToolCards } from './features/tools/ToolCards'
-import { toolCardsFor } from './features/tools/tools'
+import { toolCardsFor, tradeToolFor } from './features/tools/tools'
+import { TradeToolNotice } from './features/tools/TradeToolNotice'
 import { TradeRail } from './features/trades/TradeRail'
 import { TradeSign } from './features/trades/TradeSign'
 import { VillageView } from './features/village/VillageView'
@@ -201,6 +202,7 @@ export default function App() {
     (action) => action.skillId === selectedSkillId && !toolItemIds.has(action.outputItemId),
   )
   const toolCards = toolCardsFor(selectedSkillId, player.tools, actions)
+  const tradeTool = tradeToolFor(selectedSkillId, content.data.tools, player.tools, actions)
   const pendingActionId = startAction.isPending ? startAction.variables : undefined
 
   const showNudge = account?.isGuest === true && !nudgeDismissed && hasProgressWorthSaving(player.skills)
@@ -261,6 +263,8 @@ export default function App() {
               working={activeDefinition?.skillId === selectedSkillId ? activeDefinition : undefined}
               swingKey={swingKey}
             />
+
+            {tradeTool && <TradeToolNotice tool={tradeTool} onOpenTrade={setViewedSkillId} />}
 
             {away && <SinceYouLeft summary={away} onDismiss={() => setAway(null)} />}
             {showNudge && <SaveNudge onCreateAccount={() => setDialog('register')} onDismiss={dismissNudge} />}

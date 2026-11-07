@@ -111,6 +111,10 @@ export const en = {
     showFewer: 'Show fewer materials',
     build: 'Build',
     building: 'Building',
+    tradeTool: 'Tool for this trade',
+    inUse: 'Tool in use',
+    noneYet: 'No tool for this trade yet.',
+    goMake: 'Make one in {{trade}}',
   },
   stores: {
     heading: 'Stores',
