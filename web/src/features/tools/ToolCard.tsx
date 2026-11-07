@@ -23,7 +23,7 @@ interface ToolCardProps {
 }
 
 /**
- * One tool family: the tool in an iron frame, its name, what it takes and a button to build it.
+ * One tool family: the tool in an iron frame, its name, a slot per material and a button to build it.
  * Whether it can be built is the server's call; the stores only decide how the slots and button look.
  */
 export function ToolCard({ itemId, recipe, inventory, working, pending, onBuild }: ToolCardProps) {
@@ -68,7 +68,7 @@ export function ToolCard({ itemId, recipe, inventory, working, pending, onBuild 
                 <li
                   key={input.itemId}
                   title={text.itemName(input.itemId)}
-                  className="iron-slot relative grid size-12 place-items-center bg-frame-well"
+                  className="relative grid size-12 place-items-center border-2 border-ink bg-limewash"
                 >
                   {slotSprite && <PixelSprite src={slotSprite} width={32} height={32} />}
                   <span className="sr-only">
@@ -81,8 +81,8 @@ export function ToolCard({ itemId, recipe, inventory, working, pending, onBuild 
                   <span
                     aria-hidden
                     className={cn(
-                      'absolute right-0.5 bottom-0 text-[12px] leading-none font-extrabold text-parchment [text-shadow:0_1px_0_black]',
-                      short && 'text-danger-soft',
+                      'absolute right-0.5 bottom-0 text-[12px] leading-none font-extrabold text-ink [text-shadow:0_1px_0_white]',
+                      short && 'text-danger',
                     )}
                   >
                     {format.count(have)}/{format.count(input.quantity)}
@@ -97,7 +97,7 @@ export function ToolCard({ itemId, recipe, inventory, working, pending, onBuild 
                   aria-expanded={expanded}
                   aria-label={expanded ? t('tools.showFewer') : t('tools.showMore', { count: hidden })}
                   onClick={() => setExpanded((open) => !open)}
-                  className="iron-slot grid size-12 place-items-center bg-frame-well text-[15px] font-extrabold text-parchment hover:brightness-125"
+                  className="grid size-12 place-items-center border-2 border-ink bg-limewash text-[15px] font-extrabold text-ink hover:bg-stone"
                 >
                   {expanded ? '−' : `+${hidden}`}
                 </button>

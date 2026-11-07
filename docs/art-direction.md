@@ -114,9 +114,9 @@ it becomes a button once clicking it does something, and changes art as it is re
   9-slice at 3x (4-pixel top and bottom, 9-pixel ends that hold the nails), so it fits any label.
   Hover brightens it, pressing moves it down a pixel, and disabled greys it.
 - **Iron frame** (`frames/iron.png`, 38x38): wrought iron with corner pieces and a 24x24 opening,
-  used as a 9-slice with 8-pixel corners: `.iron-frame` at 2x around a tool (a 32x32 sprite at 2x)
-  and `.iron-slot` at 1x around a material (a 32x32 sprite at 1x). The dark well behind it stays
-  inside the band (`background-clip: padding-box`).
+  used as a 9-slice with 8-pixel corners: `.iron-frame` at 2x around a tool (a 32x32 sprite at 2x).
+  The dark well behind it stays inside the band (`background-clip: padding-box`). Material slots
+  are plain squares with a thin black border, so the tool stays the one framed thing on the card.
 
 ## Asset log
 
