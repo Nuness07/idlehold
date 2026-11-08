@@ -8,6 +8,9 @@ import sky from '../../assets/village/sky.png'
 /** Art size of the scene, in pixels. Every layer is placed in these units. */
 const ART = { width: 320, height: 180 }
 
+/** Tailwind's `lg` breakpoint: from here the village crops instead of panning. */
+const WIDE_SCREEN = '(min-width: 64rem)'
+
 /**
  * Places a layer in art pixels. `--px` is the size of one art pixel on screen, so the layers line up at
  * any size.
@@ -49,8 +52,16 @@ export function VillageScene() {
 
   useEffect(() => {
     const box = viewport.current
-    // Only where the player pans (phones); on wide screens the box crops and must stay unscrolled.
-    if (box && getComputedStyle(box).overflowX === 'auto') box.scrollLeft = (box.scrollWidth - box.clientWidth) / 2
+    if (!box) return
+    const wide = window.matchMedia(WIDE_SCREEN)
+    // Phones open centred on the campfire. Wide screens centre the scene with a transform, so a scroll offset
+    // left from the phone layout would push it off centre, with no way to scroll it back: reset it.
+    const place = () => {
+      box.scrollLeft = wide.matches ? 0 : (box.scrollWidth - box.clientWidth) / 2
+    }
+    place()
+    wide.addEventListener('change', place)
+    return () => wide.removeEventListener('change', place)
   }, [])
 
   return (
