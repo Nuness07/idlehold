@@ -30,7 +30,8 @@ import { Settings } from './features/settings/Settings'
 import { Statistics } from './features/statistics/Statistics'
 import { Stores } from './features/stores/Stores'
 import { ToolCards } from './features/tools/ToolCards'
-import { toolCardsFor, tradeToolFor } from './features/tools/tools'
+import { TradeLock } from './features/tools/TradeLock'
+import { toolCardsFor, toolInUseFor } from './features/tools/tools'
 import { TradeToolNotice } from './features/tools/TradeToolNotice'
 import { TradeRail } from './features/trades/TradeRail'
 import { TradeSign } from './features/trades/TradeSign'
@@ -65,6 +66,7 @@ export default function App() {
   /** A refusal from the game (409) says why; anything else is a connection or server problem. */
   const commandErrorText = (error: Error) => {
     const reason = isApiError(error, 409) ? error.problem.reason : undefined
+    if (reason === 'missing-tool') return t('app.actionBlocked.missing-tool')
     if (reason === 'missing-inputs') return t('app.actionBlocked.missing-inputs')
     if (reason === 'tool-already-owned') return t('app.actionBlocked.tool-already-owned')
     if (reason === 'storage-full') return t('app.actionBlocked.storage-full')
@@ -203,7 +205,10 @@ export default function App() {
     (action) => action.skillId === selectedSkillId && !toolItemIds.has(action.outputItemId),
   )
   const toolCards = toolCardsFor(selectedSkillId, player.tools, actions)
-  const tradeTool = tradeToolFor(selectedSkillId, content.data.tools, player.tools, actions)
+  const toolInUse = toolInUseFor(selectedSkillId, content.data.tools, player.tools)
+  const lockedTools = new Map(player.lockedTrades.map((lock) => [lock.skillId, lock.toolItemId]))
+  const lockTool = lockedTools.get(selectedSkillId)
+  const lockMakerSkillId = lockTool ? actions.find((action) => action.outputItemId === lockTool)?.skillId : undefined
   const pendingActionId = startAction.isPending ? startAction.variables : undefined
 
   const showNudge = account?.isGuest === true && !nudgeDismissed && hasProgressWorthSaving(player.skills)
@@ -212,6 +217,28 @@ export default function App() {
     setViewedSkillId(skillId)
     setScreen('trade')
   }
+
+  /** The trade's tools and actions; a locked trade shows them behind its chains. */
+  const tradeBody = (
+    <div className="flex flex-col gap-7">
+      <ToolCards
+        cards={toolCards}
+        inventory={player.inventory}
+        activeActionId={activeAction?.actionId}
+        pendingActionId={pendingActionId}
+        onBuild={(actionId: string) => startAction.mutate(actionId)}
+      />
+
+      {tradeActions.length > 0 && (
+        <ActionList
+          actions={tradeActions}
+          activeActionId={activeAction?.actionId}
+          pendingActionId={pendingActionId}
+          onStart={(actionId) => startAction.mutate(actionId)}
+        />
+      )}
+    </div>
+  )
 
   /** The middle column for a screen opened from the hold menu. */
   const menuScreen = (opened: Exclude<Screen, 'village' | 'trade'>) => (
@@ -250,6 +277,7 @@ export default function App() {
               category,
               skill: skillOf(skillId),
               working: skillId === activeDefinition?.skillId,
+              locked: lockedTools.has(skillId),
             }))}
           />
         </aside>
@@ -292,19 +320,22 @@ export default function App() {
               swingKey={swingKey}
             />
 
-            {tradeTool && <TradeToolNotice tool={tradeTool} onOpenTrade={openTrade} />}
+            {toolInUse && <TradeToolNotice itemId={toolInUse} />}
 
             {away && <SinceYouLeft summary={away} onDismiss={() => setAway(null)} />}
             {showNudge && <SaveNudge onCreateAccount={() => setDialog('register')} onDismiss={dismissNudge} />}
 
-            <WorkingAction
-              active={activeAction}
-              action={activeDefinition}
-              receivedAt={snapshot.receivedAt}
-              onCycleComplete={refreshPlayer}
-              onStop={() => stopAction.mutate()}
-              stopping={stopAction.isPending}
-            />
+            {/* A locked trade has nothing to start, so the "choose an action" card only shows work elsewhere. */}
+            {(!lockTool || activeAction) && (
+              <WorkingAction
+                active={activeAction}
+                action={activeDefinition}
+                receivedAt={snapshot.receivedAt}
+                onCycleComplete={refreshPlayer}
+                onStop={() => stopAction.mutate()}
+                stopping={stopAction.isPending}
+              />
+            )}
 
             {commandError && (
               <p role="alert" className="text-[15px] font-medium text-danger">
@@ -312,21 +343,12 @@ export default function App() {
               </p>
             )}
 
-            <ToolCards
-              cards={toolCards}
-              inventory={player.inventory}
-              activeActionId={activeAction?.actionId}
-              pendingActionId={pendingActionId}
-              onBuild={(actionId: string) => startAction.mutate(actionId)}
-            />
-
-            {tradeActions.length > 0 && (
-              <ActionList
-                actions={tradeActions}
-                activeActionId={activeAction?.actionId}
-                pendingActionId={pendingActionId}
-                onStart={(actionId) => startAction.mutate(actionId)}
-              />
+            {lockTool ? (
+              <TradeLock toolItemId={lockTool} makerSkillId={lockMakerSkillId} onOpenTrade={openTrade}>
+                {tradeBody}
+              </TradeLock>
+            ) : (
+              tradeBody
             )}
           </main>
         )}

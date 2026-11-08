@@ -9,6 +9,7 @@ function snap(updatedAt: string, actionId: string | null, id = 'p1'): PlayerSnap
     inventory: {},
     skills: {},
     tools: [],
+    lockedTrades: [],
   storage: { slotCount: 48, stackSize: 10_000, slots: [] },
     updatedAt,
   }

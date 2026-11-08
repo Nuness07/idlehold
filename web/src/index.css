@@ -178,6 +178,16 @@
     border-image-width: 8px 18px;
   }
 
+  /* The plaque that hangs from a locked trade's padlock (39x16 art pixels at 3x): the top holds the two rings,
+     the ends hold the nails, and the plank between them stretches to fit the label. */
+  .lock-plaque {
+    border-style: solid;
+    border-width: 15px 30px 9px;
+    border-image: url('./assets/frames/lock-plaque.png') 5 10 3 fill / 15px 30px 9px stretch;
+    image-rendering: pixelated;
+    color: var(--color-ink);
+  }
+
   /* A paper pinned to the board: every button and entry on a wooden panel. */
   /*
    * A rail entry is a signpost board pointing right. On wide screens it leaks past the panel's frame,

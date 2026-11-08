@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest'
 import type { GameAction } from '../../api/client'
-import { toolCardsFor, tradeToolFor } from './tools'
+import { toolCardsFor, toolInUseFor } from './tools'
 
 const recipe = (id: string, outputItemId: string, skillId = 'crafting'): GameAction => ({
   id, skillId, durationMs: 30000, xpPerCompletion: 40, outputItemId, outputQuantity: 1, inputs: [],
@@ -28,7 +28,7 @@ describe('toolCardsFor', () => {
   })
 })
 
-describe('tradeToolFor', () => {
+describe('toolInUseFor', () => {
   const catalog = [
     { itemId: 'axe', family: 'axe', tier: 1, skillId: 'woodcutting' },
     { itemId: 'good-axe', family: 'axe', tier: 2, skillId: 'woodcutting' },
@@ -37,16 +37,16 @@ describe('tradeToolFor', () => {
   it('names the tool in use', () => {
     const tools = [{ family: 'axe', ownedItemId: 'axe', nextActionId: 'craft-good-axe' }]
 
-    expect(tradeToolFor('woodcutting', catalog, tools, actions)).toEqual({ kind: 'owned', itemId: 'axe' })
+    expect(toolInUseFor('woodcutting', catalog, tools)).toBe('axe')
   })
 
-  it('points to the trade that makes a missing tool', () => {
+  it('is nothing before the tool is made', () => {
     const tools = [{ family: 'axe', ownedItemId: null, nextActionId: 'craft-axe' }]
 
-    expect(tradeToolFor('woodcutting', catalog, tools, actions)).toEqual({ kind: 'missing', recipeSkillId: 'crafting' })
+    expect(toolInUseFor('woodcutting', catalog, tools)).toBeNull()
   })
 
   it('is nothing for a trade no tool serves', () => {
-    expect(tradeToolFor('mining', catalog, [], actions)).toBeNull()
+    expect(toolInUseFor('mining', catalog, [])).toBeNull()
   })
 })

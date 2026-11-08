@@ -1,4 +1,4 @@
-import { ChevronDown } from 'lucide-react'
+import { ChevronDown, Lock } from 'lucide-react'
 import { useEffect, useId, useRef, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import type { Skill, SkillCategory } from '../../api/client'
@@ -13,6 +13,8 @@ interface RailTrade {
   category: SkillCategory
   skill: Skill
   working: boolean
+  /** The trade is locked until the player owns its tool. */
+  locked: boolean
 }
 
 interface TradeRailProps {
@@ -58,8 +60,8 @@ function VillageSign() {
   )
 }
 
-/** A trade's emblem, name, working mark and level. */
-function TradeSignContent({ skillId, skill, working }: Pick<RailTrade, 'skillId' | 'skill' | 'working'>) {
+/** A trade's emblem, name, working or locked mark and level. */
+function TradeSignContent({ skillId, skill, working, locked }: Pick<RailTrade, 'skillId' | 'skill' | 'working' | 'locked'>) {
   const { t } = useTranslation()
   const text = useContentText()
   const trade = tradeLabel(skillId)
@@ -78,6 +80,7 @@ function TradeSignContent({ skillId, skill, working }: Pick<RailTrade, 'skillId'
       )}
       <span>{text.tradeName(skillId)}</span>
       {working && <span aria-label={t('trades.working')} className="size-2 rounded-full bg-ochre" />}
+      {locked && <Lock role="img" aria-label={t('trades.locked')} className="size-4 shrink-0 opacity-70" strokeWidth={2.5} />}
       <span className="ml-auto pl-4 tabular-nums">{skill.level}</span>
     </>
   )
@@ -169,7 +172,7 @@ export function TradeRail({ trades, selected, villageSelected, onSelect, onSelec
               {t(`trades.groups.${category}`)}
             </h2>
             <ul className="flex flex-col gap-1.5">
-              {group.map(({ skillId, skill, working }) => (
+              {group.map(({ skillId, skill, working, locked }) => (
                 <li key={skillId}>
                   <button
                     type="button"
@@ -178,7 +181,7 @@ export function TradeRail({ trades, selected, villageSelected, onSelect, onSelec
                     className={railSign(skillId === selected)}
                   >
                     <span className={signBoard}>
-                      <TradeSignContent skillId={skillId} skill={skill} working={working} />
+                      <TradeSignContent skillId={skillId} skill={skill} working={working} locked={locked} />
                     </span>
                   </button>
                 </li>

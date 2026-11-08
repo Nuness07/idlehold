@@ -6,8 +6,8 @@ import { TradeRail } from './TradeRail'
 
 const skill: Skill = { level: 1, xp: 0, levelStartXp: 0, nextLevelXp: 83 }
 const trades = [
-  { skillId: 'woodcutting', category: 'gathering' as const, skill, working: false },
-  { skillId: 'crafting', category: 'production' as const, skill, working: false },
+  { skillId: 'woodcutting', category: 'gathering' as const, skill, working: false, locked: true },
+  { skillId: 'crafting', category: 'production' as const, skill, working: false, locked: false },
 ]
 
 describe('TradeRail', () => {
@@ -31,6 +31,18 @@ describe('TradeRail', () => {
     await userEvent.click(screen.getByRole('button', { name: 'Village' }))
 
     expect(onSelectVillage).toHaveBeenCalled()
+  })
+
+  it('marks a locked trade, which can still be opened to see what it needs', async () => {
+    const onSelect = vi.fn()
+    render(<TradeRail trades={trades} selected={null} villageSelected onSelect={onSelect} onSelectVillage={vi.fn()} />)
+
+    const woodcutting = screen.getByRole('button', { name: /Woodcutting/ })
+    expect(within(woodcutting).getByRole('img', { name: 'locked' })).toBeInTheDocument()
+    expect(within(screen.getByRole('button', { name: /Crafting/ })).queryByRole('img', { name: 'locked' })).not.toBeInTheDocument()
+
+    await userEvent.click(woodcutting)
+    expect(onSelect).toHaveBeenCalledWith('woodcutting')
   })
 
   it('lists each trade under its group', () => {
