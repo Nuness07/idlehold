@@ -1,4 +1,4 @@
-import { Axe, Cherry, Fish, FishSymbol, Gem, Hammer, Hand, Mountain, Pickaxe, Sprout, TreeDeciduous, TreePine, type LucideIcon } from 'lucide-react'
+import { Axe, Cherry, Fish, FishSymbol, Gem, Hammer, Hand, Mountain, Pickaxe, Slice, Sprout, TreeDeciduous, TreePine, type LucideIcon } from 'lucide-react'
 import berryBush from '../assets/actions/berry-bush.png'
 import tower from '../assets/brand/tower.png'
 import birchTree from '../assets/actions/birch-tree.png'
@@ -10,6 +10,8 @@ import pineTree from '../assets/actions/pine-tree.png'
 import reedClump from '../assets/actions/reeds.png'
 import stoneOutcrop from '../assets/actions/stone.png'
 import fallenTwigs from '../assets/actions/twigs.png'
+import youngHazel from '../assets/actions/young-hazel.png'
+import carpentryEmblem from '../assets/emblems/carpentry.png'
 import craftingEmblem from '../assets/emblems/crafting.png'
 import fishingEmblem from '../assets/emblems/fishing.png'
 import foragingEmblem from '../assets/emblems/foraging.png'
@@ -17,7 +19,11 @@ import miningEmblem from '../assets/emblems/mining.png'
 import woodcuttingEmblem from '../assets/emblems/woodcutting.png'
 import birchLog from '../assets/items/birch-log.png'
 import chippedStoneAxe from '../assets/items/chipped-stone-axe.png'
+import chippedStoneKnife from '../assets/items/chipped-stone-knife.png'
+import chippedStonePickaxe from '../assets/items/chipped-stone-pickaxe.png'
 import copperOre from '../assets/items/copper-ore.png'
+import hazelLog from '../assets/items/hazel-log.png'
+import hazelStick from '../assets/items/hazel-stick.png'
 import pebbleItem from '../assets/items/pebble.png'
 import perchItem from '../assets/items/perch.png'
 import pikeItem from '../assets/items/pike.png'
@@ -58,10 +64,12 @@ const trades: Record<string, TradeLabel> = {
   mining: { paint: 'var(--color-slate)', Icon: Pickaxe, emblem: miningEmblem },
   foraging: { paint: 'var(--color-bramble)', Icon: Cherry, emblem: foragingEmblem },
   crafting: { paint: 'var(--color-moss)', Icon: Hammer, emblem: craftingEmblem },
+  carpentry: { paint: 'var(--color-russet)', Icon: Slice, emblem: carpentryEmblem },
 }
 
 const actions: Record<string, ActionLabel> = {
   'gather-twigs': { Icon: Hand, sprite: fallenTwigs },
+  'cut-young-hazel': { Icon: TreeDeciduous, sprite: youngHazel },
   'cut-pine': { Icon: TreePine, sprite: pineTree },
   'cut-birch': { Icon: TreeDeciduous, sprite: birchTree },
   'catch-perch': { Icon: Fish, sprite: perchSpot },
@@ -73,10 +81,15 @@ const actions: Record<string, ActionLabel> = {
   'pull-reeds': { Icon: Sprout, sprite: reedClump },
   // A recipe shows what it makes.
   'craft-chipped-stone-axe': { Icon: Axe, sprite: chippedStoneAxe },
+  'craft-chipped-stone-knife': { Icon: Slice, sprite: chippedStoneKnife },
+  'craft-chipped-stone-pickaxe': { Icon: Pickaxe, sprite: chippedStonePickaxe },
   'craft-reed-fishing-rod': { Icon: Fish, sprite: reedFishingRod },
+  'whittle-hazel-sticks': { Icon: Slice, sprite: hazelStick },
 }
 
 const itemSprites: Record<string, string> = {
+  'hazel-log': hazelLog,
+  'hazel-stick': hazelStick,
   'pine-log': pineLog,
   'birch-log': birchLog,
   perch: perchItem,
@@ -89,6 +102,8 @@ const itemSprites: Record<string, string> = {
   reed: reedItem,
   'chipped-stone-axe': chippedStoneAxe,
   'reed-fishing-rod': reedFishingRod,
+  'chipped-stone-knife': chippedStoneKnife,
+  'chipped-stone-pickaxe': chippedStonePickaxe,
 }
 
 export function tradeLabel(skillId: string): TradeLabel {
