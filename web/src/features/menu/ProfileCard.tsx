@@ -45,7 +45,11 @@ export function ProfileCard({ account, settingsOpen, onOpenSettings, onSaveProgr
           <PixelSprite src={menuIcon.settings} width={32} height={32} />
         </button>
       </div>
-      {account.isGuest && <WoodButton onClick={onSaveProgress}>{t('account.saveProgress')}</WoodButton>}
+      {account.isGuest && (
+        <WoodButton className="wood-button-small text-[14px]" onClick={onSaveProgress}>
+          {t('account.saveProgress')}
+        </WoodButton>
+      )}
     </section>
   )
 }

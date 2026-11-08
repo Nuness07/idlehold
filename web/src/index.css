@@ -163,6 +163,12 @@
     }
   }
 
+  /* The same plank at 2x, for a small panel such as the profile card. */
+  .wood-button-small {
+    border-width: 8px 18px;
+    border-image-width: 8px 18px;
+  }
+
   /* A paper pinned to the board: every button and entry on a wooden panel. */
   /*
    * A rail entry is a signpost board pointing right. On wide screens it leaks past the panel's frame,
@@ -193,15 +199,15 @@
   }
 
   /*
-   * A hold menu entry: a wine-red plaque with a gold trim at 3x (56x20 art pixels). The gold corners stay
-   * whole and the trim between them tiles; the plaque keeps its native height, which leaves 36px inside the
-   * trim for a 32px icon.
+   * A hold menu entry: a wine-red plaque with a gold trim at 3x (56x18 art pixels). The gold corners stay
+   * whole and the trim between them tiles; the plaque keeps its native height, and the 32px icon reaches a
+   * little into the red above and below the content box, never onto the trim.
    */
   .menu-plaque {
-    height: 60px;
+    height: 54px;
     border-style: solid;
-    border-width: 12px 30px 12px 27px;
-    border-image: url('./assets/frames/menu-plaque.png') 4 10 4 9 fill / 12px 30px 12px 27px round;
+    border-width: 15px 30px 15px 27px;
+    border-image: url('./assets/frames/menu-plaque.png') 5 10 5 9 fill / 15px 30px 15px 27px round;
     image-rendering: pixelated;
     color: var(--color-oxblood-ink);
     text-shadow: 0 1px 0 rgb(0 0 0 / 0.6);
