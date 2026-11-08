@@ -25,7 +25,7 @@ public sealed class PostgresPlayerStoreTests(PostgresFixture database) : IClassF
 
         var state = GameState.New with
         {
-            Inventory = ImmutableDictionary<string, long>.Empty.Add("pine-log", 9_600),
+            Inventory = ImmutableDictionary<string, long>.Empty.Add("reed", 9_600),
             SkillXp = ImmutableDictionary<string, long>.Empty.Add("woodcutting", 96_000),
             ActiveAction = new ActiveAction("cut-pine", TimeSpan.FromTicks(12_345_678)),
         };
@@ -36,7 +36,7 @@ public sealed class PostgresPlayerStoreTests(PostgresFixture database) : IClassF
             .UpdateAsync(player.Id, save => save, CancellationToken.None);
 
         Assert.NotNull(reloaded);
-        Assert.Equal(9_600, reloaded.State.ItemCount("pine-log"));
+        Assert.Equal(9_600, reloaded.State.ItemCount("reed"));
         Assert.Equal(96_000, reloaded.State.XpOf("woodcutting"));
         Assert.Equal(new ActiveAction("cut-pine", TimeSpan.FromTicks(12_345_678)), reloaded.State.ActiveAction);
         Assert.Equal(Noon.AddHours(8), reloaded.LastUpdated);
@@ -99,10 +99,10 @@ public sealed class PostgresPlayerStoreTests(PostgresFixture database) : IClassF
             using var client = firstRun.CreateClient();
             var guest = await client.PostAsync("/account/guest", content: null);
             session = guest.Headers.GetValues("Set-Cookie").Single().Split(';')[0];
-            await client.PostAsJsonAsync("/me/player/action", new StartActionRequest("cut-pine"));
+            await client.PostAsJsonAsync("/me/player/action", new StartActionRequest("pull-reeds"));
             firstRun.Clock.Advance(TimeSpan.FromSeconds(9));
             var beforeRestart = await client.GetFromJsonAsync<PlayerResponse>("/me/player");
-            Assert.Equal(3, beforeRestart!.Inventory["pine-log"]);
+            Assert.Equal(3, beforeRestart!.Inventory["reed"]);
         }
 
         // The second server's clock starts at the same instant as the first one. Move it 9 s past the
@@ -116,6 +116,6 @@ public sealed class PostgresPlayerStoreTests(PostgresFixture database) : IClassF
 
         response.EnsureSuccessStatusCode();
         var player = await response.Content.ReadFromJsonAsync<PlayerResponse>();
-        Assert.Equal(6, player!.Inventory["pine-log"]);
+        Assert.Equal(6, player!.Inventory["reed"]);
     }
 }

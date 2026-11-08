@@ -31,10 +31,10 @@ public sealed class ContentEndpointsTests(PostgresFixture database) : IClassFixt
 
         Assert.Equal(
             [
+                new SkillDefinitionResponse("foraging", SkillCategory.Gathering),
                 new SkillDefinitionResponse("woodcutting", SkillCategory.Gathering),
                 new SkillDefinitionResponse("fishing", SkillCategory.Gathering),
                 new SkillDefinitionResponse("mining", SkillCategory.Gathering),
-                new SkillDefinitionResponse("foraging", SkillCategory.Gathering),
                 new SkillDefinitionResponse("crafting", SkillCategory.Production),
             ],
             content!.Skills);

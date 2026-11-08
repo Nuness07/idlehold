@@ -13,6 +13,7 @@ public sealed record PlayerResponse(
     IReadOnlyDictionary<string, long> Inventory,
     IReadOnlyDictionary<string, SkillResponse> Skills,
     IReadOnlyList<ToolProgressResponse> Tools,
+    IReadOnlyList<TradeLockResponse> LockedTrades,
     StorageResponse Storage,
     DateTimeOffset UpdatedAt)
 {
@@ -33,13 +34,17 @@ public sealed record PlayerResponse(
             .Select(tool => new ToolProgressResponse(tool.Family, tool.OwnedItemId, tool.NextActionId))
             .ToList();
 
+        var lockedTrades = engine.LockedTradesOf(state)
+            .Select(trade => new TradeLockResponse(trade.SkillId, trade.ToolItemId))
+            .ToList();
+
         var storage = engine.StorageOf(state);
         var storageResponse = new StorageResponse(
             storage.SlotCount,
             storage.StackSize,
             storage.Slots.Select(slot => new ItemAmountResponse(slot.ItemId, slot.Quantity)).ToList());
 
-        return new PlayerResponse(save.Id, activeAction, state.Inventory, skills, tools, storageResponse, save.LastUpdated);
+        return new PlayerResponse(save.Id, activeAction, state.Inventory, skills, tools, lockedTrades, storageResponse, save.LastUpdated);
     }
 }
 
@@ -55,6 +60,12 @@ public sealed record StorageResponse(int SlotCount, long StackSize, IReadOnlyLis
 /// (null when there is nothing better to make). The server decides which tier comes next.
 /// </summary>
 public sealed record ToolProgressResponse(string Family, string? OwnedItemId, string? NextActionId);
+
+/// <summary>
+/// A trade the player cannot work yet, and the tool that opens it (its first tier). The server decides which trades
+/// are locked; starting one of their actions is refused with the reason <c>missing-tool</c>.
+/// </summary>
+public sealed record TradeLockResponse(string SkillId, string ToolItemId);
 
 /// <summary>Progress and duration let the client animate the bar on its own between requests.</summary>
 public sealed record ActiveActionResponse(string ActionId, long ProgressMs, long DurationMs);
