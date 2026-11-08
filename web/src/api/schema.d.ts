@@ -641,6 +641,7 @@ export interface components {
                 [key: string]: components["schemas"]["SkillResponse"];
             };
             tools: components["schemas"]["ToolProgressResponse"][];
+            storage: components["schemas"]["StorageResponse"];
             /** Format: date-time */
             updatedAt: string;
         };
@@ -674,6 +675,13 @@ export interface components {
         };
         StartActionRequest: {
             actionId: string;
+        };
+        StorageResponse: {
+            /** Format: int32 */
+            slotCount: number;
+            /** Format: int64 */
+            stackSize: number;
+            slots: components["schemas"]["ItemAmountResponse"][];
         };
         ToolProgressResponse: {
             family: string;

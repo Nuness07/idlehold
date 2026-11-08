@@ -12,6 +12,7 @@ export const en = {
     actionBlocked: {
       'missing-inputs': 'Not enough materials for that yet.',
       'tool-already-owned': 'You already have this tool or a better one.',
+      'storage-full': 'The storehouse is full. Make room before working on this.',
     },
     totalLevel: 'Total level',
     pageTitle: '{{count}} {{item}} · {{verb}} · IdleHold',
@@ -152,6 +153,13 @@ export const en = {
   stores: {
     heading: 'Storehouse',
     slot: '{{name}}, {{count}}',
+    emptySlot: 'Empty slot',
+    used: 'Slots: {{used}} of {{total}}',
+    full: 'Full',
+    pages: 'Storehouse pages',
+    page: 'Page {{page}} of {{count}}',
+    previousPage: 'Previous page',
+    nextPage: 'Next page',
     empty: 'Nothing stored yet. Start an action and the stores fill up, even while you are away.',
   },
   devTools: {
