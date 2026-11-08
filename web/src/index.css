@@ -141,6 +141,15 @@
     image-rendering: pixelated;
   }
 
+  /* A storehouse slot at 2x (9-slice: the iron corners stay whole, the wooden rim repeats, the flat well
+     fills the middle). Repeat rather than stretch, so the rim keeps its pixels at any slot size. */
+  .item-slot {
+    border-style: solid;
+    border-width: 16px;
+    border-image: url('./assets/frames/slot.png') 8 fill / 16px repeat;
+    image-rendering: pixelated;
+  }
+
   /* A wooden plank button at 3x (9-slice: the nailed ends stay whole, the plank between them stretches). */
   .wood-button {
     border-style: solid;

@@ -2,6 +2,7 @@ import { useId, useState, type FormEvent } from 'react'
 import { useTranslation } from 'react-i18next'
 import type { Content, Player } from '../../api/client'
 import { Button } from '../../components/Button'
+import { itemIdsIn } from '../../content/items'
 import { useContentText } from '../../content/text'
 import { cn } from '../../lib/cn'
 import { useDevEdit } from './queries'
@@ -17,16 +18,6 @@ const SKIPS = [60, 8 * 60, 24 * 60]
 const sectionTitle = 'text-xs font-extrabold tracking-[0.14em] text-muted uppercase'
 const field = 'min-h-10 min-w-0 rounded border border-rule bg-limewash px-2 text-[15px]'
 
-/** Every item the content knows: what an action makes or uses. Tools are items too. */
-function itemIdsOf(content: Content): string[] {
-  const ids = new Set<string>()
-  for (const action of content.actions) {
-    ids.add(action.outputItemId)
-    for (const input of action.inputs) ids.add(input.itemId)
-  }
-  return [...ids]
-}
-
 /**
  * Development tools (GM mode): set a trade's level, set how many of an item the stores hold (a tool is an
  * item, so this gives and takes tools), skip time and reset the hold. The server applies every edit; the
@@ -40,7 +31,7 @@ export default function DevPanel({ player, content }: DevPanelProps) {
   const panelId = useId()
 
   const tools = new Set(content.tools.map((tool) => tool.itemId))
-  const itemIds = itemIdsOf(content)
+  const itemIds = itemIdsIn(content)
 
   const [skillId, setSkillId] = useState(content.skills[0]?.id ?? '')
   const [level, setLevel] = useState('')

@@ -107,12 +107,21 @@ Idea: the Village's emblem (the stone tower on its entry) grows as the village i
 
 The right side panel is the hold menu: Storehouse, Achievements, History and Statistics, then a profile card at its foot (the player's name, or "Guest", with a gear for Settings: language and account). Each entry opens its screen in the middle, the way the left rail opens the village and the trades. On phones and tablets the menu is a bar along the bottom.
 
-- Storehouse: the full inventory. Idea: a quick inventory that opens right in the side panel, later.
+- Storehouse: the full inventory, as a grid of slots (see Storehouse slots and capacity). Idea: a quick inventory that opens right in the side panel, later.
 - Achievements: a screen that says it is coming (see Achievements below).
 - History: a screen that says it is coming. A real log of actions, XP and level-ups needs the server to record events (a table, and how much history to keep); that is its own piece of work.
 - Statistics: totals from the player's state (total level and XP, stored items, trades started).
 
 Later entries, such as a Market or Leaderboards, are added when multiplayer exists, not shown disabled before.
+
+### Storehouse slots and capacity: Decided
+
+The storehouse is a grid of slots, like a bag in an RPG. Each slot holds a stack of one item, up to **10,000** of it (about a day of chopping pine fills one). The storehouse has a limited number of slots, raised by **bags** the player crafts, several kinds of them. The numbers are a first try, to be tuned once the limit can be played.
+
+- Built so far: the grid itself, one slot per item in the game's order, with the count in the corner and the name in a tooltip.
+- To build: the stack size and the slot limit as engine rules (the server says how the stores split into slots and how many there are), what happens when the stores are full (a full stack stops its action, and starting it is refused), empty slots and pages once there is a limit, and the bag recipes.
+- Open: the starting number of slots and how many each bag adds; whether a full storehouse wastes the rest of an offline stretch or keeps it for later; bags as something to sell, once monetisation is discussed.
+- Idea: the tooltip grows into a full item card (what it is for, how long it takes to gather, the XP it gives, its market price), with tooltips inside tooltips.
 
 ### Villagers: Later (core)
 
