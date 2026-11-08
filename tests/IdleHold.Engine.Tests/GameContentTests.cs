@@ -197,4 +197,24 @@ public class GameContentTests
 
         Assert.Equal(category, skill.Category);
     }
+    [Fact]
+    public void ItemIds_ListOutputsBeforeInputs_InActionOrder_Once()
+    {
+        var content = new GameContent(TestSkills.All,
+        [
+            new ActionDefinition("chop", "woodcutting", TimeSpan.FromSeconds(3), 10, "log"),
+            new ActionDefinition("saw", "crafting", TimeSpan.FromSeconds(5), 4, "plank") { Inputs = [new ItemAmount("log", 3), new ItemAmount("nail", 1)] },
+            new ActionDefinition("mine", "mining", TimeSpan.FromSeconds(4), 7, "ore"),
+        ]);
+
+        Assert.Equal(["log", "plank", "nail", "ore"], content.ItemIds);
+    }
+
+    [Theory]
+    [InlineData(0, 10)]
+    [InlineData(3, 0)]
+    public void Storage_NeedsASlotAndAStack(int slots, long stackSize)
+    {
+        Assert.Throws<ArgumentException>(() => new GameContent(TestSkills.All, [], storage: new StorageRules(slots, stackSize)));
+    }
 }

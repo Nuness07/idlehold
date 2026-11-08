@@ -19,6 +19,7 @@ const player: Player = {
   inventory: {},
   skills: {},
   tools: [],
+  storage: { slotCount: 48, stackSize: 10_000, slots: [] },
   updatedAt: '2100-01-01T12:00:00Z',
 }
 

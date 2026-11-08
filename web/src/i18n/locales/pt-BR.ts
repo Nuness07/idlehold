@@ -11,6 +11,7 @@ export const ptBR = {
     actionBlocked: {
       'missing-inputs': 'Ainda faltam materiais para isso.',
       'tool-already-owned': 'Você já tem essa ferramenta ou uma melhor.',
+      'storage-full': 'O armazém está cheio. Abra espaço antes de trabalhar nisso.',
     },
     totalLevel: 'Nível total',
     pageTitle: '{{count}} {{item}} · {{verb}} · IdleHold',
@@ -151,6 +152,13 @@ export const ptBR = {
   stores: {
     heading: 'Armazém',
     slot: '{{name}}, {{count}}',
+    emptySlot: 'Slot vazio',
+    used: 'Slots: {{used}} de {{total}}',
+    full: 'Cheio',
+    pages: 'Páginas do armazém',
+    page: 'Página {{page}} de {{count}}',
+    previousPage: 'Página anterior',
+    nextPage: 'Próxima página',
     empty: 'Nada guardado ainda. Comece uma ação e o armazém vai enchendo, mesmo enquanto você estiver fora.',
   },
   devTools: {

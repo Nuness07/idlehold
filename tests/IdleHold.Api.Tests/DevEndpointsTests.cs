@@ -1,5 +1,6 @@
 using System.Net;
 using System.Net.Http.Json;
+using System.Text.Json;
 using IdleHold.Api.Dev;
 using IdleHold.Api.Players;
 using IdleHold.Engine;
@@ -104,7 +105,7 @@ public sealed class DevEndpointsTests(PostgresFixture database) : IClassFixture<
 
     [Theory]
     [InlineData("pine-log", -1)]
-    [InlineData("pine-log", DevEndpoints.MaxItemCount + 1)]
+    [InlineData("pine-log", 48 * 10_000 + 1)] // More than the whole storehouse holds.
     [InlineData("chipped-stone-axe", 2)] // A tool is unique.
     [InlineData("gold-bar", 1)]
     public async Task SetItemCount_WithAnUnknownItemOrCount_Returns400(string itemId, long count)
@@ -112,6 +113,30 @@ public sealed class DevEndpointsTests(PostgresFixture database) : IClassFixture<
         var response = await _client.PutAsJsonAsync($"/dev/player/items/{itemId}", new SetItemCountRequest(count));
 
         Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
+    }
+
+    [Fact]
+    public async Task Player_ShowsTheStoresAsSlotsOfUpTo10000()
+    {
+        var player = await SetItemCountAsync("pine-log", 25_000);
+
+        Assert.Equal(48, player.Storage.SlotCount);
+        Assert.Equal(10_000, player.Storage.StackSize);
+        Assert.Equal(
+            [new ItemAmountResponse("pine-log", 10_000), new ItemAmountResponse("pine-log", 10_000), new ItemAmountResponse("pine-log", 5_000)],
+            player.Storage.Slots);
+    }
+
+    [Fact]
+    public async Task StartAction_WithAFullStorehouse_Returns409StorageFull()
+    {
+        await SetItemCountAsync("pine-log", 48 * 10_000);
+
+        var response = await _client.PostAsJsonAsync("/me/player/action", new StartActionRequest("cut-birch"));
+
+        Assert.Equal(HttpStatusCode.Conflict, response.StatusCode);
+        var problem = await response.Content.ReadFromJsonAsync<JsonElement>();
+        Assert.Equal("storage-full", problem.GetProperty("reason").GetString());
     }
 
     [Fact]
