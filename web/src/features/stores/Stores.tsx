@@ -11,43 +11,43 @@ interface StoresProps {
   freshItemId: string | undefined
 }
 
-/** Everything the hold has stored. */
+/** Everything the hold has stored, shown on the Storehouse screen. */
 export function Stores({ inventory, freshItemId }: StoresProps) {
   const { t } = useTranslation()
   const text = useContentText()
   const format = useFormat()
   const entries = Object.entries(inventory).sort(([, a], [, b]) => b - a)
 
-  return (
-    <section aria-labelledby="stores-title" className="py-2">
-      <h2 id="stores-title" className="mb-3 px-1 text-xs font-extrabold tracking-[0.14em] text-parchment uppercase">
-        {t('stores.heading')}
-      </h2>
-      {entries.length === 0 ? (
-        <p className="paper rounded px-3 py-2.5 text-muted">{t('stores.empty')}</p>
-      ) : (
-        <ul className="grid gap-2 sm:grid-cols-2 xl:grid-cols-1">
-          {entries.map(([itemId, count]) => {
-            const sprite = itemSprite(itemId)
-            return (
-              <li key={itemId} className="paper flex items-center justify-between gap-4 rounded px-3 py-1.5">
-                <span className="flex items-center gap-3 text-[16px]">
-                  {sprite && <PixelSprite src={sprite} width={32} height={32} />}
-                  {text.itemName(itemId)}
-                </span>
-                <span
-                  className={cn(
-                    'text-xl font-extrabold tabular-nums transition-colors duration-700',
-                    itemId === freshItemId ? 'text-verdigris' : 'text-ink',
-                  )}
-                >
-                  {format.count(count)}
-                </span>
-              </li>
-            )
-          })}
-        </ul>
-      )}
-    </section>
+  return entries.length === 0 ? (
+    <p className="paper max-w-xl rounded px-4 py-3 text-muted">{t('stores.empty')}</p>
+  ) : (
+    // As many columns as fit at 17rem or more, measured on the list's own width (the middle column is
+    // narrow on wide screens, between two side panels). A long name truncates; the count never shrinks.
+    <ul
+      aria-label={t('stores.heading')}
+      className="grid grid-cols-[repeat(auto-fill,minmax(min(100%,17rem),1fr))] gap-2"
+    >
+      {entries.map(([itemId, count]) => {
+        const sprite = itemSprite(itemId)
+        return (
+          <li key={itemId} className="paper flex items-center justify-between gap-4 rounded px-3 py-1.5">
+            <span className="flex min-w-0 items-center gap-3 text-[16px]">
+              {sprite && <PixelSprite src={sprite} width={32} height={32} />}
+              <span className="truncate" title={text.itemName(itemId)}>
+                {text.itemName(itemId)}
+              </span>
+            </span>
+            <span
+              className={cn(
+                'shrink-0 text-xl font-extrabold tabular-nums transition-colors duration-700',
+                itemId === freshItemId ? 'text-verdigris' : 'text-ink',
+              )}
+            >
+              {format.count(count)}
+            </span>
+          </li>
+        )
+      })}
+    </ul>
   )
 }

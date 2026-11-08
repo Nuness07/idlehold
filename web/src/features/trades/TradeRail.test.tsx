@@ -12,15 +12,21 @@ const trades = [
 
 describe('TradeRail', () => {
   it('marks the village as the screen shown when no trade is selected', () => {
-    render(<TradeRail trades={trades} selected={null} onSelect={vi.fn()} onSelectVillage={vi.fn()} />)
+    render(<TradeRail trades={trades} selected={null} villageSelected onSelect={vi.fn()} onSelectVillage={vi.fn()} />)
 
     expect(screen.getByRole('button', { name: 'Village' })).toHaveAttribute('aria-pressed', 'true')
     expect(screen.getByRole('button', { name: /Woodcutting/ })).toHaveAttribute('aria-pressed', 'false')
   })
 
+  it('marks nothing while a menu screen is shown', () => {
+    render(<TradeRail trades={trades} selected={null} villageSelected={false} onSelect={vi.fn()} onSelectVillage={vi.fn()} />)
+
+    expect(screen.queryByRole('button', { pressed: true })).not.toBeInTheDocument()
+  })
+
   it('goes back to the village from a trade', async () => {
     const onSelectVillage = vi.fn()
-    render(<TradeRail trades={trades} selected="woodcutting" onSelect={vi.fn()} onSelectVillage={onSelectVillage} />)
+    render(<TradeRail trades={trades} selected="woodcutting" villageSelected={false} onSelect={vi.fn()} onSelectVillage={onSelectVillage} />)
 
     await userEvent.click(screen.getByRole('button', { name: 'Village' }))
 
@@ -28,7 +34,7 @@ describe('TradeRail', () => {
   })
 
   it('lists each trade under its group', () => {
-    render(<TradeRail trades={trades} selected={null} onSelect={vi.fn()} onSelectVillage={vi.fn()} />)
+    render(<TradeRail trades={trades} selected={null} villageSelected onSelect={vi.fn()} onSelectVillage={vi.fn()} />)
 
     const gathering = screen.getByRole('region', { name: 'Gathering' })
     const production = screen.getByRole('region', { name: 'Production' })

@@ -120,8 +120,37 @@ export const en = {
     noneYet: 'No tool for this trade yet.',
     goMake: 'Make one in {{trade}}',
   },
+  menu: {
+    heading: 'Hold menu',
+    storehouse: 'Storehouse',
+    achievements: 'Achievements',
+    history: 'History',
+    statistics: 'Statistics',
+    settings: 'Settings',
+  },
+  profile: {
+    guest: 'Guest',
+    guestNote: 'Saved in this browser only',
+    signedIn: 'Signed in',
+  },
+  comingSoon: {
+    label: 'Coming soon',
+    achievements: 'Feats the hold has earned will be kept here: first logs, first tools, trades mastered.',
+    history: 'The hold’s chronicle will be written here: what was gathered and made, and every level reached.',
+  },
+  statistics: {
+    totalLevel: 'Total level',
+    totalXp: 'Total experience',
+    itemsStored: 'Items in the storehouse',
+    tradesStarted: 'Trades started',
+    tradesStartedValue: '{{started}} of {{total}}',
+  },
+  settings: {
+    account: 'Account',
+    guestBody: 'You are playing as a guest. Create an account to keep this hold, or sign in to open yours.',
+  },
   stores: {
-    heading: 'Stores',
+    heading: 'Storehouse',
     empty: 'Nothing stored yet. Start an action and the stores fill up, even while you are away.',
   },
   content: {

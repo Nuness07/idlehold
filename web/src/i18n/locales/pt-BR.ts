@@ -119,9 +119,38 @@ export const ptBR = {
     noneYet: 'Nenhuma ferramenta para este ofício ainda.',
     goMake: 'Fazer em {{trade}}',
   },
+  menu: {
+    heading: 'Menu da fortaleza',
+    storehouse: 'Armazém',
+    achievements: 'Conquistas',
+    history: 'Histórico',
+    statistics: 'Estatísticas',
+    settings: 'Configurações',
+  },
+  profile: {
+    guest: 'Convidado',
+    guestNote: 'Salvo só neste navegador',
+    signedIn: 'Conectado',
+  },
+  comingSoon: {
+    label: 'Em breve',
+    achievements: 'Os feitos do seu domínio ficarão aqui: as primeiras toras, as primeiras ferramentas, os ofícios dominados.',
+    history: 'A crônica do seu domínio será escrita aqui: o que foi coletado e produzido, e cada nível alcançado.',
+  },
+  statistics: {
+    totalLevel: 'Nível total',
+    totalXp: 'Experiência total',
+    itemsStored: 'Itens no armazém',
+    tradesStarted: 'Ofícios começados',
+    tradesStartedValue: '{{started}} de {{total}}',
+  },
+  settings: {
+    account: 'Conta',
+    guestBody: 'Você está jogando como convidado. Crie uma conta para guardar este domínio, ou entre para abrir o seu.',
+  },
   stores: {
-    heading: 'Estoque',
-    empty: 'Nada guardado ainda. Comece uma ação e o estoque vai enchendo, mesmo enquanto você estiver fora.',
+    heading: 'Armazém',
+    empty: 'Nada guardado ainda. Comece uma ação e o armazém vai enchendo, mesmo enquanto você estiver fora.',
   },
   content: {
     trades: {

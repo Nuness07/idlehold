@@ -103,6 +103,17 @@ Open: how buildings appear in the scene, and whether it is also a list of buildi
 
 Idea: the Village's emblem (the stone tower on its entry) grows as the village is rebuilt, a new drawing per stage. The game's logo keeps the first tower.
 
+### Hold menu: Decided
+
+The right side panel is the hold menu: Storehouse, Achievements, History and Statistics, then a profile card at its foot (the player's name, or "Guest", with a gear for Settings: language and account). Each entry opens its screen in the middle, the way the left rail opens the village and the trades. On phones and tablets the menu is a bar along the bottom.
+
+- Storehouse: the full inventory. Idea: a quick inventory that opens right in the side panel, later.
+- Achievements: a screen that says it is coming (see Achievements below).
+- History: a screen that says it is coming. A real log of actions, XP and level-ups needs the server to record events (a table, and how much history to keep); that is its own piece of work.
+- Statistics: totals from the player's state (total level and XP, stored items, trades started).
+
+Later entries, such as a Market or Leaderboards, are added when multiplayer exists, not shown disabled before.
+
 ### Villagers: Later (core)
 
 Villagers are unlocked through the village and story. Each one can be assigned to a skill and works it alongside the player.
