@@ -30,12 +30,13 @@ import { Settings } from './features/settings/Settings'
 import { Statistics } from './features/statistics/Statistics'
 import { Stores } from './features/stores/Stores'
 import { ToolCards } from './features/tools/ToolCards'
-import { TradeLock } from './features/tools/TradeLock'
+import { LockedArea, TradeLock } from './features/tools/TradeLock'
 import { toolCardsFor, toolInUseFor } from './features/tools/tools'
 import { TradeToolNotice } from './features/tools/TradeToolNotice'
 import { TradeRail } from './features/trades/TradeRail'
 import { TradeSign } from './features/trades/TradeSign'
 import { VillageView } from './features/village/VillageView'
+import { cn } from './lib/cn'
 import { useFormat } from './lib/format'
 
 /**
@@ -312,45 +313,45 @@ export default function App() {
         ) : screen !== 'trade' ? (
           menuScreen(screen)
         ) : (
-          <main className="flex w-full max-w-[880px] min-w-0 flex-col gap-7 justify-self-center px-4 pb-10 sm:px-8 lg:px-10">
-            <TradeSign
-              skillId={selectedSkillId}
-              skill={skillOf(selectedSkillId)}
-              working={activeDefinition?.skillId === selectedSkillId ? activeDefinition : undefined}
-              swingKey={swingKey}
-            />
+          // A locked trade's chains cross this whole cell, corner to corner, over its dimmed sign and actions.
+          <div className={cn('relative flex min-w-0 justify-center', lockTool && 'min-h-[560px]')}>
+            <main className="flex w-full max-w-[880px] min-w-0 flex-col gap-7 px-4 pb-10 sm:px-8 lg:px-10">
+              <LockedArea locked={!!lockTool}>
+                <TradeSign
+                  skillId={selectedSkillId}
+                  skill={skillOf(selectedSkillId)}
+                  working={activeDefinition?.skillId === selectedSkillId ? activeDefinition : undefined}
+                  swingKey={swingKey}
+                />
+              </LockedArea>
 
-            {toolInUse && <TradeToolNotice itemId={toolInUse} />}
+              {toolInUse && <TradeToolNotice itemId={toolInUse} />}
 
-            {away && <SinceYouLeft summary={away} onDismiss={() => setAway(null)} />}
-            {showNudge && <SaveNudge onCreateAccount={() => setDialog('register')} onDismiss={dismissNudge} />}
+              {away && <SinceYouLeft summary={away} onDismiss={() => setAway(null)} />}
+              {showNudge && <SaveNudge onCreateAccount={() => setDialog('register')} onDismiss={dismissNudge} />}
 
-            {/* A locked trade has nothing to start, so the "choose an action" card only shows work elsewhere. */}
-            {(!lockTool || activeAction) && (
-              <WorkingAction
-                active={activeAction}
-                action={activeDefinition}
-                receivedAt={snapshot.receivedAt}
-                onCycleComplete={refreshPlayer}
-                onStop={() => stopAction.mutate()}
-                stopping={stopAction.isPending}
-              />
-            )}
+              {/* A locked trade has nothing to start, so the "choose an action" card only shows work elsewhere. */}
+              {(!lockTool || activeAction) && (
+                <WorkingAction
+                  active={activeAction}
+                  action={activeDefinition}
+                  receivedAt={snapshot.receivedAt}
+                  onCycleComplete={refreshPlayer}
+                  onStop={() => stopAction.mutate()}
+                  stopping={stopAction.isPending}
+                />
+              )}
 
-            {commandError && (
-              <p role="alert" className="text-[15px] font-medium text-danger">
-                {commandErrorText(commandError)}
-              </p>
-            )}
+              {commandError && (
+                <p role="alert" className="text-[15px] font-medium text-danger">
+                  {commandErrorText(commandError)}
+                </p>
+              )}
 
-            {lockTool ? (
-              <TradeLock toolItemId={lockTool} makerSkillId={lockMakerSkillId} onOpenTrade={openTrade}>
-                {tradeBody}
-              </TradeLock>
-            ) : (
-              tradeBody
-            )}
-          </main>
+              <LockedArea locked={!!lockTool}>{tradeBody}</LockedArea>
+            </main>
+            {lockTool && <TradeLock toolItemId={lockTool} makerSkillId={lockMakerSkillId} onOpenTrade={openTrade} />}
+          </div>
         )}
 
         {account && (

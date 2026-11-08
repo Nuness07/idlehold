@@ -15,3 +15,10 @@ beforeEach(() => {
 })
 
 afterEach(() => cleanup())
+
+// jsdom has no ResizeObserver (the locked trade's chains measure their column with it); nothing resizes in a test.
+globalThis.ResizeObserver ??= class {
+  observe() {}
+  unobserve() {}
+  disconnect() {}
+}
