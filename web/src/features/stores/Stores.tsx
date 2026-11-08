@@ -21,18 +21,25 @@ export function Stores({ inventory, freshItemId }: StoresProps) {
   return entries.length === 0 ? (
     <p className="paper max-w-xl rounded px-4 py-3 text-muted">{t('stores.empty')}</p>
   ) : (
-    <ul aria-label={t('stores.heading')} className="grid gap-2 sm:grid-cols-2 xl:grid-cols-3">
+    // As many columns as fit at 17rem or more, measured on the list's own width (the middle column is
+    // narrow on wide screens, between two side panels). A long name truncates; the count never shrinks.
+    <ul
+      aria-label={t('stores.heading')}
+      className="grid grid-cols-[repeat(auto-fill,minmax(min(100%,17rem),1fr))] gap-2"
+    >
       {entries.map(([itemId, count]) => {
         const sprite = itemSprite(itemId)
         return (
           <li key={itemId} className="paper flex items-center justify-between gap-4 rounded px-3 py-1.5">
-            <span className="flex items-center gap-3 text-[16px]">
+            <span className="flex min-w-0 items-center gap-3 text-[16px]">
               {sprite && <PixelSprite src={sprite} width={32} height={32} />}
-              {text.itemName(itemId)}
+              <span className="truncate" title={text.itemName(itemId)}>
+                {text.itemName(itemId)}
+              </span>
             </span>
             <span
               className={cn(
-                'text-xl font-extrabold tabular-nums transition-colors duration-700',
+                'shrink-0 text-xl font-extrabold tabular-nums transition-colors duration-700',
                 itemId === freshItemId ? 'text-verdigris' : 'text-ink',
               )}
             >
