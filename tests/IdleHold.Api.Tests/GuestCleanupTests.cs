@@ -50,7 +50,7 @@ public sealed class GuestCleanupTests(PostgresFixture database) : IClassFixture<
     {
         var recent = await HoldAsync(GameState.New, Recent);
         var withItems = await HoldAsync(
-            GameState.New with { Inventory = ImmutableDictionary<string, long>.Empty.Add("pine-log", 1) }, Old);
+            GameState.New with { Inventory = ImmutableDictionary<string, long>.Empty.Add("reed", 1) }, Old);
         var withXp = await HoldAsync(
             GameState.New with { SkillXp = ImmutableDictionary<string, long>.Empty.Add("woodcutting", 10) }, Old);
         // Started an action and left: it has been gathering ever since, even though the save is empty.
@@ -79,7 +79,7 @@ public sealed class GuestCleanupTests(PostgresFixture database) : IClassFixture<
         // The next poll and command come a moment later, without asking /account/me first.
         factory.Clock.Advance(TimeSpan.FromSeconds(1));
         var read = await client.GetAsync("/me/player");
-        var start = await client.PostAsJsonAsync("/me/player/action", new StartActionRequest("cut-pine"));
+        var start = await client.PostAsJsonAsync("/me/player/action", new StartActionRequest("pull-reeds"));
 
         Assert.Equal(HttpStatusCode.Unauthorized, read.StatusCode);
         Assert.Equal(HttpStatusCode.Unauthorized, start.StatusCode);

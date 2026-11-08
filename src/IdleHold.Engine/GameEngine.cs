@@ -20,6 +20,11 @@ public sealed class GameEngine(GameContent content)
         var action = content.FindAction(actionId)
             ?? throw new ArgumentException($"Unknown action '{actionId}'.", nameof(actionId));
 
+        if (MissingToolFor(state, action.SkillId) is not null)
+        {
+            return ActionBlock.MissingTool;
+        }
+
         if (content.FindTool(action.OutputItemId) is { } tool && ToolTierOf(state, tool.Family) >= tool.Tier)
         {
             return ActionBlock.ToolAlreadyOwned;
@@ -68,6 +73,27 @@ public sealed class GameEngine(GameContent content)
             .Select(tool => tool!.Tier)
             .DefaultIfEmpty(0)
             .Max();
+
+    /// <summary>
+    /// The tool that opens <paramref name="skillId"/>, or <c>null</c> when the trade is open. A trade that some tool
+    /// family serves stays locked until the player owns a tool of that family; the answer is its first tier, the one
+    /// to make. Trades no tool serves (Foraging, Crafting) are always open. Derived from the stores, like the tier.
+    /// </summary>
+    public string? MissingToolFor(GameState state, string skillId) =>
+        content.Tools
+            .Where(tool => tool.SkillId == skillId)
+            .GroupBy(tool => tool.Family)
+            .Where(family => ToolTierOf(state, family.Key) == 0)
+            .Select(family => family.MinBy(tool => tool.Tier)!.ItemId)
+            .FirstOrDefault();
+
+    /// <summary>The trades the player cannot work yet, in the game's trade order, with the tool that opens each.</summary>
+    public IReadOnlyList<TradeLock> LockedTradesOf(GameState state) =>
+        content.Skills
+            .Select(skill => (skill.Id, Tool: MissingToolFor(state, skill.Id)))
+            .Where(trade => trade.Tool is not null)
+            .Select(trade => new TradeLock(trade.Id, trade.Tool!))
+            .ToList();
 
     /// <summary>
     /// Every tool family, in catalog order, with the best tool the player owns and the recipe for the
@@ -170,6 +196,12 @@ public sealed class GameEngine(GameContent content)
     /// </summary>
     private long? CompletionLimit(GameState state, ActionDefinition action, long completions)
     {
+        // A locked trade does no work. Starting is refused, so only a save from before the lock gets here.
+        if (MissingToolFor(state, action.SkillId) is not null)
+        {
+            return 0;
+        }
+
         long? limit = null;
 
         if (content.FindTool(action.OutputItemId) is { } tool)
@@ -252,6 +284,9 @@ public sealed class GameEngine(GameContent content)
 /// <summary>Why an action cannot start.</summary>
 public enum ActionBlock
 {
+    /// <summary>The action's trade is locked: the player owns no tool of the family that serves it.</summary>
+    MissingTool,
+
     /// <summary>The stores do not hold enough of every input for one completion.</summary>
     MissingInputs,
 
@@ -273,3 +308,6 @@ public sealed record StorageView(int SlotCount, long StackSize, IReadOnlyList<It
 /// and the action that makes the next tier (<c>null</c> when there is nothing better to make).
 /// </summary>
 public sealed record ToolProgress(string Family, string? OwnedItemId, string? NextActionId);
+
+/// <summary>A trade the player cannot work yet, and the tool (its first tier) that opens it.</summary>
+public sealed record TradeLock(string SkillId, string ToolItemId);

@@ -102,6 +102,46 @@ public sealed class CraftingEndpointsTests(PostgresFixture database) : IClassFix
         Assert.Contains(new ToolProgressResponse("axe", "chipped-stone-axe", NextActionId: null), player.Tools);
     }
 
+    [Fact]
+    public async Task NewPlayer_SeesTheTradesLockedUntilTheirTool()
+    {
+        var player = await GetPlayerAsync();
+
+        Assert.Equal(
+            [new TradeLockResponse("woodcutting", "chipped-stone-axe"), new TradeLockResponse("fishing", "reed-fishing-rod")],
+            player.LockedTrades);
+    }
+
+    [Fact]
+    public async Task StartInALockedTrade_Returns409MissingToolAndSavesNothing()
+    {
+        var player = await GetPlayerAsync();
+        var store = _factory.Services.GetRequiredService<IPlayerStore>();
+        var before = await store.GetAsync(player.Id, CancellationToken.None);
+
+        _factory.Clock.Advance(TimeSpan.FromMinutes(1));
+        var response = await StartAsync("cut-pine");
+
+        Assert.Equal(HttpStatusCode.Conflict, response.StatusCode);
+        Assert.Equal("missing-tool", await ReasonAsync(response));
+        var after = await store.GetAsync(player.Id, CancellationToken.None);
+        Assert.Equal(before!.LastUpdated, after!.LastUpdated);
+    }
+
+    [Fact]
+    public async Task CraftedAxe_OpensWoodcutting()
+    {
+        await GatherAxeMaterialsAsync();
+        (await StartAsync("craft-chipped-stone-axe")).EnsureSuccessStatusCode();
+        _factory.Clock.Advance(TimeSpan.FromSeconds(30));
+
+        var response = await StartAsync("cut-pine");
+        var player = await GetPlayerAsync();
+
+        Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+        Assert.Equal([new TradeLockResponse("fishing", "reed-fishing-rod")], player.LockedTrades);
+    }
+
     /// <summary>3 twigs (2 s each) and 2 pebbles (2 s each), read back so the save holds them.</summary>
     private async Task<PlayerResponse> GatherAxeMaterialsAsync()
     {

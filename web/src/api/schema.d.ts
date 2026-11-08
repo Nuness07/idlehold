@@ -641,6 +641,7 @@ export interface components {
                 [key: string]: components["schemas"]["SkillResponse"];
             };
             tools: components["schemas"]["ToolProgressResponse"][];
+            lockedTrades: components["schemas"]["TradeLockResponse"][];
             storage: components["schemas"]["StorageResponse"];
             /** Format: date-time */
             updatedAt: string;
@@ -694,6 +695,10 @@ export interface components {
             /** Format: int32 */
             tier: number;
             skillId: string;
+        };
+        TradeLockResponse: {
+            skillId: string;
+            toolItemId: string;
         };
     };
     responses: never;

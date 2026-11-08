@@ -9,6 +9,7 @@ export const ptBR = {
     tryAgain: 'Tentar de novo',
     actionFailed: 'O servidor não aceitou isso. Confira sua conexão e tente de novo.',
     actionBlocked: {
+      'missing-tool': 'Este ofício está trancado até você ter a ferramenta dele.',
       'missing-inputs': 'Ainda faltam materiais para isso.',
       'tool-already-owned': 'Você já tem essa ferramenta ou uma melhor.',
       'storage-full': 'O armazém está cheio. Abra espaço antes de trabalhar nisso.',
@@ -65,6 +66,7 @@ export const ptBR = {
   trades: {
     heading: 'Vila e ofícios',
     working: 'trabalhando',
+    locked: 'trancado',
     groups: {
       gathering: 'Ofício',
       production: 'Produção',
@@ -117,7 +119,7 @@ export const ptBR = {
     building: 'Construindo',
     tradeTool: 'Ferramenta deste ofício',
     inUse: 'Ferramenta em uso',
-    noneYet: 'Nenhuma ferramenta para este ofício ainda.',
+    lockedUntil: 'Trancado até você ter',
     goMake: 'Fazer em {{trade}}',
   },
   menu: {

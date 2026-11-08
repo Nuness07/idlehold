@@ -63,6 +63,7 @@ public static class PlayerEndpoints
         statusCode: StatusCodes.Status409Conflict,
         title: block switch
         {
+            ActionBlock.MissingTool => "This trade is locked until you own its tool.",
             ActionBlock.MissingInputs => "Not enough materials to start this action.",
             ActionBlock.ToolAlreadyOwned => "You already own this tool or a better one.",
             ActionBlock.StorageFull => "The storehouse has no room for what this action makes.",
@@ -72,6 +73,7 @@ public static class PlayerEndpoints
 
     private static string ReasonCode(ActionBlock block) => block switch
     {
+        ActionBlock.MissingTool => "missing-tool",
         ActionBlock.MissingInputs => "missing-inputs",
         ActionBlock.ToolAlreadyOwned => "tool-already-owned",
         ActionBlock.StorageFull => "storage-full",

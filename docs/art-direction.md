@@ -131,6 +131,15 @@ it becomes a button once clicking it does something, and changes art as it is re
   (13-pixel top and bottom, 15-pixel ends); the trim between the corners tiles, so it grows with
   what it holds.
 
+- **Trade lock** (`frames/lock-chain.png`, 32x15; `frames/lock-padlock.png`, 22x30; `frames/lock-plaque.png`,
+  39x16): two iron chains cross a locked trade's whole middle column from corner to corner, with the padlock where
+  they cross and a light wooden plaque hanging in front of it. The chain is a strip that tiles left to right; a
+  canvas the size of the column in art pixels draws it along each diagonal with nearest-neighbour sampling and is
+  shown at 3x, so every art pixel stays one 3x3 block at any angle. The padlock is drawn at 3x. The plaque is
+  `.lock-plaque`, a 9-slice at 3x (5-pixel top for the rings, 10-pixel ends for the nails, 3-pixel bottom)
+  around the HTML label: "Locked until you have" and the tool's sprite and name. All three were cropped to
+  their drawing.
+
 ## Asset log
 
 | File | Prompt (short) | Notes |
@@ -185,3 +194,6 @@ it becomes a button once clicking it does something, and changes art as it is re
 | `frames/profile-plate.png` | a wide flat rectangular medieval nameplate panel, dark navy blue painted wooden face completely filled, thin gold trim border all around, solid gold corner blocks, plain empty flat middle | Candidate 5 of 25 at 64x32, cropped to 61x30; `frames/menu-plaque.png` for the trim. The profile card (`.profile-plate`) |
 | `frames/slot.png` | a single empty square inventory slot tile, a thin dark wooden rim with tiny iron rivets at the four corners, the inside a flat plain dark brown recessed well, completely empty, symmetric, seen straight from the front | Candidate 8 of 36 at 40x40, cropped to 31x31; `frames/iron.png` as shape reference. The storehouse slot (`.item-slot`) |
 | `menu/crest.png` | a small heraldic knight shield crest, wine red field with a simple gold stone tower in the middle, gold rim | Candidate 11 (the tower carries the banner); `brand/tower.png` for the tower and colours. The profile's avatar |
+| `frames/lock-chain.png` | a straight horizontal heavy dark iron chain, links alternating face-on and edge-on, seamless left to right | Candidate 0 of 64 (32x16), the first crossed-chains sprite as reference, cropped |
+| `frames/lock-padlock.png` | a single large old dark iron padlock on its own, rivets and a black keyhole, no chains | Candidate 9 of 64 (32x32), the first crossed-chains sprite as reference, cropped |
+| `frames/lock-plaque.png` | a small plain wooden hanging sign board, one wide plank, flat empty face, two tiny iron rings on top | Candidate 2 of 49 (48x24), `frames/wood-button.png` as reference, cropped |

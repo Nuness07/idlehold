@@ -10,6 +10,7 @@ export const en = {
     tryAgain: 'Try again',
     actionFailed: 'The server did not accept that. Check your connection and try again.',
     actionBlocked: {
+      'missing-tool': 'This trade is locked until you have its tool.',
       'missing-inputs': 'Not enough materials for that yet.',
       'tool-already-owned': 'You already have this tool or a better one.',
       'storage-full': 'The storehouse is full. Make room before working on this.',
@@ -66,6 +67,7 @@ export const en = {
   trades: {
     heading: 'Village and trades',
     working: 'working',
+    locked: 'locked',
     groups: {
       gathering: 'Gathering',
       production: 'Production',
@@ -118,8 +120,8 @@ export const en = {
     building: 'Building',
     tradeTool: 'Tool for this trade',
     inUse: 'Tool in use',
-    noneYet: 'No tool for this trade yet.',
-    goMake: 'Make one in {{trade}}',
+    lockedUntil: 'Locked until you have',
+    goMake: 'Make it in {{trade}}',
   },
   menu: {
     heading: 'Hold menu',

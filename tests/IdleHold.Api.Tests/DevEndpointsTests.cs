@@ -130,9 +130,9 @@ public sealed class DevEndpointsTests(PostgresFixture database) : IClassFixture<
     [Fact]
     public async Task StartAction_WithAFullStorehouse_Returns409StorageFull()
     {
-        await SetItemCountAsync("pine-log", 48 * 10_000);
+        await SetItemCountAsync("reed", 48 * 10_000);
 
-        var response = await _client.PostAsJsonAsync("/me/player/action", new StartActionRequest("cut-birch"));
+        var response = await _client.PostAsJsonAsync("/me/player/action", new StartActionRequest("gather-twigs"));
 
         Assert.Equal(HttpStatusCode.Conflict, response.StatusCode);
         var problem = await response.Content.ReadFromJsonAsync<JsonElement>();
@@ -142,14 +142,14 @@ public sealed class DevEndpointsTests(PostgresFixture database) : IClassFixture<
     [Fact]
     public async Task Advance_RunsTheWorkedActionAsIfThePlayerWereAway()
     {
-        (await _client.PostAsJsonAsync("/me/player/action", new StartActionRequest("cut-pine"))).EnsureSuccessStatusCode();
+        (await _client.PostAsJsonAsync("/me/player/action", new StartActionRequest("pull-reeds"))).EnsureSuccessStatusCode();
 
         var player = await AdvanceAsync(minutes: 1);
 
-        // cut-pine takes 3 s: one minute makes 20 logs.
-        Assert.Equal(20, player.Inventory["pine-log"]);
-        Assert.Equal(200, player.Skills["woodcutting"].Xp);
-        Assert.Equal(20, (await GetPlayerAsync()).Inventory["pine-log"]); // Saved, not only answered.
+        // pull-reeds takes 3 s: one minute pulls 20 reeds.
+        Assert.Equal(20, player.Inventory["reed"]);
+        Assert.Equal(160, player.Skills["foraging"].Xp);
+        Assert.Equal(20, (await GetPlayerAsync()).Inventory["reed"]); // Saved, not only answered.
     }
 
     [Theory]

@@ -34,35 +34,30 @@ The village is the differentiator. Skills feed the village; the village gives sk
 
 ### Gathering skills: Decided
 
-Four gathering skills exist. Woodcutting, Mining and Foraging start with a bare-hand action; each tree, fishing spot and rock after it pays more XP per second the slower it is:
+Four gathering skills exist. Foraging is worked by hand; each tree, fishing spot and rock pays more XP per second the slower it is:
 
 | Skill | Actions | Item |
 |---|---|---|
-| Woodcutting | Twigs (2 s, 5 XP, by hand), Pine (3 s, 10 XP), Birch (5 s, 18 XP) | Twig, Pine log, Birch log |
+| Foraging | Twigs (2 s, 5 XP), Pebbles (2 s, 5 XP), Wild berries (2 s, 5 XP), Reeds (3 s, 8 XP) | Twig, Pebble, Wild berry, Reed |
+| Woodcutting | Pine (3 s, 10 XP), Birch (5 s, 18 XP) | Pine log, Birch log |
 | Fishing | Perch (4 s, 12 XP), Pike (7 s, 28 XP) | Perch, Pike |
-| Mining | Pebbles (2 s, 5 XP, by hand), Stone (3 s, 9 XP), Copper (6 s, 22 XP) | Pebble, Stone, Copper ore |
-| Foraging | Wild berries (2 s, 5 XP, by hand), Reeds (3 s, 8 XP, by hand) | Wild berry, Reed |
+| Mining | Stone (3 s, 9 XP), Copper (6 s, 22 XP) | Stone, Copper ore |
 
-Wood and stone are the village's building materials; fish feeds Cooking; copper feeds Smithing. A content test keeps the rule that a slower action never pays less XP per second. Level and tool gates are not in yet, so every action is still open at level 1 (see "Bare hands and tools").
+Wood and stone are the village's building materials; fish feeds Cooking; copper feeds Smithing. A content test keeps the rule that a slower action never pays less XP per second. Trades are locked until their tool exists (see "Bare hands and tools"); level gates are not in yet, so every action of an open trade starts at level 1.
 
 Note on originality: Melvor Idle already has a village skill (Township). Here the village is not one skill among many; the skills exist to serve the village.
 
 ### Bare hands and tools: Decided
 
-The player starts with nothing, not even an axe. Some trades have something you can gather by hand; the rest stay closed until the player owns the right tool.
+The player starts with nothing, not even an axe. **Foraging is the one gathering trade worked by hand** (twigs, pebbles, wild berries, reeds), and **every trade a tool serves is locked until the player owns that tool**: Woodcutting needs the axe, Fishing the rod, and Mining will need the pickaxe once it exists (until then Mining stays open). Production trades with no tool (Crafting) are open from the start.
 
-| Skill | By hand | Item | Needs a tool for the rest |
-|---|---|---|---|
-| Woodcutting | Gather twigs | Twig | Axe for trees |
-| Mining | Pick up pebbles | Pebble | Pickaxe for the quarry and ore |
-| Foraging (new) | Pick wild berries | Wild berry (the first food) | Later content: mushrooms, herbs, seeds |
-| Fishing | Nothing | | Closed until the player has a fishing rod |
-
+- **Locked means locked, not refused.** The trade still shows in the side panel, with a padlock, so the player sees what comes next. Opening it shows its sign and actions dimmed and out of reach, with two chains crossing the whole middle column corner to corner and a padlock where they cross, with a plaque that names the tool ("Locked until you have: chipped stone axe") and a button to the trade that makes it. Hiding locked trades was considered; showing them gives the player a goal and teaches the chain without tutorial text.
+- **Each step uses what the step before made.** The planned early chain: Foraging gathers twigs and pebbles, Crafting makes the stone axe, the axe opens Woodcutting on a young tree, Carpentry turns its log into sticks, and the sticks go into the pickaxe that opens Mining. The young tree, Carpentry and the pickaxe are the next content step; the reed fishing rod stays.
 - **Foraging** is a skill of its own, not a tutorial step: its finds feed Cooking later, and planting may grow out of it (possibly as a separate Farming skill).
 - **Crafting** is a skill that turns materials into things, starting with the first tools. It is how the player gets from bare hands to the axe, the pickaxe and the rod.
 - A pebble is not the quarry's stone: pebbles are picked up by hand, stone is mined with a pickaxe.
 
-Open: how tools act (gate only, or gate plus speed), and the numbers (see Progression and balancing).
+Tools only gate for now; "gate plus speed" waits until a family has a second tier. Old saves keep the Woodcutting and Mining XP earned from twigs and pebbles before they moved to Foraging. Open: the numbers (see Progression and balancing).
 
 ### Crafting and tools: Decided
 
@@ -79,13 +74,13 @@ The first recipes:
 
 Tool recipes take a while and pay well because each is made once. Reasons to keep crafting come later: repeatable goods for the village (cord, baskets, handles, building parts), and villagers who each need their own tool.
 
-On screen, each tool family is one card in its trade, always showing the next tier: the tool in an iron frame, its name, a slot per material with what the player has and what it takes, and a wooden Build button below. Building starts the recipe like any action (it takes its time and occupies the worker). Once the family is at its best tool, the card shows it with nothing to build. A recipe with more than six materials shows five and a "+N" slot that expands the card. The server says which tier comes next. Each tool serves one trade (the axe Woodcutting, the rod Fishing), and that trade shows the tool in use, or that it has none yet with a button to Crafting.
+On screen, each tool family is one card in its trade, always showing the next tier: the tool in an iron frame, its name, a slot per material with what the player has and what it takes, and a wooden Build button below. Building starts the recipe like any action (it takes its time and occupies the worker). Once the family is at its best tool, the card shows it with nothing to build. A recipe with more than six materials shows five and a "+N" slot that expands the card. The server says which tier comes next. Each tool serves one trade (the axe Woodcutting, the rod Fishing), and that trade shows the tool in use, or is locked until it exists.
 
-Not in yet: tools gating actions (the axe opening the pine), the next tiers (stone axe, then copper), recipe categories (by material and by use: tool, weapon), a "make N" queue, an inventory of owned tools, and the crafting table screen (the inputs filling the recipe, then the tool appearing).
+Not in yet: the next tiers (stone axe, then copper), recipe categories (by material and by use: tool, weapon), a "make N" queue, an inventory of owned tools, and the crafting table screen (the inputs filling the recipe, then the tool appearing).
 
 ### Trade groups: Decided
 
-Trades are split in two groups: **Gathering** (Woodcutting, Fishing, Mining, Foraging), which takes from the world, and **Production** (Crafting, and later Leatherworking, Smithing, Cooking), which turns what was gathered into goods. The side panel lists the Village first, then each group under its heading. In Brazilian Portuguese the groups are "Ofício" and "Produção".
+Trades are split in two groups: **Gathering** (Foraging, Woodcutting, Fishing, Mining), which takes from the world, and **Production** (Crafting, and later Leatherworking, Smithing, Cooking), which turns what was gathered into goods. The side panel lists the Village first, then each group under its heading. In Brazilian Portuguese the groups are "Ofício" and "Produção".
 
 ### Processing skills: Next
 

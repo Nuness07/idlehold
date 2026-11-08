@@ -36,7 +36,7 @@ public sealed class PlayerEndpointsTests(PostgresFixture database) : IClassFixtu
     public async Task EachGuestSession_HasItsOwnHold()
     {
         using var other = await _factory.CreateGuestClientAsync();
-        await StartActionAsync("cut-pine");
+        await StartActionAsync("pull-reeds");
 
         var theirs = await other.GetFromJsonAsync<PlayerResponse>("/me/player");
 
@@ -50,7 +50,7 @@ public sealed class PlayerEndpointsTests(PostgresFixture database) : IClassFixtu
         using var stranger = _factory.CreateClient();
 
         var read = await stranger.GetAsync("/me/player");
-        var start = await stranger.PostAsJsonAsync("/me/player/action", new StartActionRequest("cut-pine"));
+        var start = await stranger.PostAsJsonAsync("/me/player/action", new StartActionRequest("pull-reeds"));
         var stop = await stranger.DeleteAsync("/me/player/action");
 
         Assert.Equal(HttpStatusCode.Unauthorized, read.StatusCode);
@@ -62,37 +62,37 @@ public sealed class PlayerEndpointsTests(PostgresFixture database) : IClassFixtu
     public async Task StartAction_ThenTimePasses_GrantsRewards()
     {
         var player = await GetPlayerAsync();
-        await StartActionAsync("cut-pine");
+        await StartActionAsync("pull-reeds");
 
         _factory.Clock.Advance(TimeSpan.FromSeconds(10));
         var state = await GetPlayerAsync();
 
-        // cut-pine takes 3s: 10s = 3 completions with 1s left on the bar.
-        Assert.Equal(3, state.Inventory["pine-log"]);
-        Assert.Equal(new SkillResponse(Xp: 30, Level: 1, LevelStartXp: 0, NextLevelXp: 100), state.Skills["woodcutting"]);
-        Assert.Equal(new ActiveActionResponse("cut-pine", ProgressMs: 1000, DurationMs: 3000), state.ActiveAction);
+        // pull-reeds takes 3s: 10s = 3 completions with 1s left on the bar.
+        Assert.Equal(3, state.Inventory["reed"]);
+        Assert.Equal(new SkillResponse(Xp: 24, Level: 1, LevelStartXp: 0, NextLevelXp: 100), state.Skills["foraging"]);
+        Assert.Equal(new ActiveActionResponse("pull-reeds", ProgressMs: 1000, DurationMs: 3000), state.ActiveAction);
     }
 
     [Fact]
     public async Task OfflineProgress_IsCalculatedWhenThePlayerComesBack()
     {
         var player = await GetPlayerAsync();
-        await StartActionAsync("cut-pine");
+        await StartActionAsync("pull-reeds");
 
         _factory.Clock.Advance(TimeSpan.FromHours(8));
         var state = await GetPlayerAsync();
 
-        Assert.Equal(9600, state.Inventory["pine-log"]);
-        var woodcutting = state.Skills["woodcutting"];
-        Assert.True(woodcutting.Level > 1);
-        Assert.InRange(woodcutting.Xp, woodcutting.LevelStartXp, woodcutting.NextLevelXp!.Value - 1);
+        Assert.Equal(9600, state.Inventory["reed"]);
+        var foraging = state.Skills["foraging"];
+        Assert.True(foraging.Level > 1);
+        Assert.InRange(foraging.Xp, foraging.LevelStartXp, foraging.NextLevelXp!.Value - 1);
     }
 
     [Fact]
     public async Task Reading_ComputesNowWithoutWritingTheSave()
     {
         var player = await GetPlayerAsync();
-        await StartActionAsync("cut-pine");
+        await StartActionAsync("pull-reeds");
         var store = _factory.Services.GetRequiredService<IPlayerStore>();
         var savedAfterStart = await store.GetAsync(player.Id, CancellationToken.None);
 
@@ -102,8 +102,8 @@ public sealed class PlayerEndpointsTests(PostgresFixture database) : IClassFixtu
         var second = await GetPlayerAsync();
 
         // Each read is caught up to its own "now"...
-        Assert.Equal(3, first.Inventory["pine-log"]);
-        Assert.Equal(4, second.Inventory["pine-log"]);
+        Assert.Equal(3, first.Inventory["reed"]);
+        Assert.Equal(4, second.Inventory["reed"]);
         // ...while the stored save is still the one written by the command.
         var savedNow = await store.GetAsync(player.Id, CancellationToken.None);
         Assert.Equal(savedAfterStart!.LastUpdated, savedNow!.LastUpdated);
@@ -114,13 +114,13 @@ public sealed class PlayerEndpointsTests(PostgresFixture database) : IClassFixtu
     public async Task Command_SavesTheCaughtUpState()
     {
         var player = await GetPlayerAsync();
-        await StartActionAsync("cut-pine");
+        await StartActionAsync("pull-reeds");
         _factory.Clock.Advance(TimeSpan.FromSeconds(10));
 
         await _client.DeleteAsync("/me/player/action");
 
         var saved = await _factory.Services.GetRequiredService<IPlayerStore>().GetAsync(player.Id, CancellationToken.None);
-        Assert.Equal(3, saved!.State.ItemCount("pine-log"));
+        Assert.Equal(3, saved!.State.ItemCount("reed"));
         Assert.Null(saved.State.ActiveAction);
         Assert.Equal(_factory.Clock.GetUtcNow(), saved.LastUpdated);
     }
@@ -129,7 +129,7 @@ public sealed class PlayerEndpointsTests(PostgresFixture database) : IClassFixtu
     public async Task StopAction_FreezesProgress()
     {
         var player = await GetPlayerAsync();
-        await StartActionAsync("cut-pine");
+        await StartActionAsync("pull-reeds");
         _factory.Clock.Advance(TimeSpan.FromSeconds(6));
 
         var stop = await _client.DeleteAsync("/me/player/action");
@@ -138,7 +138,7 @@ public sealed class PlayerEndpointsTests(PostgresFixture database) : IClassFixtu
 
         Assert.Equal(HttpStatusCode.OK, stop.StatusCode);
         Assert.Null(state.ActiveAction);
-        Assert.Equal(2, state.Inventory["pine-log"]);
+        Assert.Equal(2, state.Inventory["reed"]);
     }
 
     [Theory]

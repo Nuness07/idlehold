@@ -73,7 +73,7 @@ public sealed class AccountEndpointsTests(PostgresFixture database) : IClassFixt
     {
         using var client = await _factory.CreateGuestClientAsync();
         var guestHold = await MyPlayer(client);
-        await client.PostAsJsonAsync("/me/player/action", new StartActionRequest("cut-pine"));
+        await client.PostAsJsonAsync("/me/player/action", new StartActionRequest("pull-reeds"));
         _factory.Clock.Advance(TimeSpan.FromSeconds(9));
         var email = NewEmail();
 
@@ -84,8 +84,8 @@ public sealed class AccountEndpointsTests(PostgresFixture database) : IClassFixt
         Assert.Equal(HttpStatusCode.OK, registered.StatusCode);
         Assert.Equal(new AccountResponse(email, IsGuest: false), me);
         Assert.Equal(guestHold.Id, mine.Id);
-        Assert.Equal(3, mine.Inventory["pine-log"]);
-        Assert.Equal("cut-pine", mine.ActiveAction!.ActionId);
+        Assert.Equal(3, mine.Inventory["reed"]);
+        Assert.Equal("pull-reeds", mine.ActiveAction!.ActionId);
     }
 
     [Fact]
