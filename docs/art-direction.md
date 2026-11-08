@@ -117,6 +117,10 @@ it becomes a button once clicking it does something, and changes art as it is re
   used as a 9-slice with 8-pixel corners: `.iron-frame` at 2x around a tool (a 32x32 sprite at 2x).
   The dark well behind it stays inside the band (`background-clip: padding-box`). Material slots
   are plain squares with a thin black border, so the tool stays the one framed thing on the card.
+- **Storehouse slot** (`frames/slot.png`, 31x31): a dark wooden rim with iron corner pieces around a
+  flat dark well. Used by `.item-slot` as a 9-slice at 2x (8-pixel slices, `fill` for the well) in an
+  80x80 slot; the rim between the corners repeats rather than stretches, so its pixels stay whole. The
+  item sprite sits in it at 2x and overhangs the rim a little; the count is HTML in the corner.
 - **Menu plaque** (`frames/menu-plaque.png`, 56x18): a wine-red plaque with a gold trim and gold
   corner blocks, the red and gold of the tower's banner. Used by `.menu-plaque` at 3x and its native
   height (5-pixel top and bottom, 9-pixel left and 10-pixel right ends); the trim between the
@@ -179,4 +183,5 @@ it becomes a button once clicking it does something, and changes art as it is re
 | `menu/statistics.png` | a partly unrolled parchment scroll with a few tally marks and a small rising bar chart in ink | Candidate 24 |
 | `menu/settings.png` | a single simple gold cogwheel with eight square teeth and a round hole | Candidate 0, moved 2 px left so it sits centred in its 32x32 box |
 | `frames/profile-plate.png` | a wide flat rectangular medieval nameplate panel, dark navy blue painted wooden face completely filled, thin gold trim border all around, solid gold corner blocks, plain empty flat middle | Candidate 5 of 25 at 64x32, cropped to 61x30; `frames/menu-plaque.png` for the trim. The profile card (`.profile-plate`) |
+| `frames/slot.png` | a single empty square inventory slot tile, a thin dark wooden rim with tiny iron rivets at the four corners, the inside a flat plain dark brown recessed well, completely empty, symmetric, seen straight from the front | Candidate 8 of 36 at 40x40, cropped to 31x31; `frames/iron.png` as shape reference. The storehouse slot (`.item-slot`) |
 | `menu/crest.png` | a small heraldic knight shield crest, wine red field with a simple gold stone tower in the middle, gold rim | Candidate 11 (the tower carries the banner); `brand/tower.png` for the tower and colours. The profile's avatar |
