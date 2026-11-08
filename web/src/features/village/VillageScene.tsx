@@ -38,10 +38,10 @@ const CAMPFIRE_SHAPE = `polygon(${[
  * piece (a cutout of the painted fire plus its flicker), so it can brighten under the pointer without
  * touching the rest of the scene. Motion stops for players who ask for reduced motion.
  *
- * On wide screens the scene covers its box like a cover image: `--px` is the larger of width/320 and
- * height/180, so it fills the box with no empty edge, and the overflow is cropped evenly around the middle.
- * On phones the box is a little over half the screen tall, the scene is sized to its height, and the
- * player drags it sideways to look around; it opens on the middle, at the campfire.
+ * The scene covers its box like a cover image: `--px` is the larger of width/320 and height/180, so it
+ * fills the box with no empty edge, centred. On wide screens the overflow is cropped. On phones the box is
+ * a little over half the screen tall, so in portrait the scene is wider than the screen and the player
+ * drags it sideways to look around, starting at the campfire; a landscape phone crops top and bottom.
  */
 export function VillageScene() {
   const { t } = useTranslation()
@@ -61,7 +61,7 @@ export function VillageScene() {
       <div
         role="img"
         aria-label={t('village.sceneLabel')}
-        className="relative [--px:calc(100cqh/180)] lg:absolute lg:top-1/2 lg:left-1/2 lg:-translate-1/2 lg:[--px:max(100cqw/320,100cqh/180)] [&_*]:[image-rendering:pixelated]"
+        className="relative top-1/2 -translate-y-1/2 [--px:max(100cqw/320,100cqh/180)] lg:absolute lg:left-1/2 lg:-translate-x-1/2 [&_*]:[image-rendering:pixelated]"
         style={{ width: 'calc(320 * var(--px))', height: 'calc(180 * var(--px))' }}
       >
         {/* Sky: one art pixel per step, so the clouds stay on the pixel grid. */}
