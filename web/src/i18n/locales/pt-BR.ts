@@ -129,7 +129,7 @@ export const ptBR = {
   },
   profile: {
     guest: 'Convidado',
-    guestNote: 'Progresso guardado só neste navegador',
+    guestNote: 'Salvo só neste navegador',
     signedIn: 'Conectado',
   },
   comingSoon: {

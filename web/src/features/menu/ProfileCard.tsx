@@ -1,8 +1,9 @@
-import { UserRound } from 'lucide-react'
 import { useTranslation } from 'react-i18next'
 import type { Account } from '../../api/client'
 import { PixelSprite } from '../../components/PixelSprite'
+import { WoodButton } from '../../components/WoodButton'
 import { cn } from '../../lib/cn'
+import crest from '../../assets/menu/crest.png'
 import { menuIcon } from './menu'
 
 interface ProfileCardProps {
@@ -14,24 +15,24 @@ interface ProfileCardProps {
 }
 
 /**
- * Who is playing: the account's e-mail, or "Guest" with a way to save progress.
- * The gear opens the settings screen, where the language and signing out live.
+ * Who is playing, on a gold-trimmed navy nameplate: the hold's crest, the account's e-mail or "Guest"
+ * with a way to save progress. The gear opens the settings screen, where the language and signing out live.
  */
 export function ProfileCard({ account, settingsOpen, onOpenSettings, onSaveProgress, className }: ProfileCardProps) {
   const { t } = useTranslation()
   const name = account.isGuest ? t('profile.guest') : (account.email ?? '')
 
   return (
-    <section aria-label={name} className={cn('paper flex flex-col gap-2.5 rounded px-3 py-3', className)}>
-      <div className="flex items-center gap-3">
-        <span aria-hidden className="grid size-10 shrink-0 place-items-center rounded-full bg-oxblood text-oxblood-soft">
-          <UserRound className="size-5" />
-        </span>
+    <section aria-label={name} className={cn('profile-plate flex flex-col gap-3', className)}>
+      <div className="-mx-1 flex items-center gap-2.5">
+        <PixelSprite src={crest} width={32} height={32} />
         <div className="min-w-0 flex-1">
-          <p className="truncate text-[16px] font-bold" title={name}>
+          <p className="truncate text-[16px] font-bold text-parchment" title={name}>
             {name}
           </p>
-          <p className="text-[13px] text-muted">{account.isGuest ? t('profile.guestNote') : t('profile.signedIn')}</p>
+          <p className="text-[13px] leading-tight text-oxblood-soft">
+            {account.isGuest ? t('profile.guestNote') : t('profile.signedIn')}
+          </p>
         </div>
         <button
           type="button"
@@ -39,20 +40,12 @@ export function ProfileCard({ account, settingsOpen, onOpenSettings, onSaveProgr
           aria-pressed={settingsOpen}
           aria-label={t('menu.settings')}
           title={t('menu.settings')}
-          className="grid size-11 shrink-0 place-items-center rounded transition-colors hover:bg-ink/10 aria-pressed:bg-ink/15"
+          className="grid size-10 shrink-0 place-items-center rounded transition-[filter,background-color] hover:brightness-125 aria-pressed:bg-black/25"
         >
           <PixelSprite src={menuIcon.settings} width={32} height={32} />
         </button>
       </div>
-      {account.isGuest && (
-        <button
-          type="button"
-          onClick={onSaveProgress}
-          className="min-h-9 rounded bg-oxblood px-3 text-[14px] font-bold text-oxblood-ink transition-colors hover:bg-oxblood/90"
-        >
-          {t('account.saveProgress')}
-        </button>
-      )}
+      {account.isGuest && <WoodButton onClick={onSaveProgress}>{t('account.saveProgress')}</WoodButton>}
     </section>
   )
 }

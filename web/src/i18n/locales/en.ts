@@ -130,7 +130,7 @@ export const en = {
   },
   profile: {
     guest: 'Guest',
-    guestNote: 'Progress kept in this browser only',
+    guestNote: 'Saved in this browser only',
     signedIn: 'Signed in',
   },
   comingSoon: {

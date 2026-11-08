@@ -117,11 +117,15 @@ it becomes a button once clicking it does something, and changes art as it is re
   used as a 9-slice with 8-pixel corners: `.iron-frame` at 2x around a tool (a 32x32 sprite at 2x).
   The dark well behind it stays inside the band (`background-clip: padding-box`). Material slots
   are plain squares with a thin black border, so the tool stays the one framed thing on the card.
-- **Menu plaque** (`frames/menu-plaque.png`, 56x16): a wine-red plaque with a gold trim and gold
+- **Menu plaque** (`frames/menu-plaque.png`, 56x20): a wine-red plaque with a gold trim and gold
   corner blocks, the red and gold of the tower's banner. Used by `.menu-plaque` at 3x and its native
   height (4-pixel top and bottom, 9-pixel left and 10-pixel right ends); the trim between the
   corners tiles. The generated plaques came with an empty middle, so the red face was flood-filled
   with the rail sign's red (`#65212e`).
+- **Profile plate** (`frames/profile-plate.png`, 61x30): the menu's gold trim and corner blocks on a
+  navy face, so the profile reads apart from the menu entries. Used by `.profile-plate` at 2x
+  (13-pixel top and bottom, 15-pixel ends); the trim between the corners tiles, so it grows with
+  what it holds.
 
 ## Asset log
 
@@ -168,9 +172,11 @@ it becomes a button once clicking it does something, and changes art as it is re
   the set grows.
 | `brand/tower.png` | a single small medieval stone fortress tower, round keep of grey fieldstone blocks with crenellated battlements, a small arched wooden door, not too detailed, village emblem and game logo icon | Candidate 11 (red banner). The Village's emblem and the mark beside the wordmark; the Village's emblem will grow as it is rebuilt, the logo keeps this one |
 | `frames/rail-sign.png` | a flat horizontal wooden signpost board painted dark wine red, the right end cut into a pointed arrow tip, two small iron nails on the left, plain empty middle for text | Candidate 6 of 16 at 64x16 (symmetric tip), cropped to 55x13; `frames/wood-button.png` as reference. A rail entry at 4x, 9-sliced (`.rail-sign-board`): the nailed end and the tip stay whole, the plank between tiles |
-| `frames/menu-plaque.png` | a wide flat rectangular medieval menu button plaque, dark wine red painted wooden face with a thin ornate gold trim border all around, a small gold rivet at each of the four corners, plain empty flat middle for text | Candidate 3 of 16 at 64x16, cropped to 56x16, face filled with the rail sign's red; `frames/rail-sign.png` and `brand/tower.png` as colour references. A hold menu entry (`.menu-plaque`) |
+| `frames/menu-plaque.png` | a wide flat rectangular medieval menu button plaque, dark wine red painted wooden face with a thin ornate gold trim border all around, a small gold rivet at each of the four corners, plain empty flat middle for text | Candidate 3 of 16 at 64x16, cropped to 56x16, face filled with the rail sign's red, then a middle row repeated to make it 56x20 so a 32px icon fits inside the trim at 3x; `frames/rail-sign.png` and `brand/tower.png` as colour references. A hold menu entry (`.menu-plaque`) |
 | `menu/storehouse.png` | a small closed medieval wooden treasure chest with iron bands and a gold lock plate | Candidate 0; `emblems/foraging.png` for size and outline |
 | `menu/achievements.png` | a round gold medal hanging from a short dark wine red ribbon, a simple star in the middle | Candidate 17, realigned by hand (the ribbon top capped with an outline, the medal centred); `brand/tower.png` for the red and gold |
 | `menu/history.png` | an open old leather-bound book with pale parchment pages and a feather quill resting across it | Candidate 11 |
 | `menu/statistics.png` | a partly unrolled parchment scroll with a few tally marks and a small rising bar chart in ink | Candidate 24 |
 | `menu/settings.png` | a single simple gold cogwheel with eight square teeth and a round hole | Candidate 0 |
+| `frames/profile-plate.png` | a wide flat rectangular medieval nameplate panel, dark navy blue painted wooden face completely filled, thin gold trim border all around, solid gold corner blocks, plain empty flat middle | Candidate 5 of 25 at 64x32, cropped to 61x30; `frames/menu-plaque.png` for the trim. The profile card (`.profile-plate`) |
+| `menu/crest.png` | a small heraldic knight shield crest, wine red field with a simple gold stone tower in the middle, gold rim | Candidate 11 (the tower carries the banner); `brand/tower.png` for the tower and colours. The profile's avatar |
