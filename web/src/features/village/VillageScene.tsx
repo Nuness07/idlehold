@@ -1,4 +1,4 @@
-import type { CSSProperties } from 'react'
+import { useEffect, useRef, type CSSProperties } from 'react'
 import { useTranslation } from 'react-i18next'
 import campfire from '../../assets/village/campfire.png'
 import fire from '../../assets/village/fire.png'
@@ -7,6 +7,9 @@ import sky from '../../assets/village/sky.png'
 
 /** Art size of the scene, in pixels. Every layer is placed in these units. */
 const ART = { width: 320, height: 180 }
+
+/** Tailwind's `lg` breakpoint: from here the village crops instead of panning. */
+const WIDE_SCREEN = '(min-width: 64rem)'
 
 /**
  * Places a layer in art pixels. `--px` is the size of one art pixel on screen, so the layers line up at
@@ -39,20 +42,37 @@ const CAMPFIRE_SHAPE = `polygon(${[
  * touching the rest of the scene. Motion stops for players who ask for reduced motion.
  *
  * The scene covers its box like a cover image: `--px` is the larger of width/320 and height/180, so it
- * fills the box with no empty edge, and the overflow is cropped evenly around the middle. On phones the
- * box is 16:9, so nothing is cropped.
+ * fills the box with no empty edge, centred. On wide screens the overflow is cropped. On phones the box is
+ * a little over half the screen tall, so in portrait the scene is wider than the screen and the player
+ * drags it sideways to look around, starting at the campfire; a landscape phone crops top and bottom.
  */
 export function VillageScene() {
   const { t } = useTranslation()
+  const viewport = useRef<HTMLDivElement>(null)
+
+  useEffect(() => {
+    const box = viewport.current
+    if (!box) return
+    const wide = window.matchMedia(WIDE_SCREEN)
+    // Phones open centred on the campfire. Wide screens centre the scene with a transform, so a scroll offset
+    // left from the phone layout would push it off centre, with no way to scroll it back: reset it.
+    const place = () => {
+      box.scrollLeft = wide.matches ? 0 : (box.scrollWidth - box.clientWidth) / 2
+    }
+    place()
+    wide.addEventListener('change', place)
+    return () => wide.removeEventListener('change', place)
+  }, [])
 
   return (
     <div
-      role="img"
-      aria-label={t('village.sceneLabel')}
-      className="relative aspect-[16/9] w-full overflow-hidden [container-type:size] lg:aspect-auto lg:min-h-[320px] lg:flex-1"
+      ref={viewport}
+      className="relative h-[58dvh] w-full overflow-x-auto overflow-y-hidden overscroll-x-contain [container-type:size] [scrollbar-width:none] lg:h-auto lg:min-h-[320px] lg:flex-1 lg:overflow-hidden"
     >
       <div
-        className="absolute top-1/2 left-1/2 -translate-1/2 [--px:max(100cqw/320,100cqh/180)] [&_*]:[image-rendering:pixelated]"
+        role="img"
+        aria-label={t('village.sceneLabel')}
+        className="relative top-1/2 -translate-y-1/2 [--px:max(100cqw/320,100cqh/180)] lg:absolute lg:left-1/2 lg:-translate-x-1/2 [&_*]:[image-rendering:pixelated]"
         style={{ width: 'calc(320 * var(--px))', height: 'calc(180 * var(--px))' }}
       >
         {/* Sky: one art pixel per step, so the clouds stay on the pixel grid. */}

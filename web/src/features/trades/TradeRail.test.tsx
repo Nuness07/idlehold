@@ -42,4 +42,30 @@ describe('TradeRail', () => {
     expect(within(production).getByRole('button', { name: /Crafting/ })).toBeInTheDocument()
     expect(within(gathering).queryByRole('button', { name: /Crafting/ })).not.toBeInTheDocument()
   })
+
+  it('on phones names the screen shown and opens the list from it', async () => {
+    const onSelect = vi.fn()
+    render(<TradeRail trades={trades} selected="woodcutting" villageSelected={false} onSelect={onSelect} onSelectVillage={vi.fn()} />)
+
+    const toggle = screen.getByRole('button', { name: 'Village and trades: Woodcutting' })
+    expect(toggle).toHaveAttribute('aria-expanded', 'false')
+
+    await userEvent.click(toggle)
+    expect(toggle).toHaveAttribute('aria-expanded', 'true')
+
+    await userEvent.click(screen.getByRole('button', { name: /^Crafting/ }))
+    expect(onSelect).toHaveBeenCalledWith('crafting')
+    expect(toggle).toHaveAttribute('aria-expanded', 'false')
+  })
+
+  it('closes the open list on Escape and returns focus to the toggle', async () => {
+    render(<TradeRail trades={trades} selected={null} villageSelected onSelect={vi.fn()} onSelectVillage={vi.fn()} />)
+
+    const toggle = screen.getByRole('button', { name: 'Village and trades: Village' })
+    await userEvent.click(toggle)
+    await userEvent.keyboard('{Escape}')
+
+    expect(toggle).toHaveAttribute('aria-expanded', 'false')
+    expect(toggle).toHaveFocus()
+  })
 })

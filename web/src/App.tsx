@@ -248,11 +248,12 @@ export default function App() {
         </aside>
 
         {screen === 'village' ? (
-          // The village fills the middle column; the wooden bar below it holds notices and the worked action.
-          <main className="flex min-w-0 flex-col">
+          // The village fills the middle column. Notices and the worked action float over its foot on wide
+          // screens and sit below it on phones, only while there is something to show.
+          <main className="relative flex min-w-0 flex-col">
             <VillageView />
-            <div className="wood-board wood-frame wood-panel">
-              <div className="flex w-full max-w-3xl flex-col gap-3">
+            {(away || showNudge || activeAction || commandError) && (
+              <div className="flex w-full flex-col gap-3 p-4 lg:absolute lg:inset-x-0 lg:bottom-0 lg:mx-auto lg:max-w-3xl lg:p-6">
                 {away && <SinceYouLeft summary={away} onDismiss={() => setAway(null)} />}
                 {showNudge && <SaveNudge onCreateAccount={() => setDialog('register')} onDismiss={dismissNudge} />}
                 {activeAction && (
@@ -266,12 +267,12 @@ export default function App() {
                   />
                 )}
                 {commandError && (
-                  <p role="alert" className="text-[15px] font-medium text-danger">
+                  <p role="alert" className="paper rounded px-4 py-2.5 text-[15px] font-medium text-danger">
                     {commandErrorText(commandError)}
                   </p>
                 )}
               </div>
-            </div>
+            )}
           </main>
         ) : screen !== 'trade' ? (
           menuScreen(screen)
