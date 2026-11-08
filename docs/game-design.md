@@ -118,9 +118,11 @@ Later entries, such as a Market or Leaderboards, are added when multiplayer exis
 
 The storehouse is a grid of slots, like a bag in an RPG. Each slot holds a stack of one item, up to **10,000** of it (about a day of chopping pine fills one). The storehouse has a limited number of slots, raised by **bags** the player crafts, several kinds of them. The numbers are a first try, to be tuned once the limit can be played.
 
-- Built so far: the grid itself, one slot per item in the game's order, with the count in the corner and the name in a tooltip.
-- To build: the stack size and the slot limit as engine rules (the server says how the stores split into slots and how many there are), what happens when the stores are full (a full stack stops its action, and starting it is refused), empty slots and pages once there is a limit, and the bag recipes.
-- Open: the starting number of slots and how many each bag adds; whether a full storehouse wastes the rest of an offline stretch or keeps it for later; bags as something to sell, once monetisation is discussed.
+- A hold starts with **48 slots**.
+- When what an action makes no longer fits (its last stack is full and no slot is free), the action stops, like when its inputs run out, and starting it is refused ("the storehouse is full"). Time away after that yields nothing, which is what makes bags worth having. A recipe can use the slot its inputs free.
+- Built: the stack size and the slot limit as engine rules, the server splitting the stores into slots, and the grid with free slots and pages of 24.
+- To build: the bags (items that add slots, crafted, several kinds), and a way to make room (selling or dropping items).
+- Open: how many slots each bag adds; bags as something to sell, once monetisation is discussed.
 - Idea: the tooltip grows into a full item card (what it is for, how long it takes to gather, the XP it gives, its market price), with tooltips inside tooltips.
 
 ### Villagers: Later (core)
