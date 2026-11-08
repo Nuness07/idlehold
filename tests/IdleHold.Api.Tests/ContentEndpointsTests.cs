@@ -36,6 +36,7 @@ public sealed class ContentEndpointsTests(PostgresFixture database) : IClassFixt
                 new SkillDefinitionResponse("fishing", SkillCategory.Gathering),
                 new SkillDefinitionResponse("mining", SkillCategory.Gathering),
                 new SkillDefinitionResponse("crafting", SkillCategory.Production),
+                new SkillDefinitionResponse("carpentry", SkillCategory.Production),
             ],
             content!.Skills);
     }
