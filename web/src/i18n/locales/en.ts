@@ -151,6 +151,7 @@ export const en = {
   },
   stores: {
     heading: 'Storehouse',
+    slot: '{{name}}, {{count}}',
     empty: 'Nothing stored yet. Start an action and the stores fill up, even while you are away.',
   },
   devTools: {

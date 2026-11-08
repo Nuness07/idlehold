@@ -5,6 +5,7 @@ import { isApiError, type Skill } from './api/client'
 import { Button } from './components/Button'
 import { PixelSprite } from './components/PixelSprite'
 import { towerSprite } from './content/labels'
+import { itemIdsIn } from './content/items'
 import { useContentText } from './content/text'
 import { AccountDialog } from './features/account/AccountDialog'
 import type { AccountFormMode } from './features/account/AccountForm'
@@ -215,7 +216,7 @@ export default function App() {
   /** The middle column for a screen opened from the hold menu. */
   const menuScreen = (opened: Exclude<Screen, 'village' | 'trade'>) => (
     <ScreenPage screen={opened}>
-      {opened === 'storehouse' && <Stores inventory={player.inventory} freshItemId={freshItemId} />}
+      {opened === 'storehouse' && <Stores inventory={player.inventory} itemOrder={itemIdsIn(content.data)} freshItemId={freshItemId} />}
       {opened === 'achievements' && <ComingSoon>{t('comingSoon.achievements')}</ComingSoon>}
       {opened === 'history' && <ComingSoon>{t('comingSoon.history')}</ComingSoon>}
       {opened === 'statistics' && <Statistics skills={skillIds.map(skillOf)} inventory={player.inventory} />}

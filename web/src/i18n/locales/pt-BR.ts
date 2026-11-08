@@ -150,6 +150,7 @@ export const ptBR = {
   },
   stores: {
     heading: 'Armazém',
+    slot: '{{name}}, {{count}}',
     empty: 'Nada guardado ainda. Comece uma ação e o armazém vai enchendo, mesmo enquanto você estiver fora.',
   },
   devTools: {
