@@ -16,6 +16,10 @@ public class StorageTests
         {
             Inputs = [new ItemAmount("log", 3)],
         },
+        new ActionDefinition("whittle", "crafting", TimeSpan.FromSeconds(2), XpPerCompletion: 3, OutputItemId: "stick", OutputQuantity: 2)
+        {
+            Inputs = [new ItemAmount("log", 1)],
+        },
     ],
     storage: new StorageRules(SlotCount: 3, StackSize: 10));
 
@@ -97,6 +101,33 @@ public class StorageTests
 
         Assert.Equal(2, result.ItemCount("plank"));
         Assert.Equal(0, result.ItemCount("log"));
+    }
+
+    [Fact]
+    public void Tick_ARecipeThatNeedsASlotBeforeItFreesOne_Stops()
+    {
+        // Every slot is taken. The first cut opens a second stick stack while the logs still need two; only the
+        // second cut would free one, so the first can never be stored.
+        var state = Doing("whittle", ("log", 12), ("stick", 9));
+
+        var result = _engine.Tick(state, TimeSpan.FromHours(1));
+
+        Assert.Equal(9, result.ItemCount("stick"));
+        Assert.Equal(12, result.ItemCount("log"));
+        Assert.Null(result.ActiveAction);
+    }
+
+    [Fact]
+    public void Tick_ARepeatableRecipe_StopsAtTheFirstCompletionThatDoesNotFit()
+    {
+        // One free slot: 5 cuts make 10 sticks; the 6th would need a second stick stack while the logs still take two.
+        var state = Doing("whittle", ("log", 20));
+
+        var result = _engine.Tick(state, TimeSpan.FromHours(1));
+
+        Assert.Equal(10, result.ItemCount("stick"));
+        Assert.Equal(15, result.ItemCount("log"));
+        Assert.Null(result.ActiveAction);
     }
 
     [Fact]
