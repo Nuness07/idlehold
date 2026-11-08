@@ -45,3 +45,24 @@ Content-Type: application/json
 
 ### Sign out (a guest is deleted with its hold)
 POST {{host}}/account/logout
+
+### Dev tools: set a trade's level (Development only)
+PUT {{host}}/dev/player/skills/woodcutting
+Content-Type: application/json
+
+{ "level": 30 }
+
+### Dev tools: set an item's count (a tool: 1 gives it, 0 takes it)
+PUT {{host}}/dev/player/items/chipped-stone-axe
+Content-Type: application/json
+
+{ "count": 1 }
+
+### Dev tools: skip time as if the player had been away
+POST {{host}}/dev/player/advance
+Content-Type: application/json
+
+{ "minutes": 480 }
+
+### Dev tools: reset the hold
+POST {{host}}/dev/player/reset

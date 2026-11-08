@@ -56,6 +56,13 @@ public sealed class PlayerService(IPlayerStore store, GameEngine engine, TimePro
         ApplyAsync(accountId, check: _ => null, engine.StopAction, cancellationToken);
 
     /// <summary>
+    /// Rewrites the account's caught-up state with no game rule in the way. Only the development tools
+    /// (<c>Dev/</c>) call this; game commands go through the engine.
+    /// </summary>
+    public Task<CommandResult> EditAsync(Guid accountId, Func<GameState, GameState> edit, CancellationToken cancellationToken) =>
+        ApplyAsync(accountId, check: _ => null, edit, cancellationToken);
+
+    /// <summary>
     /// Applies a command to the account's hold as one atomic store update (repeated on a concurrency retry).
     /// <paramref name="check"/> runs on the caught-up state; when the game refuses the command, nothing is written.
     /// </summary>

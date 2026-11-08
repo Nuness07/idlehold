@@ -1,5 +1,5 @@
 import { useQueryClient } from '@tanstack/react-query'
-import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
+import { lazy, Suspense, useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { isApiError, type Skill } from './api/client'
 import { Button } from './components/Button'
@@ -36,6 +36,12 @@ import { TradeRail } from './features/trades/TradeRail'
 import { TradeSign } from './features/trades/TradeSign'
 import { VillageView } from './features/village/VillageView'
 import { useFormat } from './lib/format'
+
+/**
+ * The development tools (GM mode), only in the dev build: Vite turns `import.meta.env.DEV` into `false` for
+ * production, so the panel and its chunk are left out of the bundle.
+ */
+const DevPanel = import.meta.env.DEV ? lazy(() => import('./features/devtools/DevPanel')) : null
 
 /** A trade the player has not earned XP in yet. Its real level bounds arrive with the first XP. */
 const untouchedSkill: Skill = { xp: 0, level: 1, levelStartXp: 0, nextLevelXp: null }
@@ -338,6 +344,11 @@ export default function App() {
       <div className="xl:hidden">
         <MenuBar screen={screen} onOpen={setScreen} />
       </div>
+      {DevPanel && (
+        <Suspense fallback={null}>
+          <DevPanel player={player} content={content.data} />
+        </Suspense>
+      )}
     </>,
   )
 }
