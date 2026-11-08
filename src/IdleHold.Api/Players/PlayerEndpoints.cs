@@ -65,6 +65,7 @@ public static class PlayerEndpoints
         {
             ActionBlock.MissingInputs => "Not enough materials to start this action.",
             ActionBlock.ToolAlreadyOwned => "You already own this tool or a better one.",
+            ActionBlock.StorageFull => "The storehouse has no room for what this action makes.",
             _ => "This action cannot start now.",
         },
         extensions: new Dictionary<string, object?> { ["reason"] = ReasonCode(block) });
@@ -73,6 +74,7 @@ public static class PlayerEndpoints
     {
         ActionBlock.MissingInputs => "missing-inputs",
         ActionBlock.ToolAlreadyOwned => "tool-already-owned",
+        ActionBlock.StorageFull => "storage-full",
         _ => "blocked",
     };
 

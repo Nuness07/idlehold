@@ -20,8 +20,6 @@ public static class DevEndpoints
     /// <summary>The longest single time skip: a month, far more than any test needs.</summary>
     public static readonly TimeSpan MaxAdvance = TimeSpan.FromDays(30);
 
-    /// <summary>Upper bound for a stack set by hand, so a typo cannot overflow later sums.</summary>
-    public const long MaxItemCount = 1_000_000_000;
 
     public static IEndpointRouteBuilder MapDevEndpoints(this IEndpointRouteBuilder app)
     {
@@ -61,8 +59,9 @@ public static class DevEndpoints
             errors["itemId"] = [$"Unknown item '{itemId}'."];
         }
 
-        // A tool is unique: the stores hold one or none.
-        var max = content.FindTool(itemId) is null ? MaxItemCount : 1;
+        // A tool is unique: the stores hold one or none. Anything else can fill the whole storehouse, no more,
+        // so the answer never lists more slots than the hold has.
+        var max = content.FindTool(itemId) is null ? MaxItemCount(content) : 1;
         if (request.Count < 0 || request.Count > max)
         {
             errors["count"] = [$"The count must be between 0 and {max}."];
@@ -109,9 +108,10 @@ public static class DevEndpoints
             : TypedResults.NotFound();
     }
 
-    /// <summary>The content has no item list of its own: an item is anything an action makes or uses.</summary>
-    private static bool IsKnownItem(GameContent content, string itemId) =>
-        content.Actions.Any(action => action.OutputItemId == itemId || action.Inputs.Any(input => input.ItemId == itemId));
+    /// <summary>The most of one item set by hand: every slot of the storehouse full of it.</summary>
+    public static long MaxItemCount(GameContent content) => content.Storage.SlotCount * content.Storage.StackSize;
+
+    private static bool IsKnownItem(GameContent content, string itemId) => content.ItemIds.Contains(itemId);
 
     private static Guid AccountId(ClaimsPrincipal user) =>
         Guid.Parse(user.FindFirstValue(ClaimTypes.NameIdentifier)

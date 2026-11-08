@@ -30,6 +30,11 @@ public sealed class GameEngine(GameContent content)
             return ActionBlock.MissingInputs;
         }
 
+        if (StorageLimit(state, action, upTo: 1) == 0)
+        {
+            return ActionBlock.StorageFull;
+        }
+
         return null;
     }
 
@@ -83,10 +88,37 @@ public sealed class GameEngine(GameContent content)
             .ToList();
 
     /// <summary>
+    /// How the stores split into slots, in the game's item order: each item fills stacks of the content's stack
+    /// size, the last one holding the rest. <see cref="StorageView.SlotCount"/> is how many slots there are.
+    /// </summary>
+    public StorageView StorageOf(GameState state)
+    {
+        var rules = content.Storage;
+        var position = content.ItemIds.Select((itemId, index) => (itemId, index)).ToDictionary(pair => pair.itemId, pair => pair.index);
+        var slots = state.Inventory
+            .Where(item => item.Value > 0)
+            // An item the content no longer lists still shows, after the known ones.
+            .OrderBy(item => position.GetValueOrDefault(item.Key, int.MaxValue))
+            .ThenBy(item => item.Key, StringComparer.Ordinal)
+            .SelectMany(item => Stacks(item.Key, item.Value, rules.StackSize))
+            .ToList();
+
+        return new StorageView(rules.SlotCount, rules.StackSize, slots);
+    }
+
+    private static IEnumerable<ItemAmount> Stacks(string itemId, long count, long stackSize)
+    {
+        for (var left = count; left > 0; left -= stackSize)
+        {
+            yield return new ItemAmount(itemId, Math.Min(left, stackSize));
+        }
+    }
+
+    /// <summary>
     /// Advances the game by <paramref name="elapsed"/>. Runs in constant time no matter how long
     /// the period is: completions are computed with division instead of a loop. When the stores
-    /// can only pay for fewer completions than the time allows (inputs run out, or the tool is made),
-    /// the action completes those and stops.
+    /// can only pay for or hold fewer completions than the time allows (inputs run out, the tool is
+    /// made, or the storehouse fills), the action completes those and stops.
     /// </summary>
     public GameState Tick(GameState state, TimeSpan elapsed)
     {
@@ -102,7 +134,7 @@ public sealed class GameEngine(GameContent content)
         var completions = totalTicks / action.Duration.Ticks;
 
         GameState next;
-        if (CompletionLimit(state, action) is { } limit && completions >= limit)
+        if (CompletionLimit(state, action, completions) is { } limit && completions >= limit)
         {
             // The next cycle could not be paid for, so the action ends here and its partial progress goes.
             completions = limit;
@@ -131,8 +163,12 @@ public sealed class GameEngine(GameContent content)
         };
     }
 
-    /// <summary>How many more completions the player can pay for, or <c>null</c> when nothing limits them.</summary>
-    private long? CompletionLimit(GameState state, ActionDefinition action)
+    /// <summary>
+    /// How many more completions the player can pay for and store, or <c>null</c> when nothing limits them
+    /// before the <paramref name="completions"/> the time allows plus the next one (which decides whether the
+    /// action goes on).
+    /// </summary>
+    private long? CompletionLimit(GameState state, ActionDefinition action, long completions)
     {
         long? limit = null;
 
@@ -147,7 +183,62 @@ public sealed class GameEngine(GameContent content)
             limit = limit is { } current ? Math.Min(current, affordable) : affordable;
         }
 
-        return limit;
+        var upTo = Math.Min(limit ?? long.MaxValue, completions + 1);
+        var storable = StorageLimit(state, action, upTo);
+        return storable < upTo ? storable : limit;
+    }
+
+    /// <summary>
+    /// The most completions, up to <paramref name="upTo"/>, whose results still fit in the storehouse. Each
+    /// completion takes its inputs out and puts its output in, so a recipe can free the slot its output needs.
+    /// A binary search over the slot count after k completions: constant time for any stretch of time.
+    /// </summary>
+    private long StorageLimit(GameState state, ActionDefinition action, long upTo)
+    {
+        var rules = content.Storage;
+        if (rules == StorageRules.Unlimited)
+        {
+            return upTo;
+        }
+
+        // Slots taken by everything the action does not touch; the touched items are counted per k below.
+        var touched = action.Inputs.Select(input => input.ItemId).Append(action.OutputItemId).ToHashSet();
+        var untouched = state.Inventory.Where(item => !touched.Contains(item.Key)).Sum(item => rules.SlotsFor(item.Value));
+
+        bool Fits(long k)
+        {
+            var slots = untouched + rules.SlotsFor(state.ItemCount(action.OutputItemId) + k * action.OutputQuantity);
+            foreach (var input in action.Inputs)
+            {
+                slots += rules.SlotsFor(state.ItemCount(input.ItemId) - k * input.Quantity);
+            }
+
+            return slots <= rules.SlotCount;
+        }
+
+        // The search assumes the slot count never falls and then rises again as k grows. That holds for gathering
+        // (it only adds) and for today's recipes, which each make a tool once. A recipe that frees slots of its
+        // inputs while it fills its output's could stop a completion early or late; revisit with the first one.
+        if (!Fits(0))
+        {
+            return 0;
+        }
+
+        long low = 0, high = upTo;
+        while (low < high)
+        {
+            var mid = low + (high - low + 1) / 2;
+            if (Fits(mid))
+            {
+                low = mid;
+            }
+            else
+            {
+                high = mid - 1;
+            }
+        }
+
+        return low;
     }
 
     /// <summary>Adds (or, with a negative amount, removes) and drops entries that reach zero.</summary>
@@ -166,7 +257,16 @@ public enum ActionBlock
 
     /// <summary>The action makes a tool, and the player already owns that tier or a better one.</summary>
     ToolAlreadyOwned,
+
+    /// <summary>What the action makes does not fit: its stack is full and no slot is free.</summary>
+    StorageFull,
 }
+
+/// <summary>
+/// The storehouse as slots: <see cref="Slots"/> lists the stacks in the game's item order, and
+/// <see cref="SlotCount"/> says how many slots there are (more slots than that only after a rule change).
+/// </summary>
+public sealed record StorageView(int SlotCount, long StackSize, IReadOnlyList<ItemAmount> Slots);
 
 /// <summary>
 /// Where the player stands in one tool family: the tool they own (<c>null</c> with bare hands)

@@ -13,8 +13,15 @@ public sealed class GameContent
     public GameContent(
         IEnumerable<SkillDefinition> skills,
         IEnumerable<ActionDefinition> actions,
-        IEnumerable<ToolDefinition>? tools = null)
+        IEnumerable<ToolDefinition>? tools = null,
+        StorageRules? storage = null)
     {
+        Storage = storage ?? StorageRules.Unlimited;
+        if (Storage.SlotCount < 1 || Storage.StackSize < 1)
+        {
+            throw new ArgumentException("The storehouse needs at least one slot and a stack size of at least one.", nameof(storage));
+        }
+
         foreach (var skill in skills)
         {
             AddSkill(skill);
@@ -29,7 +36,21 @@ public sealed class GameContent
         {
             AddAction(action);
         }
+
+        ItemIds = _actions.Values
+            .SelectMany(action => action.Inputs.Select(input => input.ItemId).Prepend(action.OutputItemId))
+            .Distinct()
+            .ToList();
     }
+
+    /// <summary>How the storehouse holds items: its slots and how much one slot holds.</summary>
+    public StorageRules Storage { get; }
+
+    /// <summary>
+    /// Every item, in the order the game lists them: action by action, each action's output before its inputs.
+    /// There is no separate item list: an item is anything an action makes or uses. Tools are items too.
+    /// </summary>
+    public IReadOnlyList<string> ItemIds { get; }
 
     /// <summary>Every skill, in the order the game lists them.</summary>
     public IReadOnlyList<SkillDefinition> Skills => _skills;

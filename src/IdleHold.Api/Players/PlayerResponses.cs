@@ -13,6 +13,7 @@ public sealed record PlayerResponse(
     IReadOnlyDictionary<string, long> Inventory,
     IReadOnlyDictionary<string, SkillResponse> Skills,
     IReadOnlyList<ToolProgressResponse> Tools,
+    StorageResponse Storage,
     DateTimeOffset UpdatedAt)
 {
     public static PlayerResponse From(PlayerSave save, GameEngine engine, GameContent content)
@@ -32,9 +33,22 @@ public sealed record PlayerResponse(
             .Select(tool => new ToolProgressResponse(tool.Family, tool.OwnedItemId, tool.NextActionId))
             .ToList();
 
-        return new PlayerResponse(save.Id, activeAction, state.Inventory, skills, tools, save.LastUpdated);
+        var storage = engine.StorageOf(state);
+        var storageResponse = new StorageResponse(
+            storage.SlotCount,
+            storage.StackSize,
+            storage.Slots.Select(slot => new ItemAmountResponse(slot.ItemId, slot.Quantity)).ToList());
+
+        return new PlayerResponse(save.Id, activeAction, state.Inventory, skills, tools, storageResponse, save.LastUpdated);
     }
 }
+
+/// <summary>
+/// The storehouse as slots: each slot is a stack of one item, in the game's item order, and
+/// <see cref="SlotCount"/> is how many slots the hold has. The server splits the stores, so the client
+/// never applies the stack rule itself.
+/// </summary>
+public sealed record StorageResponse(int SlotCount, long StackSize, IReadOnlyList<ItemAmountResponse> Slots);
 
 /// <summary>
 /// One tool family: the tool owned (null with bare hands) and the action that makes the next tier

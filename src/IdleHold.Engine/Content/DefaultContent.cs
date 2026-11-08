@@ -49,5 +49,12 @@ public static class DefaultContent
     [
         new ToolDefinition("chipped-stone-axe", Family: "axe", Tier: 1, SkillId: "woodcutting"),
         new ToolDefinition("reed-fishing-rod", Family: "fishing-rod", Tier: 1, SkillId: "fishing"),
-    ]);
+    ],
+    Storage);
+
+    /// <summary>
+    /// The storehouse a hold starts with: 48 slots of up to 10,000 of one item each (a day of chopping pine fills
+    /// about one). Bags will add slots. A first try, to tune once the limit is played.
+    /// </summary>
+    public static StorageRules Storage { get; } = new(SlotCount: 48, StackSize: 10_000);
 }
