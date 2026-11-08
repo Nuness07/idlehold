@@ -13,7 +13,9 @@ namespace IdleHold.Api.Tests;
 /// It runs in a "Testing" environment, so the local development database is never touched: every
 /// test class gets a throwaway Postgres from <see cref="PostgresFixture"/>.
 /// </summary>
-public sealed class ApiFactory(string gameDatabase) : WebApplicationFactory<Program>
+/// <param name="devTools">Maps the development tools (<c>/dev/player</c>), which are off unless configured.</param>
+/// <param name="environment">The hosting environment; "Testing" unless a test checks an environment rule.</param>
+public sealed class ApiFactory(string gameDatabase, bool devTools = false, string environment = "Testing") : WebApplicationFactory<Program>
 {
     /// <summary>
     /// Every factory's clock starts at the same fixed instant, so runs never depend on the wall clock.
@@ -26,8 +28,9 @@ public sealed class ApiFactory(string gameDatabase) : WebApplicationFactory<Prog
 
     protected override void ConfigureWebHost(IWebHostBuilder builder)
     {
-        builder.UseEnvironment("Testing");
+        builder.UseEnvironment(environment);
         builder.UseSetting("ConnectionStrings:Game", gameDatabase);
+        builder.UseSetting("DevTools:Enabled", devTools ? "true" : "false");
         builder.UseSetting("GuestCleanup:Enabled", "false"); // It would delete other tests' empty holds.
         builder.ConfigureTestServices(services => services.AddSingleton<TimeProvider>(Clock));
     }

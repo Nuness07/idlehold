@@ -1,6 +1,7 @@
 using System.Text.Json.Serialization;
 using IdleHold.Api;
 using IdleHold.Api.Accounts;
+using IdleHold.Api.Dev;
 using IdleHold.Api.Persistence;
 using IdleHold.Api.Players;
 using IdleHold.Engine;
@@ -125,6 +126,18 @@ app.UseAuthorization();
 app.MapGameContentEndpoints();
 app.MapAccountEndpoints();
 app.MapPlayerEndpoints();
+
+// Development tools (GM mode): rewrite the session's hold to try features quickly. Off unless configured,
+// and never allowed in Production, where they would let any player edit their own save.
+if (app.Configuration.GetValue("DevTools:Enabled", defaultValue: false))
+{
+    if (app.Environment.IsProduction())
+    {
+        throw new InvalidOperationException("DevTools:Enabled must not be set in Production.");
+    }
+
+    app.MapDevEndpoints();
+}
 
 await app.RunAsync();
 
