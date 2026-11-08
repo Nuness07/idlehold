@@ -1,4 +1,5 @@
 using IdleHold.Engine.Content;
+using IdleHold.Engine.State;
 
 namespace IdleHold.Engine.Tests;
 
@@ -91,24 +92,70 @@ public class GameContentTests
             .ToDictionary(group => group.Key, group => group.Count());
 
         Assert.Equal(
-            new Dictionary<string, int> { ["woodcutting"] = 3, ["fishing"] = 2, ["mining"] = 3, ["foraging"] = 2, ["crafting"] = 2 },
+            new Dictionary<string, int> { ["foraging"] = 4, ["woodcutting"] = 2, ["fishing"] = 2, ["mining"] = 2, ["crafting"] = 2 },
             bySkill);
     }
 
     [Theory]
-    [InlineData("gather-twigs", "woodcutting")]
-    [InlineData("pick-pebbles", "mining")]
-    [InlineData("pick-wild-berries", "foraging")]
-    public void DefaultContent_HasABareHandActionInEveryStartingTrade(string actionId, string skillId)
+    [InlineData("gather-twigs")]
+    [InlineData("pick-pebbles")]
+    public void DefaultContent_TheFirstAxeIsGatheredByHand(string actionId)
     {
-        // Hand actions are the quickest in their trade: the player starts with nothing.
+        // Foraging is the bare-hand trade, and it gathers what the first axe is made of.
         var content = DefaultContent.Create();
-        var action = content.GetAction(actionId);
 
-        Assert.Equal(skillId, action.SkillId);
-        Assert.All(
-            content.Actions.Where(other => other.SkillId == skillId),
-            other => Assert.True(action.Duration <= other.Duration));
+        Assert.Equal("foraging", content.GetAction(actionId).SkillId);
+        Assert.Contains(
+            content.GetAction("craft-chipped-stone-axe").Inputs,
+            input => input.ItemId == content.GetAction(actionId).OutputItemId);
+    }
+
+    [Fact]
+    public void DefaultContent_EveryLockedTradeCanBeOpened()
+    {
+        // Each tool that opens a trade is made in a trade that is open from the start, or that an earlier tool opens.
+        var content = DefaultContent.Create();
+        var engine = new GameEngine(content);
+        var open = content.Skills.Select(skill => skill.Id).Where(id => engine.MissingToolFor(GameState.New, id) is null).ToHashSet();
+
+        var opened = true;
+        while (opened)
+        {
+            opened = false;
+            foreach (var tool in content.Tools.Where(tool => !open.Contains(tool.SkillId)))
+            {
+                var recipe = content.FindRecipeFor(tool.ItemId);
+                if (recipe is not null && open.Contains(recipe.SkillId) && recipe.Inputs.All(input => open.Contains(content.FindRecipeFor(input.ItemId)!.SkillId)))
+                {
+                    opened = open.Add(tool.SkillId);
+                }
+            }
+        }
+
+        Assert.Equal(content.Skills.Select(skill => skill.Id).ToHashSet(), open);
+    }
+
+    [Fact]
+    public void Constructor_FirstToolMadeInTheTradeItOpens_Throws()
+    {
+        var makeAxe = new ActionDefinition("make-axe", "woodcutting", TimeSpan.FromSeconds(5), 10, "axe");
+
+        Assert.Throws<ArgumentException>(() => new GameContent(TestSkills.All, [makeAxe], [new ToolDefinition("axe", "axe", 1, "woodcutting")]));
+    }
+
+    [Fact]
+    public void Constructor_UpgradeMadeInTheTradeItServes_IsAllowed()
+    {
+        // Only the first tier opens the trade; a better one can be made inside it.
+        var content = new GameContent(
+            TestSkills.All,
+            [
+                new ActionDefinition("make-axe", "crafting", TimeSpan.FromSeconds(5), 10, "axe"),
+                new ActionDefinition("make-good-axe", "woodcutting", TimeSpan.FromSeconds(5), 10, "good-axe"),
+            ],
+            [new ToolDefinition("axe", "axe", 1, "woodcutting"), new ToolDefinition("good-axe", "axe", 2, "woodcutting")]);
+
+        Assert.Equal(2, content.Actions.Count);
     }
 
     [Fact]

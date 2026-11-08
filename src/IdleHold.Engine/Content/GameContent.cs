@@ -143,6 +143,14 @@ public sealed class GameContent
             throw new ArgumentException($"Action '{action.Id}' makes a tool and must produce exactly one.", "actions");
         }
 
+        // A trade is locked until its tool exists, so the first tier must be made somewhere else.
+        if (_tools.GetValueOrDefault(action.OutputItemId) is { } made
+            && made.SkillId == action.SkillId
+            && _tools.Values.Where(tool => tool.Family == made.Family).Min(tool => tool.Tier) == made.Tier)
+        {
+            throw new ArgumentException($"Action '{action.Id}' makes the tool that opens its own trade, so it could never start.", "actions");
+        }
+
         if (action.Inputs.Any(input => input.Quantity <= 0))
         {
             throw new ArgumentException($"Action '{action.Id}' must use a positive quantity of every input.", "actions");

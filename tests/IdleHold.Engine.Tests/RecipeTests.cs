@@ -126,9 +126,10 @@ public class RecipeTests
     }
 
     [Fact]
-    public void CheckStart_GatheringAction_IsAlwaysAllowed()
+    public void CheckStart_GatheringAction_NeedsNoInputs()
     {
-        Assert.Null(_engine.CheckStart(GameState.New, "chop"));
+        // The axe opens Woodcutting (see TradeLockTests); once it does, chopping needs nothing else.
+        Assert.Null(_engine.CheckStart(With(("axe", 1)), "chop"));
     }
 
     [Fact]
