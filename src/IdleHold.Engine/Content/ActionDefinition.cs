@@ -24,6 +24,9 @@ public sealed record ActionDefinition(
     /// <see cref="FuelDefinition"/>.
     /// </summary>
     public bool UsesFuel { get; init; }
+
+    /// <summary>The recipe group the action is listed under, or <c>null</c> for a trade without groups; see <see cref="RecipeGroupDefinition"/>.</summary>
+    public string? GroupId { get; init; }
 }
 
 /// <summary>A quantity of one item, such as "3 twigs".</summary>

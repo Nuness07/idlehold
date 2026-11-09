@@ -1,7 +1,7 @@
 namespace IdleHold.Engine.Content;
 
 /// <summary>
-/// The static catalog of the game: skills, actions, tools and fuels (and later items).
+/// The static catalog of the game: skills, actions, tools, fuels and recipe groups (and later items).
 /// It is validated once at construction so the engine can trust it afterwards.
 /// </summary>
 public sealed class GameContent
@@ -10,13 +10,15 @@ public sealed class GameContent
     private readonly Dictionary<string, ActionDefinition> _actions = new(StringComparer.Ordinal);
     private readonly Dictionary<string, ToolDefinition> _tools = new(StringComparer.Ordinal);
     private readonly Dictionary<string, FuelDefinition> _fuels = new(StringComparer.Ordinal);
+    private readonly List<RecipeGroupDefinition> _recipeGroups = [];
 
     public GameContent(
         IEnumerable<SkillDefinition> skills,
         IEnumerable<ActionDefinition> actions,
         IEnumerable<ToolDefinition>? tools = null,
         StorageRules? storage = null,
-        IEnumerable<FuelDefinition>? fuels = null)
+        IEnumerable<FuelDefinition>? fuels = null,
+        IEnumerable<RecipeGroupDefinition>? recipeGroups = null)
     {
         Storage = storage ?? StorageRules.Unlimited;
         if (Storage.SlotCount < 1 || Storage.StackSize < 1)
@@ -34,9 +36,20 @@ public sealed class GameContent
             AddTool(tool);
         }
 
+        foreach (var group in recipeGroups ?? [])
+        {
+            AddRecipeGroup(group);
+        }
+
         foreach (var action in actions)
         {
             AddAction(action);
+        }
+
+        // A trade with groups must sort every one of its recipes, or one would fall off the screen.
+        if (_actions.Values.FirstOrDefault(action => action.GroupId is null && _recipeGroups.Any(group => group.SkillId == action.SkillId)) is { } ungrouped)
+        {
+            throw new ArgumentException($"Action '{ungrouped.Id}' has no recipe group, but its trade has some.", nameof(actions));
         }
 
         ItemIds = _actions.Values
@@ -68,6 +81,9 @@ public sealed class GameContent
 
     /// <summary>Every fuel, in the order the game lists them.</summary>
     public IReadOnlyCollection<FuelDefinition> Fuels => _fuels.Values;
+
+    /// <summary>Every recipe group, in the order the game lists them; see <see cref="RecipeGroupDefinition"/>.</summary>
+    public IReadOnlyList<RecipeGroupDefinition> RecipeGroups => _recipeGroups;
 
     /// <summary>Returns the fuel this item is, or <c>null</c> if the item cannot feed a fire.</summary>
     public FuelDefinition? FindFuel(string itemId) =>
@@ -134,6 +150,21 @@ public sealed class GameContent
         }
     }
 
+    private void AddRecipeGroup(RecipeGroupDefinition group)
+    {
+        if (!HasSkill(group.SkillId))
+        {
+            throw new ArgumentException($"Recipe group '{group.Id}' belongs to the unknown skill '{group.SkillId}'.", "recipeGroups");
+        }
+
+        if (_recipeGroups.Any(other => other.Id == group.Id))
+        {
+            throw new ArgumentException($"Duplicate recipe group '{group.Id}'.", "recipeGroups");
+        }
+
+        _recipeGroups.Add(group);
+    }
+
     private void AddFuel(FuelDefinition fuel)
     {
         if (!ItemIds.Contains(fuel.ItemId))
@@ -191,6 +222,11 @@ public sealed class GameContent
             && _tools.Values.Where(tool => tool.Family == made.Family).Min(tool => tool.Tier) == made.Tier)
         {
             throw new ArgumentException($"Action '{action.Id}' makes the tool that opens its own trade, so it could never start.", "actions");
+        }
+
+        if (action.GroupId is not null && _recipeGroups.Find(group => group.Id == action.GroupId)?.SkillId != action.SkillId)
+        {
+            throw new ArgumentException($"Action '{action.Id}' is in the recipe group '{action.GroupId}', which is not one of its trade's.", "actions");
         }
 
         if (action.Inputs.Any(input => input.Quantity <= 0))
