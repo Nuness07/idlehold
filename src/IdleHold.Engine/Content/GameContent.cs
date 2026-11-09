@@ -1,7 +1,7 @@
 namespace IdleHold.Engine.Content;
 
 /// <summary>
-/// The static catalog of the game: skills, actions and tools (and later items).
+/// The static catalog of the game: skills, actions, tools and fuels (and later items).
 /// It is validated once at construction so the engine can trust it afterwards.
 /// </summary>
 public sealed class GameContent
@@ -9,12 +9,14 @@ public sealed class GameContent
     private readonly List<SkillDefinition> _skills = [];
     private readonly Dictionary<string, ActionDefinition> _actions = new(StringComparer.Ordinal);
     private readonly Dictionary<string, ToolDefinition> _tools = new(StringComparer.Ordinal);
+    private readonly Dictionary<string, FuelDefinition> _fuels = new(StringComparer.Ordinal);
 
     public GameContent(
         IEnumerable<SkillDefinition> skills,
         IEnumerable<ActionDefinition> actions,
         IEnumerable<ToolDefinition>? tools = null,
-        StorageRules? storage = null)
+        StorageRules? storage = null,
+        IEnumerable<FuelDefinition>? fuels = null)
     {
         Storage = storage ?? StorageRules.Unlimited;
         if (Storage.SlotCount < 1 || Storage.StackSize < 1)
@@ -41,6 +43,11 @@ public sealed class GameContent
             .SelectMany(action => action.Inputs.Select(input => input.ItemId).Prepend(action.OutputItemId))
             .Distinct()
             .ToList();
+
+        foreach (var fuel in fuels ?? [])
+        {
+            AddFuel(fuel);
+        }
     }
 
     /// <summary>How the storehouse holds items: its slots and how much one slot holds.</summary>
@@ -58,6 +65,13 @@ public sealed class GameContent
     public IReadOnlyCollection<ActionDefinition> Actions => _actions.Values;
 
     public IReadOnlyCollection<ToolDefinition> Tools => _tools.Values;
+
+    /// <summary>Every fuel, in the order the game lists them.</summary>
+    public IReadOnlyCollection<FuelDefinition> Fuels => _fuels.Values;
+
+    /// <summary>Returns the fuel this item is, or <c>null</c> if the item cannot feed a fire.</summary>
+    public FuelDefinition? FindFuel(string itemId) =>
+        _fuels.GetValueOrDefault(itemId);
 
     /// <summary>Returns the action with this id, or <c>null</c> if it does not exist.</summary>
     public ActionDefinition? FindAction(string id) =>
@@ -120,6 +134,29 @@ public sealed class GameContent
         }
     }
 
+    private void AddFuel(FuelDefinition fuel)
+    {
+        if (!ItemIds.Contains(fuel.ItemId))
+        {
+            throw new ArgumentException($"Fuel '{fuel.ItemId}' is not an item any action makes or uses.", "fuels");
+        }
+
+        if (fuel.Cycles < 1)
+        {
+            throw new ArgumentException($"Fuel '{fuel.ItemId}' must burn for at least one cycle.", "fuels");
+        }
+
+        if (_actions.Values.Any(action => action.UsesFuel && (action.OutputItemId == fuel.ItemId || action.Inputs.Any(input => input.ItemId == fuel.ItemId))))
+        {
+            throw new ArgumentException($"Fuel '{fuel.ItemId}' is made or used by an action that burns fuel.", "fuels");
+        }
+
+        if (!_fuels.TryAdd(fuel.ItemId, fuel))
+        {
+            throw new ArgumentException($"Duplicate fuel '{fuel.ItemId}'.", "fuels");
+        }
+    }
+
     private void AddAction(ActionDefinition action)
     {
         if (!HasSkill(action.SkillId))
@@ -130,6 +167,11 @@ public sealed class GameContent
         if (action.Duration <= TimeSpan.Zero)
         {
             throw new ArgumentException($"Action '{action.Id}' must have a positive duration.", "actions");
+        }
+
+        if (action.RequiredLevel is < 1 or > Experience.MaxLevel)
+        {
+            throw new ArgumentException($"Action '{action.Id}' must require a level from 1 to {Experience.MaxLevel}.", "actions");
         }
 
         if (action.OutputQuantity <= 0)

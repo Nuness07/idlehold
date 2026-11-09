@@ -27,7 +27,8 @@ public sealed class PostgresPlayerStoreTests(PostgresFixture database) : IClassF
         {
             Inventory = ImmutableDictionary<string, long>.Empty.Add("reed", 9_600),
             SkillXp = ImmutableDictionary<string, long>.Empty.Add("woodcutting", 96_000),
-            ActiveAction = new ActiveAction("cut-pine", TimeSpan.FromTicks(12_345_678)),
+            ActiveAction = new ActiveAction("cook-grilled-berries", TimeSpan.FromTicks(12_345_678), "pine-log"),
+            FireCyclesLeft = 3,
         };
         await store.UpdateAsync(player.Id, save => save with { State = state, LastUpdated = Noon.AddHours(8) }, CancellationToken.None);
 
@@ -38,7 +39,8 @@ public sealed class PostgresPlayerStoreTests(PostgresFixture database) : IClassF
         Assert.NotNull(reloaded);
         Assert.Equal(9_600, reloaded.State.ItemCount("reed"));
         Assert.Equal(96_000, reloaded.State.XpOf("woodcutting"));
-        Assert.Equal(new ActiveAction("cut-pine", TimeSpan.FromTicks(12_345_678)), reloaded.State.ActiveAction);
+        Assert.Equal(new ActiveAction("cook-grilled-berries", TimeSpan.FromTicks(12_345_678), "pine-log"), reloaded.State.ActiveAction);
+        Assert.Equal(3, reloaded.State.FireCyclesLeft);
         Assert.Equal(Noon.AddHours(8), reloaded.LastUpdated);
     }
 

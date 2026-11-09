@@ -4,11 +4,13 @@ namespace IdleHold.Engine.Content;
 /// The content the real game ships with. Hard-coded for now; it will move to data files later.
 /// The player starts with bare hands: Foraging is the one gathering trade worked by hand, and a trade that a tool
 /// serves (Woodcutting the axe, Carpentry the knife, Mining the pickaxe, Fishing the rod) stays locked until that
-/// tool is made. Each tree, fishing spot and rock then pays more XP per second the slower it is.
+/// tool is made. Inside a trade, better actions open with levels (the pine at Woodcutting 15, the birch at 30), and
+/// each tree, fishing spot and rock pays more XP per second the slower it is.
 /// Crafting turns what the trades gather into tools, and each tool opens the next step: twigs and pebbles make the
 /// axe, the axe cuts the young hazel, a hazel log handles the knife, the knife whittles hazel sticks in Carpentry,
 /// and the sticks handle the pickaxe. Tools are unique and upgraded by tier, so each tool recipe can be made once
-/// (see <see cref="ToolDefinition"/>).
+/// (see <see cref="ToolDefinition"/>). Cooking needs no tool but burns logs: the player picks which, and each kind
+/// lasts a number of dishes (see <see cref="FuelDefinition"/>).
 /// </summary>
 public static class DefaultContent
 {
@@ -20,6 +22,7 @@ public static class DefaultContent
         new SkillDefinition("mining", SkillCategory.Gathering),
         new SkillDefinition("crafting", SkillCategory.Production),
         new SkillDefinition("carpentry", SkillCategory.Production),
+        new SkillDefinition("cooking", SkillCategory.Production),
     ],
     [
         // Foraging: the bare-hand trade, and the only one open from the start besides Crafting.
@@ -30,8 +33,8 @@ public static class DefaultContent
 
         // Woodcutting: locked until the axe. The young hazel is the first tree: thin and quick to cut.
         new ActionDefinition("cut-young-hazel", "woodcutting", TimeSpan.FromSeconds(2), XpPerCompletion: 6, OutputItemId: "hazel-log"),
-        new ActionDefinition("cut-pine", "woodcutting", TimeSpan.FromSeconds(3), XpPerCompletion: 10, OutputItemId: "pine-log"),
-        new ActionDefinition("cut-birch", "woodcutting", TimeSpan.FromSeconds(5), XpPerCompletion: 18, OutputItemId: "birch-log"),
+        new ActionDefinition("cut-pine", "woodcutting", TimeSpan.FromSeconds(3), XpPerCompletion: 10, OutputItemId: "pine-log") { RequiredLevel = 15 },
+        new ActionDefinition("cut-birch", "woodcutting", TimeSpan.FromSeconds(5), XpPerCompletion: 18, OutputItemId: "birch-log") { RequiredLevel = 30 },
 
         // Fishing: locked until the rod.
         new ActionDefinition("catch-perch", "fishing", TimeSpan.FromSeconds(4), XpPerCompletion: 12, OutputItemId: "perch"),
@@ -57,13 +60,27 @@ public static class DefaultContent
         },
         new ActionDefinition("craft-reed-fishing-rod", "crafting", TimeSpan.FromSeconds(40), XpPerCompletion: 55, OutputItemId: "reed-fishing-rod")
         {
-            Inputs = [new ItemAmount("pine-log", 2), new ItemAmount("reed", 4)],
+            Inputs = [new ItemAmount("hazel-stick", 3), new ItemAmount("reed", 4)],
         },
 
         // Carpentry: locked until the knife. Wood shaped into parts; repeatable, unlike a tool.
         new ActionDefinition("whittle-hazel-sticks", "carpentry", TimeSpan.FromSeconds(3), XpPerCompletion: 8, OutputItemId: "hazel-stick", OutputQuantity: 2)
         {
             Inputs = [new ItemAmount("hazel-log", 1)],
+        },
+
+        // Cooking: open from the start, but every dish burns fuel, and logs need the axe.
+        new ActionDefinition("cook-grilled-berries", "cooking", TimeSpan.FromSeconds(3), XpPerCompletion: 8, OutputItemId: "grilled-berries")
+        {
+            Inputs = [new ItemAmount("wild-berry", 2)],
+            UsesFuel = true,
+        },
+        new ActionDefinition("cook-berry-soup", "cooking", TimeSpan.FromSeconds(6), XpPerCompletion: 20, OutputItemId: "berry-soup")
+        {
+            // The reeds thicken the pot.
+            Inputs = [new ItemAmount("wild-berry", 5), new ItemAmount("reed", 2)],
+            RequiredLevel = 15,
+            UsesFuel = true,
         },
     ],
     [
@@ -72,7 +89,13 @@ public static class DefaultContent
         new ToolDefinition("chipped-stone-pickaxe", Family: "pickaxe", Tier: 1, SkillId: "mining"),
         new ToolDefinition("reed-fishing-rod", Family: "fishing-rod", Tier: 1, SkillId: "fishing"),
     ],
-    Storage);
+    Storage,
+    [
+        // A thicker log burns longer.
+        new FuelDefinition("hazel-log", Cycles: 2),
+        new FuelDefinition("pine-log", Cycles: 4),
+        new FuelDefinition("birch-log", Cycles: 6),
+    ]);
 
     /// <summary>
     /// The storehouse a hold starts with: 48 slots of up to 10,000 of one item each (a day of chopping pine fills

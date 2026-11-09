@@ -39,20 +39,30 @@ Four gathering skills exist. Foraging is worked by hand; each tree, fishing spot
 | Skill | Actions | Item |
 |---|---|---|
 | Foraging | Twigs (2 s, 5 XP), Pebbles (2 s, 5 XP), Wild berries (2 s, 5 XP), Reeds (3 s, 8 XP) | Twig, Pebble, Wild berry, Reed |
-| Woodcutting | Young hazel (2 s, 6 XP), Pine (3 s, 10 XP), Birch (5 s, 18 XP) | Hazel log, Pine log, Birch log |
+| Woodcutting | Young hazel (2 s, 6 XP), Pine (level 15; 3 s, 10 XP), Birch (level 30; 5 s, 18 XP) | Hazel log, Pine log, Birch log |
 | Fishing | Perch (4 s, 12 XP), Pike (7 s, 28 XP) | Perch, Pike |
 | Mining | Stone (3 s, 9 XP), Copper (6 s, 22 XP) | Stone, Copper ore |
 
-Wood and stone are the village's building materials; fish feeds Cooking; copper feeds Smithing. A content test keeps the rule that a slower action never pays less XP per second. Trades are locked until their tool exists (see "Bare hands and tools"); level gates are not in yet, so every action of an open trade starts at level 1.
+Wood and stone are the village's building materials; fish feeds Cooking; copper feeds Smithing. A content test keeps the rule that a slower action never pays less XP per second. Trades are locked until their tool exists (see "Bare hands and tools"), and inside a trade a better action can need a level (see "Level gates").
 
 Note on originality: Melvor Idle already has a village skill (Township). Here the village is not one skill among many; the skills exist to serve the village.
+
+### Level gates: Decided
+
+An action can need a level in its trade before it starts, so a trade grows by opening better actions as it levels. Woodcutting starts on the young hazel; the pine opens at level 15 and the birch at 30. Foraging keeps its four finds open from level 1, and Fishing and Mining have no gates yet. A locked action shows the level it opens at, and starting it is refused with `level-too-low`. A save working an action above the player's level stops at once.
+
+### Cooking and the fire: Decided
+
+Cooking is a production trade with no tool, but every dish burns fuel. The player picks the fuel (for now a log: hazel lasts 2 dishes, pine 4, birch 6), and the fire takes a whole log from the stores each time the last one runs out. The fire only burns while a dish cooks, so nothing is wasted while the player does something else, and what is left of a burning log waits in the fire for the next dish. Cooking stops when the ingredients or the chosen fuel run out (`missing-fuel` when there is none to start with). Picking another fuel while cooking feeds it to the same fire without restarting the dish.
+
+The first dishes: grilled berries (2 wild berries, 3 s, 8 XP) and, at Cooking 15, berry soup (5 wild berries and 2 reeds, 6 s, 20 XP). Nothing eats them yet; food feeds the village and villagers later.
 
 ### Bare hands and tools: Decided
 
 The player starts with nothing, not even an axe. **Foraging is the one gathering trade worked by hand** (twigs, pebbles, wild berries, reeds), and **every trade a tool serves is locked until the player owns that tool**: Woodcutting needs the axe, Mining the pickaxe and Fishing the rod. Production trades follow the same rule: Carpentry needs the knife, and Crafting, which has no tool, is open from the start.
 
 - **Locked means locked, not refused.** The trade still shows in the side panel, with a padlock, so the player sees what comes next. Opening it shows its sign and actions dimmed and out of reach, with two chains crossing the whole middle column corner to corner and a padlock where they cross, with a plaque that names the tool ("Locked until you have: chipped stone axe") and a button to the trade that makes it. Hiding locked trades was considered; showing them gives the player a goal and teaches the chain without tutorial text.
-- **Each step uses what the step before made.** The early chain: Foraging gathers twigs and pebbles; Crafting makes the chipped stone axe (3 twigs, 2 pebbles), which opens Woodcutting on the young hazel; a hazel log and 3 pebbles make the chipped stone knife, which opens Carpentry; Carpentry whittles a hazel log into 2 hazel sticks; and 4 sticks, 5 pebbles and 3 reeds (the lashing) make the chipped stone pickaxe, which opens Mining. The reed fishing rod stays as it is.
+- **Each step uses what the step before made.** The early chain: Foraging gathers twigs and pebbles; Crafting makes the chipped stone axe (3 twigs, 2 pebbles), which opens Woodcutting on the young hazel; a hazel log and 3 pebbles make the chipped stone knife, which opens Carpentry; Carpentry whittles a hazel log into 2 hazel sticks; and 4 sticks, 5 pebbles and 3 reeds (the lashing) make the chipped stone pickaxe, which opens Mining. The reed fishing rod is handled with hazel sticks too (3 sticks, 4 reeds), so Fishing opens right after Carpentry.
 - **Carpentry** is a production trade that shapes wood into parts. Its first recipe, hazel sticks, is repeatable, unlike a tool; planks and the village's building parts come later.
 - **Foraging** is a skill of its own, not a tutorial step: its finds feed Cooking later, and planting may grow out of it (possibly as a separate Farming skill).
 - **Crafting** is a skill that turns materials into things, starting with the first tools. It is how the player gets from bare hands to the axe, the pickaxe and the rod.
@@ -81,7 +91,7 @@ Not in yet: the next tiers (stone axe, then copper), recipe categories (by mater
 
 ### Trade groups: Decided
 
-Trades are split in two groups: **Gathering** (Foraging, Woodcutting, Fishing, Mining), which takes from the world, and **Production** (Crafting, Carpentry, and later Leatherworking, Smithing, Cooking), which turns what was gathered into goods. The side panel lists the Village first, then each group under its heading. In Brazilian Portuguese the groups are "Ofício" and "Produção".
+Trades are split in two groups: **Gathering** (Foraging, Woodcutting, Fishing, Mining), which takes from the world, and **Production** (Crafting, Carpentry, Cooking, and later Leatherworking, Smithing), which turns what was gathered into goods. The side panel lists the Village first, then each group under its heading. In Brazilian Portuguese the groups are "Ofício" and "Produção".
 
 ### Processing skills: Next
 

@@ -15,6 +15,8 @@ const axeRecipe: GameAction = {
     { itemId: 'twig', quantity: 3 },
     { itemId: 'pebble', quantity: 2 },
   ],
+  requiredLevel: 1,
+  usesFuel: false,
 }
 
 const card = (props: Partial<Parameters<typeof ToolCard>[0]> = {}) => (

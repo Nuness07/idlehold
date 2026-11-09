@@ -3,7 +3,7 @@ import type { GameAction } from '../../api/client'
 import { toolCardsFor, toolInUseFor } from './tools'
 
 const recipe = (id: string, outputItemId: string, skillId = 'crafting'): GameAction => ({
-  id, skillId, durationMs: 30000, xpPerCompletion: 40, outputItemId, outputQuantity: 1, inputs: [],
+  id, skillId, durationMs: 30000, xpPerCompletion: 40, outputItemId, outputQuantity: 1, inputs: [], requiredLevel: 1, usesFuel: false,
 })
 
 const axe = recipe('craft-axe', 'axe')

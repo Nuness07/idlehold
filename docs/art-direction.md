@@ -182,6 +182,9 @@ it becomes a button once clicking it does something, and changes art as it is re
 | `items/chipped-stone-knife.png` | a single chipped stone knife: a short wooden handle with a knapped grey flint blade lashed on with plant fibre cord | Candidate 29; `items/chipped-stone-axe.png` as sibling tool. Also the recipe's action sprite |
 | `items/chipped-stone-pickaxe.png` | a single chipped stone pickaxe: a wooden stick handle with a long pointed knapped grey stone head lashed on with pale reed cord | Candidate 13; `items/chipped-stone-axe.png` as sibling tool. Also the recipe's action sprite |
 | `emblems/carpentry.png` | a medieval small whittling knife and a few pale wood shavings leaning diagonally against a short split wooden log on a carpenter's block | Candidate 6; `emblems/crafting.png` as composition reference |
+| `items/grilled-berries.png` | a few grilled dark purple-red wild berries skewered on a short thin wooden stick, lightly charred, lying diagonally | Candidate 0; `items/wild-berry.png` for the berries. Also the recipe's action sprite |
+| `items/berry-soup.png` | a small round wooden bowl of thick dark purple-red berry soup with a few whole berries on top, slight three-quarter angle | Candidate 6; `items/wild-berry.png` for the berries. Also the recipe's action sprite |
+| `emblems/cooking.png` | a small round black iron cooking pot with a little steam on a tiny campfire of two crossed logs, nothing behind them | Candidate 60 of a second run; `emblems/mining.png` for scale. The first run, with the Carpentry emblem as reference, put a brown and green shape behind the pot |
 
 
 ## Open points

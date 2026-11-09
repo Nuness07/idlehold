@@ -21,6 +21,7 @@ const player: Player = {
   tools: [],
   lockedTrades: [],
   storage: { slotCount: 48, stackSize: 10_000, slots: [] },
+  fireCyclesLeft: 0,
   updatedAt: '2100-01-01T12:00:00Z',
 }
 
@@ -30,7 +31,7 @@ const content: Content = {
     { id: 'crafting', category: 'production' },
   ],
   actions: [
-    { id: 'cut-pine', skillId: 'woodcutting', durationMs: 3000, xpPerCompletion: 10, outputItemId: 'pine-log', outputQuantity: 1, inputs: [] },
+    { id: 'cut-pine', skillId: 'woodcutting', durationMs: 3000, xpPerCompletion: 10, outputItemId: 'pine-log', outputQuantity: 1, inputs: [], requiredLevel: 1, usesFuel: false },
     {
       id: 'craft-chipped-stone-axe',
       skillId: 'crafting',
@@ -39,9 +40,12 @@ const content: Content = {
       outputItemId: 'chipped-stone-axe',
       outputQuantity: 1,
       inputs: [{ itemId: 'pine-log', quantity: 2 }],
+      requiredLevel: 1,
+      usesFuel: false,
     },
   ],
   tools: [{ itemId: 'chipped-stone-axe', family: 'axe', tier: 1, skillId: 'woodcutting' }],
+  fuels: [],
 }
 
 function renderPanel() {

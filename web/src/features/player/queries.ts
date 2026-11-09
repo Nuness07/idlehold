@@ -54,12 +54,18 @@ export function applyServerState(queryClient: QueryClient, player: Player): void
 // changes and React Query clears the old error, so an old 401 cannot outlive its session.
 // Before sending, they cancel any read in flight, which would carry the state from before the command.
 
+/** What to start: the action, and for one that burns fuel, the fuel the player chose. */
+export interface StartCommand {
+  actionId: string
+  fuelItemId?: string
+}
+
 export function useStartAction(holdId: string | undefined) {
   const queryClient = useQueryClient()
   return useMutation({
     mutationKey: ['command', 'start', holdId],
     onMutate: () => queryClient.cancelQueries({ queryKey: playerQueryKey }),
-    mutationFn: async (actionId: string) => (await api.POST('/me/player/action', { body: { actionId } })).data!,
+    mutationFn: async (command: StartCommand) => (await api.POST('/me/player/action', { body: command })).data!,
     onSuccess: (player) => applyServerState(queryClient, player),
   })
 }

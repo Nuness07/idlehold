@@ -45,12 +45,21 @@ public sealed class PlayerService(IPlayerStore store, GameEngine engine, TimePro
     }
 
     /// <summary>Starts an action on the account's hold. The game checks the caught-up state, so materials gathered while away count.</summary>
-    public Task<CommandResult> StartActionAsync(Guid accountId, string actionId, CancellationToken cancellationToken) =>
+    public Task<CommandResult> StartActionAsync(Guid accountId, string actionId, string? fuelItemId, CancellationToken cancellationToken) =>
         ApplyAsync(
             accountId,
-            state => state.ActiveAction?.ActionId == actionId ? null : engine.CheckStart(state, actionId),
-            state => engine.StartAction(state, actionId),
+            state => IsAlreadyRunning(state, actionId, fuelItemId) ? null : engine.CheckStart(state, actionId, fuelItemId),
+            state => engine.StartAction(state, actionId, fuelItemId),
             cancellationToken);
+
+    /// <summary>
+    /// Starting what already runs is a no-op. The fuel only counts for an action that burns one, and only that kind
+    /// of action keeps a fuel.
+    /// </summary>
+    private static bool IsAlreadyRunning(GameState state, string actionId, string? fuelItemId) =>
+        state.ActiveAction is { } active
+        && active.ActionId == actionId
+        && (active.FuelItemId is null || active.FuelItemId == fuelItemId);
 
     public Task<CommandResult> StopActionAsync(Guid accountId, CancellationToken cancellationToken) =>
         ApplyAsync(accountId, check: _ => null, engine.StopAction, cancellationToken);

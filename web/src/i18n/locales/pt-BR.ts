@@ -10,6 +10,8 @@ export const ptBR = {
     actionFailed: 'O servidor não aceitou isso. Confira sua conexão e tente de novo.',
     actionBlocked: {
       'missing-tool': 'Este ofício está trancado até você ter a ferramenta dele.',
+      'level-too-low': 'Seu nível neste ofício ainda é baixo para isso.',
+      'missing-fuel': 'Não há lenha desse tipo para o fogo. Escolha outra ou junte mais.',
       'missing-inputs': 'Ainda faltam materiais para isso.',
       'tool-already-owned': 'Você já tem essa ferramenta ou uma melhor.',
       'storage-full': 'O armazém está cheio. Abra espaço antes de trabalhar nisso.',
@@ -106,6 +108,18 @@ export const ptBR = {
     start: 'Começar',
     switch: 'Trocar',
     starting: 'Começando…',
+    uses: 'Usa {{items}}',
+    level: 'Nível {{level}}',
+  },
+  fire: {
+    heading: 'Fogueira',
+    left_one: 'Queima por mais {{count}} prato',
+    left_other: 'Queima por mais {{count}} pratos',
+    burning: 'Queimando',
+    out: 'Apagada. Escolha a lenha e comece a cozinhar.',
+    fuel: 'Lenha',
+    fuelMeta_one: '{{owned}} no armazém · {{count}} prato cada',
+    fuelMeta_other: '{{owned}} no armazém · {{count}} pratos cada',
   },
   tools: {
     heading: 'Ferramentas',
@@ -191,6 +205,7 @@ export const ptBR = {
       foraging: 'Coleta',
       crafting: 'Artesanato',
       carpentry: 'Carpintaria',
+      cooking: 'Culinária',
     },
     actions: {
       'gather-twigs': { name: 'Gravetos', verb: 'Juntando gravetos' },
@@ -208,12 +223,16 @@ export const ptBR = {
       'craft-chipped-stone-knife': { name: 'Faca de pedra lascada', verb: 'Fazendo uma faca de pedra lascada' },
       'craft-chipped-stone-pickaxe': { name: 'Picareta de pedra lascada', verb: 'Fazendo uma picareta de pedra lascada' },
       'whittle-hazel-sticks': { name: 'Varetas de aveleira', verb: 'Entalhando varetas de aveleira' },
+      'cook-grilled-berries': { name: 'Frutinhas grelhadas', verb: 'Grelhando frutinhas' },
+      'cook-berry-soup': { name: 'Sopa de frutas', verb: 'Cozinhando sopa de frutas' },
       'craft-reed-fishing-rod': { name: 'Vara de pesca de junco', verb: 'Fazendo uma vara de pesca de junco' },
     },
     items: {
       // `_many` is Portuguese's form for round millions ("2 milhões de toras"); here it reads like `_other`.
       twig: { name: 'Graveto', count_one: 'graveto', count_many: 'gravetos', count_other: 'gravetos' },
       'hazel-log': { name: 'Tora de aveleira', count_one: 'tora de aveleira', count_many: 'toras de aveleira', count_other: 'toras de aveleira' },
+      'grilled-berries': { name: 'Frutinhas grelhadas', count_one: 'espetinho de frutinhas grelhadas', count_many: 'espetinhos de frutinhas grelhadas', count_other: 'espetinhos de frutinhas grelhadas' },
+      'berry-soup': { name: 'Sopa de frutas', count_one: 'tigela de sopa de frutas', count_many: 'tigelas de sopa de frutas', count_other: 'tigelas de sopa de frutas' },
       'hazel-stick': { name: 'Vareta de aveleira', count_one: 'vareta de aveleira', count_many: 'varetas de aveleira', count_other: 'varetas de aveleira' },
       'pine-log': { name: 'Tora de pinheiro', count_one: 'tora de pinheiro', count_many: 'toras de pinheiro', count_other: 'toras de pinheiro' },
       'birch-log': { name: 'Tora de bétula', count_one: 'tora de bétula', count_many: 'toras de bétula', count_other: 'toras de bétula' },

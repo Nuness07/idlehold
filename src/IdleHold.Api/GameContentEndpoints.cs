@@ -24,17 +24,23 @@ public static class GameContentEndpoints
                 action.XpPerCompletion,
                 action.OutputItemId,
                 action.OutputQuantity,
-                action.Inputs.Select(input => new ItemAmountResponse(input.ItemId, input.Quantity)).ToList()))
+                action.Inputs.Select(input => new ItemAmountResponse(input.ItemId, input.Quantity)).ToList(),
+                action.RequiredLevel,
+                action.UsesFuel))
             .ToList(),
         content.Tools
             .Select(tool => new ToolResponse(tool.ItemId, tool.Family, tool.Tier, tool.SkillId))
+            .ToList(),
+        content.Fuels
+            .Select(fuel => new FuelResponse(fuel.ItemId, fuel.Cycles))
             .ToList());
 }
 
 public sealed record ContentResponse(
     IReadOnlyList<SkillDefinitionResponse> Skills,
     IReadOnlyList<ActionResponse> Actions,
-    IReadOnlyList<ToolResponse> Tools);
+    IReadOnlyList<ToolResponse> Tools,
+    IReadOnlyList<FuelResponse> Fuels);
 
 /// <summary>A trade, in the order the game lists them, with the group it belongs to.</summary>
 public sealed record SkillDefinitionResponse(
@@ -52,7 +58,12 @@ public sealed record ActionResponse(
     long XpPerCompletion,
     string OutputItemId,
     long OutputQuantity,
-    IReadOnlyList<ItemAmountResponse> Inputs);
+    IReadOnlyList<ItemAmountResponse> Inputs,
+    int RequiredLevel,
+    bool UsesFuel);
+
+/// <summary>An item that can feed the fire of an action that burns fuel, and how many completions one of it lasts.</summary>
+public sealed record FuelResponse(string ItemId, int Cycles);
 
 /// <summary>An action's input: taken from the stores at the end of each completion.</summary>
 public sealed record ItemAmountResponse(string ItemId, long Quantity);

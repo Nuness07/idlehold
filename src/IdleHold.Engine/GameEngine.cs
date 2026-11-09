@@ -12,17 +12,24 @@ namespace IdleHold.Engine;
 public sealed class GameEngine(GameContent content)
 {
     /// <summary>
-    /// Why an action cannot start right now, or <c>null</c> if it can. Throws for an unknown action:
-    /// that is a bad request, not a game situation.
+    /// Why an action cannot start right now, or <c>null</c> if it can. An action that burns fuel needs
+    /// <paramref name="fuelItemId"/>, the fuel the player chose; other actions ignore it. Throws for an unknown action
+    /// or a fuel that is not one: that is a bad request, not a game situation.
     /// </summary>
-    public ActionBlock? CheckStart(GameState state, string actionId)
+    public ActionBlock? CheckStart(GameState state, string actionId, string? fuelItemId = null)
     {
         var action = content.FindAction(actionId)
             ?? throw new ArgumentException($"Unknown action '{actionId}'.", nameof(actionId));
+        var fuel = FuelFor(action, fuelItemId);
 
         if (MissingToolFor(state, action.SkillId) is not null)
         {
             return ActionBlock.MissingTool;
+        }
+
+        if (state.LevelOf(action.SkillId) < action.RequiredLevel)
+        {
+            return ActionBlock.LevelTooLow;
         }
 
         if (content.FindTool(action.OutputItemId) is { } tool && ToolTierOf(state, tool.Family) >= tool.Tier)
@@ -35,6 +42,11 @@ public sealed class GameEngine(GameContent content)
             return ActionBlock.MissingInputs;
         }
 
+        if (fuel is not null && FireCyclesFor(state, fuel) == 0)
+        {
+            return ActionBlock.MissingFuel;
+        }
+
         if (StorageLimit(state, action, upTo: 1) == 0)
         {
             return ActionBlock.StorageFull;
@@ -43,20 +55,50 @@ public sealed class GameEngine(GameContent content)
         return null;
     }
 
-    public GameState StartAction(GameState state, string actionId)
+    public GameState StartAction(GameState state, string actionId, string? fuelItemId = null)
     {
+        var action = content.FindAction(actionId)
+            ?? throw new ArgumentException($"Unknown action '{actionId}'.", nameof(actionId));
+        var fuelId = FuelFor(action, fuelItemId)?.ItemId;
+
         // Restarting the action you are already doing should not throw away its progress.
-        if (state.ActiveAction?.ActionId == actionId && content.FindAction(actionId) is not null)
+        if (state.ActiveAction is { } active && active.ActionId == actionId && active.FuelItemId == fuelId)
         {
             return state;
         }
 
-        if (CheckStart(state, actionId) is { } block)
+        if (CheckStart(state, actionId, fuelId) is { } block)
         {
             throw new InvalidOperationException($"Action '{actionId}' cannot start: {block}.");
         }
 
-        return state with { ActiveAction = new ActiveAction(actionId, TimeSpan.Zero) };
+        // Changing only the fuel keeps the cycle going: the pot stays on the fire.
+        var progress = state.ActiveAction?.ActionId == actionId ? state.ActiveAction.Progress : TimeSpan.Zero;
+        return state with { ActiveAction = new ActiveAction(actionId, progress, fuelId) };
+    }
+
+    /// <summary>
+    /// The fuel an action burns when started with <paramref name="fuelItemId"/>: <c>null</c> for an action that
+    /// burns none. Throws when a fire-using action gets no fuel or an item that is not one.
+    /// </summary>
+    private FuelDefinition? FuelFor(ActionDefinition action, string? fuelItemId)
+    {
+        if (!action.UsesFuel)
+        {
+            return null;
+        }
+
+        return fuelItemId is not null && content.FindFuel(fuelItemId) is { } fuel
+            ? fuel
+            : throw new ArgumentException($"Action '{action.Id}' needs a fuel, and '{fuelItemId}' is not one.", nameof(fuelItemId));
+    }
+
+    /// <summary>How many completions the fire can burn for: what is left in it, plus every fuel of this kind in the stores.</summary>
+    private static long FireCyclesFor(GameState state, FuelDefinition fuel)
+    {
+        var stored = state.ItemCount(fuel.ItemId);
+        var room = (long.MaxValue - state.FireCyclesLeft) / fuel.Cycles;
+        return state.FireCyclesLeft + Math.Min(stored, room) * fuel.Cycles;
     }
 
     public GameState StopAction(GameState state) => state with { ActiveAction = null };
@@ -182,10 +224,22 @@ public sealed class GameEngine(GameContent content)
             inventory = AddTo(inventory, input.ItemId, -completions * input.Quantity);
         }
 
+        var fireLeft = next.FireCyclesLeft;
+        if (action.UsesFuel && active.FuelItemId is { } fuelId && content.FindFuel(fuelId) is { } fuel)
+        {
+            // The fire burns what is already in it first, then takes whole fuels from the stores as it needs them.
+            var fromFire = Math.Min(completions, fireLeft);
+            var rest = completions - fromFire;
+            var burned = (rest + fuel.Cycles - 1) / fuel.Cycles;
+            inventory = AddTo(inventory, fuelId, -burned);
+            fireLeft = fireLeft - fromFire + burned * fuel.Cycles - rest;
+        }
+
         return next with
         {
             Inventory = inventory,
             SkillXp = AddTo(next.SkillXp, action.SkillId, completions * action.XpPerCompletion),
+            FireCyclesLeft = fireLeft,
         };
     }
 
@@ -196,13 +250,22 @@ public sealed class GameEngine(GameContent content)
     /// </summary>
     private long? CompletionLimit(GameState state, ActionDefinition action, long completions)
     {
-        // A locked trade does no work. Starting is refused, so only a save from before the lock gets here.
-        if (MissingToolFor(state, action.SkillId) is not null)
+        // A locked trade or an action above the player's level does no work. Starting is refused, so only a save
+        // from before the lock or the level gate gets here.
+        if (MissingToolFor(state, action.SkillId) is not null || state.LevelOf(action.SkillId) < action.RequiredLevel)
         {
             return 0;
         }
 
         long? limit = null;
+
+        if (action.UsesFuel)
+        {
+            // An action that burns fuel and has none chosen (or a fuel the content dropped) cannot go on.
+            limit = state.ActiveAction?.FuelItemId is { } fuelId && content.FindFuel(fuelId) is { } fuel
+                ? FireCyclesFor(state, fuel)
+                : 0;
+        }
 
         if (content.FindTool(action.OutputItemId) is { } tool)
         {
@@ -235,7 +298,9 @@ public sealed class GameEngine(GameContent content)
             return upTo;
         }
 
-        // Slots taken by everything the action does not touch; the touched items are counted per k below.
+        // Slots taken by everything the action does not touch; the touched items are counted per k below. Fuel
+        // burned along the way is counted as still there: it only frees slots, so the answer can stop a little early
+        // when burning the last of a stack is what would make room, never late.
         var touched = action.Inputs.Select(input => input.ItemId).Append(action.OutputItemId).ToHashSet();
         var untouched = state.Inventory.Where(item => !touched.Contains(item.Key)).Sum(item => rules.SlotsFor(item.Value));
 
@@ -326,6 +391,12 @@ public enum ActionBlock
 {
     /// <summary>The action's trade is locked: the player owns no tool of the family that serves it.</summary>
     MissingTool,
+
+    /// <summary>The player's level in the action's trade is below the level the action needs.</summary>
+    LevelTooLow,
+
+    /// <summary>The action burns fuel, and neither the fire nor the stores hold any of the chosen kind.</summary>
+    MissingFuel,
 
     /// <summary>The stores do not hold enough of every input for one completion.</summary>
     MissingInputs,

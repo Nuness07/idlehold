@@ -15,6 +15,7 @@ public sealed record PlayerResponse(
     IReadOnlyList<ToolProgressResponse> Tools,
     IReadOnlyList<TradeLockResponse> LockedTrades,
     StorageResponse Storage,
+    long FireCyclesLeft,
     DateTimeOffset UpdatedAt)
 {
     public static PlayerResponse From(PlayerSave save, GameEngine engine, GameContent content)
@@ -25,7 +26,8 @@ public sealed record PlayerResponse(
             ? new ActiveActionResponse(
                 active.ActionId,
                 ProgressMs: (long)active.Progress.TotalMilliseconds,
-                DurationMs: (long)content.GetAction(active.ActionId).Duration.TotalMilliseconds)
+                DurationMs: (long)content.GetAction(active.ActionId).Duration.TotalMilliseconds,
+                active.FuelItemId)
             : null;
 
         var skills = state.SkillXp.ToDictionary(pair => pair.Key, pair => SkillResponse.From(pair.Value));
@@ -44,7 +46,7 @@ public sealed record PlayerResponse(
             storage.StackSize,
             storage.Slots.Select(slot => new ItemAmountResponse(slot.ItemId, slot.Quantity)).ToList());
 
-        return new PlayerResponse(save.Id, activeAction, state.Inventory, skills, tools, lockedTrades, storageResponse, save.LastUpdated);
+        return new PlayerResponse(save.Id, activeAction, state.Inventory, skills, tools, lockedTrades, storageResponse, state.FireCyclesLeft, save.LastUpdated);
     }
 }
 
@@ -67,8 +69,11 @@ public sealed record ToolProgressResponse(string Family, string? OwnedItemId, st
 /// </summary>
 public sealed record TradeLockResponse(string SkillId, string ToolItemId);
 
-/// <summary>Progress and duration let the client animate the bar on its own between requests.</summary>
-public sealed record ActiveActionResponse(string ActionId, long ProgressMs, long DurationMs);
+/// <summary>
+/// Progress and duration let the client animate the bar on its own between requests. <see cref="FuelItemId"/> is the
+/// fuel the fire burns, for an action that uses one.
+/// </summary>
+public sealed record ActiveActionResponse(string ActionId, long ProgressMs, long DurationMs, string? FuelItemId);
 
 /// <summary>
 /// A skill's XP and level, plus the XP bounds of the current level so the client can show
@@ -85,4 +90,5 @@ public sealed record SkillResponse(long Xp, int Level, long LevelStartXp, long? 
     }
 }
 
-public sealed record StartActionRequest(string ActionId);
+/// <summary>Starts an action. <see cref="FuelItemId"/> is required for an action that burns fuel, and ignored otherwise.</summary>
+public sealed record StartActionRequest(string ActionId, string? FuelItemId = null);
