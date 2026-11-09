@@ -593,6 +593,9 @@ export interface components {
             /** Format: int64 */
             outputQuantity: number;
             inputs: components["schemas"]["ItemAmountResponse"][];
+            /** Format: int32 */
+            requiredLevel: number;
+            usesFuel: boolean;
         };
         ActiveActionResponse: {
             actionId: string;
@@ -600,6 +603,7 @@ export interface components {
             progressMs: number;
             /** Format: int64 */
             durationMs: number;
+            fuelItemId: null | string;
         };
         AdvanceRequest: {
             /** Format: int32 */
@@ -609,6 +613,12 @@ export interface components {
             skills: components["schemas"]["SkillDefinitionResponse"][];
             actions: components["schemas"]["ActionResponse"][];
             tools: components["schemas"]["ToolResponse"][];
+            fuels: components["schemas"]["FuelResponse"][];
+        };
+        FuelResponse: {
+            itemId: string;
+            /** Format: int32 */
+            cycles: number;
         };
         HttpValidationProblemDetails: {
             type?: null | string;
@@ -643,6 +653,8 @@ export interface components {
             tools: components["schemas"]["ToolProgressResponse"][];
             lockedTrades: components["schemas"]["TradeLockResponse"][];
             storage: components["schemas"]["StorageResponse"];
+            /** Format: int64 */
+            fireCyclesLeft: number;
             /** Format: date-time */
             updatedAt: string;
         };
@@ -676,6 +688,7 @@ export interface components {
         };
         StartActionRequest: {
             actionId: string;
+            fuelItemId?: null | string;
         };
         StorageResponse: {
             /** Format: int32 */

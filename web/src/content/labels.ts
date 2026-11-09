@@ -1,4 +1,4 @@
-import { Axe, Cherry, Fish, FishSymbol, Gem, Hammer, Hand, Mountain, Pickaxe, Slice, Sprout, TreeDeciduous, TreePine, type LucideIcon } from 'lucide-react'
+import { Axe, Cherry, CookingPot, Fish, FishSymbol, Flame, Gem, Hammer, Hand, Mountain, Pickaxe, Slice, Sprout, TreeDeciduous, TreePine, type LucideIcon } from 'lucide-react'
 import berryBush from '../assets/actions/berry-bush.png'
 import tower from '../assets/brand/tower.png'
 import birchTree from '../assets/actions/birch-tree.png'
@@ -12,16 +12,19 @@ import stoneOutcrop from '../assets/actions/stone.png'
 import fallenTwigs from '../assets/actions/twigs.png'
 import youngHazel from '../assets/actions/young-hazel.png'
 import carpentryEmblem from '../assets/emblems/carpentry.png'
+import cookingEmblem from '../assets/emblems/cooking.png'
 import craftingEmblem from '../assets/emblems/crafting.png'
 import fishingEmblem from '../assets/emblems/fishing.png'
 import foragingEmblem from '../assets/emblems/foraging.png'
 import miningEmblem from '../assets/emblems/mining.png'
 import woodcuttingEmblem from '../assets/emblems/woodcutting.png'
+import berrySoup from '../assets/items/berry-soup.png'
 import birchLog from '../assets/items/birch-log.png'
 import chippedStoneAxe from '../assets/items/chipped-stone-axe.png'
 import chippedStoneKnife from '../assets/items/chipped-stone-knife.png'
 import chippedStonePickaxe from '../assets/items/chipped-stone-pickaxe.png'
 import copperOre from '../assets/items/copper-ore.png'
+import grilledBerries from '../assets/items/grilled-berries.png'
 import hazelLog from '../assets/items/hazel-log.png'
 import hazelStick from '../assets/items/hazel-stick.png'
 import pebbleItem from '../assets/items/pebble.png'
@@ -65,6 +68,7 @@ const trades: Record<string, TradeLabel> = {
   foraging: { paint: 'var(--color-bramble)', Icon: Cherry, emblem: foragingEmblem },
   crafting: { paint: 'var(--color-moss)', Icon: Hammer, emblem: craftingEmblem },
   carpentry: { paint: 'var(--color-russet)', Icon: Slice, emblem: carpentryEmblem },
+  cooking: { paint: 'var(--color-ember)', Icon: CookingPot, emblem: cookingEmblem },
 }
 
 const actions: Record<string, ActionLabel> = {
@@ -85,6 +89,8 @@ const actions: Record<string, ActionLabel> = {
   'craft-chipped-stone-pickaxe': { Icon: Pickaxe, sprite: chippedStonePickaxe },
   'craft-reed-fishing-rod': { Icon: Fish, sprite: reedFishingRod },
   'whittle-hazel-sticks': { Icon: Slice, sprite: hazelStick },
+  'cook-grilled-berries': { Icon: Flame, sprite: grilledBerries },
+  'cook-berry-soup': { Icon: CookingPot, sprite: berrySoup },
 }
 
 const itemSprites: Record<string, string> = {
@@ -104,6 +110,8 @@ const itemSprites: Record<string, string> = {
   'reed-fishing-rod': reedFishingRod,
   'chipped-stone-knife': chippedStoneKnife,
   'chipped-stone-pickaxe': chippedStonePickaxe,
+  'grilled-berries': grilledBerries,
+  'berry-soup': berrySoup,
 }
 
 export function tradeLabel(skillId: string): TradeLabel {

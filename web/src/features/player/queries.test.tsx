@@ -28,7 +28,7 @@ describe('a command the game refuses', () => {
     fetchMock.mockResolvedValue(problem(409, { title: 'Not enough materials.', reason: 'missing-inputs' }))
     const { result } = renderHook(() => useStartAction('a-hold'), { wrapper })
 
-    act(() => result.current.mutate('craft-chipped-stone-axe'))
+    act(() => result.current.mutate({ actionId: 'craft-chipped-stone-axe' }))
     await waitFor(() => expect(result.current.isError).toBe(true))
 
     const error = result.current.error
@@ -37,7 +37,7 @@ describe('a command the game refuses', () => {
 })
 
 describe.each([
-  ['start', (holdId: string) => useStartAction(holdId), (hook: ReturnType<typeof useStartAction>) => hook.mutate('cut-pine')],
+  ['start', (holdId: string) => useStartAction(holdId), (hook: ReturnType<typeof useStartAction>) => hook.mutate({ actionId: 'cut-pine' })],
   ['stop', (holdId: string) => useStopAction(holdId), (hook: ReturnType<typeof useStopAction>) => hook.mutate()],
 ] as const)('the %s command', (_name, useCommand, send) => {
   it('forgets its error when another hold loads', async () => {

@@ -12,6 +12,7 @@ import { endSession, useAccount, useLogout } from './features/account/queries'
 import { hasProgressWorthSaving, useNudgeDismissed } from './features/account/nudge'
 import { SaveNudge } from './features/account/SaveNudge'
 import { ActionList } from './features/actions/ActionList'
+import { FirePanel } from './features/cooking/FirePanel'
 import { WorkingAction } from './features/actions/WorkingAction'
 import {
   playerQueryKey,
@@ -68,6 +69,8 @@ export default function App() {
   const commandErrorText = (error: Error) => {
     const reason = isApiError(error, 409) ? error.problem.reason : undefined
     if (reason === 'missing-tool') return t('app.actionBlocked.missing-tool')
+    if (reason === 'level-too-low') return t('app.actionBlocked.level-too-low')
+    if (reason === 'missing-fuel') return t('app.actionBlocked.missing-fuel')
     if (reason === 'missing-inputs') return t('app.actionBlocked.missing-inputs')
     if (reason === 'tool-already-owned') return t('app.actionBlocked.tool-already-owned')
     if (reason === 'storage-full') return t('app.actionBlocked.storage-full')
@@ -83,6 +86,8 @@ export default function App() {
   const [freshItemId, setFreshItemId] = useState<string>()
   /** The trade the player chose to look at; until they choose, the screen follows the working trade. */
   const [viewedSkillId, setViewedSkillId] = useState<string>()
+  /** The fuel the player picked for the fire; until they pick, the fire burns what it burned last, or what is in stock. */
+  const [chosenFuel, setChosenFuel] = useState<string>()
   /** What the middle shows. The village is the home screen; the rail opens trades, the hold menu its screens. */
   const [screen, setScreen] = useState<Screen>('village')
   const summarized = useRef(false)
@@ -210,7 +215,26 @@ export default function App() {
   const lockedTools = new Map(player.lockedTrades.map((lock) => [lock.skillId, lock.toolItemId]))
   const lockTool = lockedTools.get(selectedSkillId)
   const lockMakerSkillId = lockTool ? actions.find((action) => action.outputItemId === lockTool)?.skillId : undefined
-  const pendingActionId = startAction.isPending ? startAction.variables : undefined
+  const pendingActionId = startAction.isPending ? startAction.variables.actionId : undefined
+  const fuels = content.data.fuels
+  const usesFire = tradeActions.some((action) => action.usesFuel)
+  const fuelItemId =
+    chosenFuel ??
+    activeAction?.fuelItemId ??
+    fuels.find((fuel) => (player.inventory[fuel.itemId] ?? 0) > 0)?.itemId ??
+    fuels[0]?.itemId
+  const start = (actionId: string) =>
+    startAction.mutate({
+      actionId,
+      fuelItemId: actions.find((action) => action.id === actionId)?.usesFuel ? fuelItemId : undefined,
+    })
+  /** Picking another fuel while a dish cooks feeds it to the same fire: the dish keeps cooking. */
+  const chooseFuel = (itemId: string) => {
+    setChosenFuel(itemId)
+    if (activeAction && activeDefinition?.usesFuel && activeAction.fuelItemId !== itemId) {
+      startAction.mutate({ actionId: activeAction.actionId, fuelItemId: itemId })
+    }
+  }
 
   const showNudge = account?.isGuest === true && !nudgeDismissed && hasProgressWorthSaving(player.skills)
 
@@ -227,15 +251,27 @@ export default function App() {
         inventory={player.inventory}
         activeActionId={activeAction?.actionId}
         pendingActionId={pendingActionId}
-        onBuild={(actionId: string) => startAction.mutate(actionId)}
+        onBuild={start}
       />
+
+      {usesFire && fuelItemId && (
+        <FirePanel
+          fuels={fuels}
+          inventory={player.inventory}
+          fireCyclesLeft={player.fireCyclesLeft}
+          selected={fuelItemId}
+          burning={!!activeDefinition?.usesFuel}
+          onSelect={chooseFuel}
+        />
+      )}
 
       {tradeActions.length > 0 && (
         <ActionList
           actions={tradeActions}
           activeActionId={activeAction?.actionId}
           pendingActionId={pendingActionId}
-          onStart={(actionId) => startAction.mutate(actionId)}
+          level={skillOf(selectedSkillId).level}
+          onStart={start}
         />
       )}
     </div>

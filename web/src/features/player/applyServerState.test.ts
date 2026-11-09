@@ -5,12 +5,13 @@ import { applyServerState, playerQueryKey, type PlayerSnapshot } from './queries
 
 const hold = (id: string, updatedAt: string, actionId: string | null = null): Player => ({
   id,
-  activeAction: actionId ? { actionId, progressMs: 0, durationMs: 3000 } : null,
+  activeAction: actionId ? { actionId, progressMs: 0, durationMs: 3000, fuelItemId: null } : null,
   inventory: {},
   skills: {},
   tools: [],
   lockedTrades: [],
   storage: { slotCount: 48, stackSize: 10_000, slots: [] },
+  fireCyclesLeft: 0,
   updatedAt,
 })
 

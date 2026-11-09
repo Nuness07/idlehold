@@ -5,12 +5,13 @@ import { keepNewest, type PlayerSnapshot } from './snapshots'
 function snap(updatedAt: string, actionId: string | null, id = 'p1'): PlayerSnapshot {
   const player: Player = {
     id,
-    activeAction: actionId ? { actionId, progressMs: 0, durationMs: 3000 } : null,
+    activeAction: actionId ? { actionId, progressMs: 0, durationMs: 3000, fuelItemId: null } : null,
     inventory: {},
     skills: {},
     tools: [],
     lockedTrades: [],
   storage: { slotCount: 48, stackSize: 10_000, slots: [] },
+  fireCyclesLeft: 0,
     updatedAt,
   }
   return { player, receivedAt: 0 }
