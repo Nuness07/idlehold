@@ -28,12 +28,14 @@ import grilledBerries from '../assets/items/grilled-berries.png'
 import hazelLog from '../assets/items/hazel-log.png'
 import hazelStick from '../assets/items/hazel-stick.png'
 import pebbleItem from '../assets/items/pebble.png'
+import campfire from '../assets/village/campfire.png'
 import perchItem from '../assets/items/perch.png'
 import pikeItem from '../assets/items/pike.png'
 import pineLog from '../assets/items/pine-log.png'
 import reedFishingRod from '../assets/items/reed-fishing-rod.png'
 import reedItem from '../assets/items/reed.png'
 import stoneBlock from '../assets/items/stone.png'
+import stoneFurnace from '../assets/stations/stone-furnace.png'
 import twigItem from '../assets/items/twig.png'
 import wildBerry from '../assets/items/wild-berry.png'
 
@@ -120,6 +122,25 @@ export function tradeLabel(skillId: string): TradeLabel {
 
 export function actionLabel(actionId: string): ActionLabel {
   return actions[actionId] ?? { Icon: TreePine }
+}
+
+export interface SpriteArt {
+  src: string
+  width: number
+  height: number
+}
+
+/** What each recipe group shows: the station itself, or the material its recipes are made of. */
+const recipeGroupSprites: Record<string, SpriteArt> = {
+  'chipped-stone': { src: pebbleItem, width: 32, height: 32 },
+  stone: { src: stoneBlock, width: 32, height: 32 },
+  copper: { src: copperOre, width: 32, height: 32 },
+  campfire: { src: campfire, width: 41, height: 32 },
+  'stone-furnace': { src: stoneFurnace, width: 32, height: 32 },
+}
+
+export function recipeGroupSprite(groupId: string): SpriteArt | undefined {
+  return recipeGroupSprites[groupId]
 }
 
 export function itemSprite(itemId: string): string | undefined {

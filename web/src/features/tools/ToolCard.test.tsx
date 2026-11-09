@@ -2,7 +2,8 @@ import { render, screen, within } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { describe, expect, it, vi } from 'vitest'
 import type { GameAction } from '../../api/client'
-import { ToolCard, VISIBLE_SLOTS } from './ToolCard'
+import { VISIBLE_SLOTS } from '../../components/MaterialSlots'
+import { ToolCard } from './ToolCard'
 
 const axeRecipe: GameAction = {
   id: 'craft-chipped-stone-axe',
@@ -17,6 +18,7 @@ const axeRecipe: GameAction = {
   ],
   requiredLevel: 1,
   usesFuel: false,
+  groupId: null,
 }
 
 const card = (props: Partial<Parameters<typeof ToolCard>[0]> = {}) => (

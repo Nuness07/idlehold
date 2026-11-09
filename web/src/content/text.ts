@@ -20,6 +20,9 @@ export function contentText(t: TFunction) {
     tradeName: (skillId: string) => lookup(`content.trades.${skillId}`, humanize(skillId)),
     actionName: (actionId: string) => lookup(`content.actions.${actionId}.name`, humanize(actionId)),
     actionVerb: (actionId: string) => lookup(`content.actions.${actionId}.verb`, humanize(actionId)),
+    recipeGroupName: (groupId: string) => lookup(`content.recipeGroups.${groupId}`, humanize(groupId)),
+    /** What a trade's recipe groups are, as a heading: "Station" in Cooking, "Material" in Crafting. */
+    recipeGroupLegend: (skillId: string) => lookup(`recipeGroups.legend.${skillId}`, ''),
     itemName: (itemId: string) => lookup(`content.items.${itemId}.name`, humanize(itemId)),
     /** The item as it reads after a number: "1 pine log", "9 pine logs", "9 percas". */
     itemCount: (itemId: string, count: number) =>

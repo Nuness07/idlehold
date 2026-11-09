@@ -2,6 +2,7 @@ import { Lock } from 'lucide-react'
 import { useTranslation } from 'react-i18next'
 import type { GameAction } from '../../api/client'
 import { Button } from '../../components/Button'
+import { MaterialSlots } from '../../components/MaterialSlots'
 import { PixelSprite } from '../../components/PixelSprite'
 import { actionLabel, tradeLabel } from '../../content/labels'
 import { useContentText } from '../../content/text'
@@ -14,11 +15,13 @@ interface ActionListProps {
   pendingActionId: string | undefined
   /** The player's level in the trade: an action that needs more stays locked, showing the level it opens at. */
   level: number
+  /** The stores, to show what each recipe's materials have against what they need. */
+  inventory: Record<string, number>
   onStart: (actionId: string) => void
 }
 
 /** Every action of the selected trade. The working one recedes here: it already owns the panel above. */
-export function ActionList({ actions, activeActionId, pendingActionId, level, onStart }: ActionListProps) {
+export function ActionList({ actions, activeActionId, pendingActionId, level, inventory, onStart }: ActionListProps) {
   const { t } = useTranslation()
   const text = useContentText()
 
@@ -64,13 +67,7 @@ export function ActionList({ actions, activeActionId, pendingActionId, level, on
                   })}
                 </p>
                 {action.inputs.length > 0 && (
-                  <p className="text-[15px] text-muted">
-                    {t('actions.uses', {
-                      items: action.inputs
-                        .map((input) => `${input.quantity} ${text.itemCount(input.itemId, input.quantity)}`)
-                        .join(', '),
-                    })}
-                  </p>
+                  <MaterialSlots inputs={action.inputs} inventory={inventory} className="mt-2" />
                 )}
               </div>
               {locked ? (

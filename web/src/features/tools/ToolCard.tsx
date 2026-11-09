@@ -1,15 +1,11 @@
-import { useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import type { GameAction } from '../../api/client'
+import { MaterialSlots } from '../../components/MaterialSlots'
 import { PixelSprite } from '../../components/PixelSprite'
 import { WoodButton } from '../../components/WoodButton'
 import { itemSprite } from '../../content/labels'
 import { useContentText } from '../../content/text'
-import { cn } from '../../lib/cn'
 import { useFormat } from '../../lib/format'
-
-/** A recipe with more inputs than this shows the first few and a slot that expands the card. */
-export const VISIBLE_SLOTS = 6
 
 interface ToolCardProps {
   /** The tool shown: the next tier to make, or the best one owned when nothing better exists. */
@@ -30,14 +26,10 @@ export function ToolCard({ itemId, recipe, inventory, working, pending, onBuild 
   const { t } = useTranslation()
   const text = useContentText()
   const format = useFormat()
-  const [expanded, setExpanded] = useState(false)
 
   const sprite = itemSprite(itemId)
   const inputs = recipe?.inputs ?? []
   const missing = inputs.some((input) => (inventory[input.itemId] ?? 0) < input.quantity)
-  const folds = inputs.length > VISIBLE_SLOTS
-  const shown = folds && !expanded ? inputs.slice(0, VISIBLE_SLOTS - 1) : inputs
-  const hidden = inputs.length - shown.length
   const titleId = `tool-${itemId}`
 
   return (
@@ -59,51 +51,7 @@ export function ToolCard({ itemId, recipe, inventory, working, pending, onBuild 
 
       {recipe && (
         <>
-          <ul aria-label={t('tools.materials')} className="flex flex-wrap justify-center gap-2">
-            {shown.map((input) => {
-              const have = inventory[input.itemId] ?? 0
-              const short = have < input.quantity
-              const slotSprite = itemSprite(input.itemId)
-              return (
-                <li
-                  key={input.itemId}
-                  title={text.itemName(input.itemId)}
-                  className="relative grid size-12 place-items-center border-2 border-ink bg-limewash"
-                >
-                  {slotSprite && <PixelSprite src={slotSprite} width={32} height={32} />}
-                  <span className="sr-only">
-                    {t('tools.slot', {
-                      have: format.count(have),
-                      need: format.count(input.quantity),
-                      item: text.itemCount(input.itemId, input.quantity),
-                    })}
-                  </span>
-                  <span
-                    aria-hidden
-                    className={cn(
-                      'absolute right-0.5 bottom-0 text-[12px] leading-none font-extrabold text-ink [text-shadow:0_1px_0_white]',
-                      short && 'text-danger',
-                    )}
-                  >
-                    {format.count(have)}/{format.count(input.quantity)}
-                  </span>
-                </li>
-              )
-            })}
-            {folds && (
-              <li>
-                <button
-                  type="button"
-                  aria-expanded={expanded}
-                  aria-label={expanded ? t('tools.showFewer') : t('tools.showMore', { count: hidden })}
-                  onClick={() => setExpanded((open) => !open)}
-                  className="grid size-12 place-items-center border-2 border-ink bg-limewash text-[15px] font-extrabold text-ink hover:bg-stone"
-                >
-                  {expanded ? '−' : `+${hidden}`}
-                </button>
-              </li>
-            )}
-          </ul>
+          <MaterialSlots inputs={inputs} inventory={inventory} className="justify-center" />
 
           {working ? (
             <p className="py-2 text-[15px] font-extrabold">{t('tools.building')}</p>
