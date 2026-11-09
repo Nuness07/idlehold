@@ -16,6 +16,7 @@ public sealed record PlayerResponse(
     IReadOnlyList<TradeLockResponse> LockedTrades,
     StorageResponse Storage,
     long FireCyclesLeft,
+    IReadOnlyList<string> Buildings,
     DateTimeOffset UpdatedAt)
 {
     public static PlayerResponse From(PlayerSave save, GameEngine engine, GameContent content)
@@ -37,8 +38,11 @@ public sealed record PlayerResponse(
             .ToList();
 
         var lockedTrades = engine.LockedTradesOf(state)
-            .Select(trade => new TradeLockResponse(trade.SkillId, trade.ToolItemId))
+            .Select(trade => new TradeLockResponse(trade.SkillId, trade.ToolItemId, trade.BuildingId))
             .ToList();
+
+        // In the game's building order, so the answer never depends on how the set was saved.
+        var buildings = content.Buildings.Select(building => building.Id).Where(state.Buildings.Contains).ToList();
 
         var storage = engine.StorageOf(state);
         var storageResponse = new StorageResponse(
@@ -46,7 +50,7 @@ public sealed record PlayerResponse(
             storage.StackSize,
             storage.Slots.Select(slot => new ItemAmountResponse(slot.ItemId, slot.Quantity)).ToList());
 
-        return new PlayerResponse(save.Id, activeAction, state.Inventory, skills, tools, lockedTrades, storageResponse, state.FireCyclesLeft, save.LastUpdated);
+        return new PlayerResponse(save.Id, activeAction, state.Inventory, skills, tools, lockedTrades, storageResponse, state.FireCyclesLeft, buildings, save.LastUpdated);
     }
 }
 
@@ -64,10 +68,11 @@ public sealed record StorageResponse(int SlotCount, long StackSize, IReadOnlyLis
 public sealed record ToolProgressResponse(string Family, string? OwnedItemId, string? NextActionId);
 
 /// <summary>
-/// A trade the player cannot work yet, and the tool that opens it (its first tier). The server decides which trades
-/// are locked; starting one of their actions is refused with the reason <c>missing-tool</c>.
+/// A trade the player cannot work yet, and what opens it: the village building to build (<c>buildingId</c>), else the
+/// tool to make (<c>toolItemId</c>, its first tier). The server decides which trades are locked; starting one of their
+/// actions is refused with the reason <c>missing-building</c> or <c>missing-tool</c>.
 /// </summary>
-public sealed record TradeLockResponse(string SkillId, string ToolItemId);
+public sealed record TradeLockResponse(string SkillId, string? ToolItemId, string? BuildingId);
 
 /// <summary>
 /// Progress and duration let the client animate the bar on its own between requests. <see cref="FuelItemId"/> is the

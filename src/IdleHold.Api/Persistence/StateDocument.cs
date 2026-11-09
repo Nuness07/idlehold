@@ -12,6 +12,7 @@ namespace IdleHold.Api.Persistence;
 /// <list type="bullet">
 /// <item>Version 1: stores, XP and the active action.</item>
 /// <item>Version 2: adds the fire (<see cref="FireCyclesLeft"/>) and the active action's chosen fuel.</item>
+/// <item>Version 3: adds the village's buildings (<see cref="Buildings"/>).</item>
 /// </list>
 /// </summary>
 public sealed record StateDocument(
@@ -19,9 +20,10 @@ public sealed record StateDocument(
     Dictionary<string, long> Inventory,
     Dictionary<string, long> SkillXp,
     ActiveActionDocument? ActiveAction,
-    long FireCyclesLeft = 0)
+    long FireCyclesLeft = 0,
+    List<string>? Buildings = null)
 {
-    public const int CurrentSchemaVersion = 2;
+    public const int CurrentSchemaVersion = 3;
 
     private static readonly JsonSerializerOptions Json = new(JsonSerializerDefaults.Web);
 
@@ -32,7 +34,8 @@ public sealed record StateDocument(
         state.ActiveAction is { } active
             ? new ActiveActionDocument(active.ActionId, active.Progress.Ticks, active.FuelItemId)
             : null,
-        state.FireCyclesLeft);
+        state.FireCyclesLeft,
+        state.Buildings.Order(StringComparer.Ordinal).ToList());
 
     public GameState ToState() => new()
     {
@@ -42,6 +45,7 @@ public sealed record StateDocument(
             ? new ActiveAction(active.ActionId, TimeSpan.FromTicks(active.ProgressTicks), active.FuelItemId)
             : null,
         FireCyclesLeft = FireCyclesLeft,
+        Buildings = (Buildings ?? []).ToImmutableHashSet(),
     };
 
     public string Serialize() => JsonSerializer.Serialize(this, Json);
@@ -54,7 +58,8 @@ public sealed record StateDocument(
         return document.SchemaVersion switch
         {
             CurrentSchemaVersion => document,
-            1 => FromVersion1(document),
+            2 => FromVersion2(document),
+            1 => FromVersion2(FromVersion1(document)),
             _ => throw new InvalidOperationException(
                 $"Saved state schema {document.SchemaVersion} is not supported (expected {CurrentSchemaVersion})."),
         };
@@ -63,9 +68,16 @@ public sealed record StateDocument(
     /// <summary>A version 1 save predates the fire: it has no fuel in the fire and no fuel chosen.</summary>
     private static StateDocument FromVersion1(StateDocument document) => document with
     {
-        SchemaVersion = CurrentSchemaVersion,
+        SchemaVersion = 2,
         ActiveAction = document.ActiveAction is { } active ? active with { FuelItemId = null } : null,
         FireCyclesLeft = 0,
+    };
+
+    /// <summary>A version 2 save predates the village's buildings: nothing is built, so the campfire starts out.</summary>
+    private static StateDocument FromVersion2(StateDocument document) => document with
+    {
+        SchemaVersion = CurrentSchemaVersion,
+        Buildings = [],
     };
 }
 

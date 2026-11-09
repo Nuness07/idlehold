@@ -48,7 +48,7 @@ public sealed class PlayerService(IPlayerStore store, GameEngine engine, TimePro
     public Task<CommandResult> StartActionAsync(Guid accountId, string actionId, string? fuelItemId, CancellationToken cancellationToken) =>
         ApplyAsync(
             accountId,
-            state => IsAlreadyRunning(state, actionId, fuelItemId) ? null : engine.CheckStart(state, actionId, fuelItemId),
+            state => IsAlreadyRunning(state, actionId, fuelItemId) ? null : Reasons.Of(engine.CheckStart(state, actionId, fuelItemId)),
             state => engine.StartAction(state, actionId, fuelItemId),
             cancellationToken);
 
@@ -60,6 +60,14 @@ public sealed class PlayerService(IPlayerStore store, GameEngine engine, TimePro
         state.ActiveAction is { } active
         && active.ActionId == actionId
         && (active.FuelItemId is null || active.FuelItemId == fuelItemId);
+
+    /// <summary>Builds a village building on the account's hold, paid from the caught-up stores.</summary>
+    public Task<CommandResult> BuildAsync(Guid accountId, string buildingId, CancellationToken cancellationToken) =>
+        ApplyAsync(
+            accountId,
+            state => Reasons.Of(engine.CheckBuild(state, buildingId)),
+            state => engine.Build(state, buildingId),
+            cancellationToken);
 
     public Task<CommandResult> StopActionAsync(Guid accountId, CancellationToken cancellationToken) =>
         ApplyAsync(accountId, check: _ => null, engine.StopAction, cancellationToken);
@@ -77,12 +85,12 @@ public sealed class PlayerService(IPlayerStore store, GameEngine engine, TimePro
     /// </summary>
     private async Task<CommandResult> ApplyAsync(
         Guid accountId,
-        Func<GameState, ActionBlock?> check,
+        Func<GameState, string?> check,
         Func<GameState, GameState> command,
         CancellationToken cancellationToken)
     {
         var mine = await GetOrCreateForAccountAsync(accountId, cancellationToken);
-        ActionBlock? block = null;
+        string? block = null;
         var updated = await store.UpdateAsync(mine.Id, save =>
         {
             var caughtUp = CatchUp(save, time.GetUtcNow());
@@ -91,7 +99,7 @@ public sealed class PlayerService(IPlayerStore store, GameEngine engine, TimePro
         }, cancellationToken);
 
         return updated is null ? CommandResult.NotFound
-            : block is { } blocked ? CommandResult.Blocked(blocked)
+            : block is not null ? CommandResult.Blocked(block)
             : CommandResult.Done(updated);
     }
 
@@ -109,13 +117,17 @@ public enum CommandStatus
     Done,
     NotFound,
 
-    /// <summary>The game refused the command (see <see cref="CommandResult.Block"/>); nothing was saved.</summary>
+    /// <summary>The game refused the command (see <see cref="CommandResult.Reason"/>); nothing was saved.</summary>
     Blocked,
 }
 
-public sealed record CommandResult(CommandStatus Status, PlayerSave? Player, ActionBlock? Block = null)
+/// <summary>
+/// What a command did. A refused command carries <see cref="Reason"/>, the stable code the API answers with (see
+/// <see cref="Reasons"/>).
+/// </summary>
+public sealed record CommandResult(CommandStatus Status, PlayerSave? Player, string? Reason = null)
 {
-    public static CommandResult Blocked(ActionBlock block) => new(CommandStatus.Blocked, null, block);
+    public static CommandResult Blocked(string reason) => new(CommandStatus.Blocked, null, reason);
 
     public static CommandResult NotFound { get; } = new(CommandStatus.NotFound, null);
 

@@ -1,9 +1,12 @@
 import { useEffect, useRef, type CSSProperties } from 'react'
 import { useTranslation } from 'react-i18next'
+import campfireOut from '../../assets/village/campfire-out.png'
 import campfire from '../../assets/village/campfire.png'
 import fire from '../../assets/village/fire.png'
 import scene from '../../assets/village/scene.png'
 import sky from '../../assets/village/sky.png'
+import smoke from '../../assets/village/smoke.png'
+import { CampfirePopup, type CampfireGoal } from './CampfirePopup'
 
 /** Art size of the scene, in pixels. Every layer is placed in these units. */
 const ART = { width: 320, height: 180 }
@@ -46,8 +49,14 @@ const CAMPFIRE_SHAPE = `polygon(${[
  * a little over half the screen tall, so in portrait the scene is wider than the screen and the player
  * drags it sideways to look around, starting at the campfire; a landscape phone crops top and bottom.
  */
-export function VillageScene() {
+interface VillageSceneProps {
+  /** The goal to light the campfire, while it is still out; `undefined` once it is lit. */
+  campfire?: CampfireGoal
+}
+
+export function VillageScene({ campfire: goal }: VillageSceneProps = {}) {
   const { t } = useTranslation()
+  const lit = goal === undefined
   const viewport = useRef<HTMLDivElement>(null)
 
   useEffect(() => {
@@ -70,10 +79,13 @@ export function VillageScene() {
       className="relative h-[58dvh] w-full overflow-x-auto overflow-y-hidden overscroll-x-contain [container-type:size] [scrollbar-width:none] lg:h-auto lg:min-h-[320px] lg:flex-1 lg:overflow-hidden"
     >
       <div
-        role="img"
-        aria-label={t('village.sceneLabel')}
-        className="relative top-1/2 -translate-y-1/2 [--px:max(100cqw/320,100cqh/180)] lg:absolute lg:left-1/2 lg:-translate-x-1/2 [&_*]:[image-rendering:pixelated]"
+        className="relative top-1/2 -translate-y-1/2 [--px:max(100cqw/320,100cqh/180)] lg:absolute lg:left-1/2 lg:-translate-x-1/2"
         style={{ width: 'calc(320 * var(--px))', height: 'calc(180 * var(--px))' }}
+      >
+      <div
+        role="img"
+        aria-label={lit ? t('village.sceneLabel') : `${t('village.sceneLabel')} ${t('village.unlitLabel')}`}
+        className="absolute inset-0 [&_*]:[image-rendering:pixelated]"
       >
         {/* Sky: one art pixel per step, so the clouds stay on the pixel grid. */}
         <div
@@ -86,8 +98,9 @@ export function VillageScene() {
           }}
         />
         <img src={scene} alt="" draggable={false} className="absolute inset-0 size-full" />
-        {/* Campfire: the painted fire cut out of the scene, then an 8-frame strip holding only the pixels that
-            change. Both brighten together while the pointer is over the fire. */}
+        {lit ? (
+        /* Campfire: the painted fire cut out of the scene, then an 8-frame strip holding only the pixels that
+            change. Both brighten together while the pointer is over the fire. */
         <div className="pointer-events-none absolute inset-0 transition-[filter] duration-150 hover:brightness-125">
           <img src={campfire} alt="" draggable={false} className="absolute" style={art(141, 108, 41, 32)} />
           <div
@@ -106,6 +119,33 @@ export function VillageScene() {
             style={{ ...art(141, 108, 41, 32), clipPath: CAMPFIRE_SHAPE }}
           />
         </div>
+        ) : (
+          <>
+            {/* The cold campfire: the scene around the fire repainted with charred logs and no flame or smoke
+                column, then a thin wisp rising from the logs in 16 frames. */}
+            <img src={campfireOut} alt="" draggable={false} className="absolute" style={art(112, 32, 96, 112)} />
+            <div
+              aria-hidden
+              className="absolute motion-safe:animate-village-smoke"
+              style={{
+                ...art(151, 76, 20, 44),
+                backgroundImage: `url(${smoke})`,
+                backgroundSize: 'calc(320 * var(--px)) 100%',
+              }}
+            />
+          </>
+        )}
+      </div>
+      {goal && (
+        // The goal hangs above the smoke, its tail pointing at the fire. On a short scene (phones) it comes down
+        // just enough to keep its top inside the box, which crops anything above it.
+        <div
+          className="absolute -translate-x-1/2 -translate-y-full"
+          style={{ left: 'calc(161.5 * var(--px))', top: 'max(calc(74 * var(--px)), 13rem)' }}
+        >
+          <CampfirePopup {...goal} />
+        </div>
+      )}
       </div>
     </div>
   )

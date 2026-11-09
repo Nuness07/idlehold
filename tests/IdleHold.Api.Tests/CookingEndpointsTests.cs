@@ -7,13 +7,17 @@ using IdleHold.Api.Players;
 namespace IdleHold.Api.Tests;
 
 // Uses the real content: grilled berries take 4 berries and 3 s, and a hazel log lasts 2 dishes. The GM routes set
-// the stores and levels.
+// the stores and levels; each test starts with the campfire lit (10 twigs, 5 reeds, 8 pebbles), which opens Cooking.
 public sealed class CookingEndpointsTests(PostgresFixture database) : IClassFixture<PostgresFixture>, IAsyncLifetime
 {
     private readonly ApiFactory _factory = new(database.ConnectionString, devTools: true);
     private HttpClient _client = null!;
 
-    public async Task InitializeAsync() => _client = await _factory.CreateGuestClientAsync();
+    public async Task InitializeAsync()
+    {
+        _client = await _factory.CreateGuestClientAsync();
+        await LightTheCampfireAsync();
+    }
 
     public async Task DisposeAsync()
     {
@@ -92,6 +96,14 @@ public sealed class CookingEndpointsTests(PostgresFixture database) : IClassFixt
         var player = (await _client.GetFromJsonAsync<PlayerResponse>("/me/player"))!;
 
         Assert.Equal("pine-log", player.ActiveAction!.FuelItemId);
+    }
+
+    private async Task LightTheCampfireAsync()
+    {
+        await SetItemCountAsync("twig", 10);
+        await SetItemCountAsync("reed", 5);
+        await SetItemCountAsync("pebble", 8);
+        (await _client.PostAsync("/me/player/buildings/campfire", null)).EnsureSuccessStatusCode();
     }
 
     private Task<HttpResponseMessage> StartAsync(StartActionRequest request) =>

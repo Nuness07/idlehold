@@ -103,6 +103,14 @@ Three layers, placed in art pixels:
     the ring's dark outline on each row, plus the flame-coloured pixels above it.
   - `village/fire.png` (8 frames of 64x96): `animate_image` on a crop of the fire and its smoke; each
     frame keeps only the pixels that change.
+- **Cold campfire** (until the player lights it): shown instead of the two pieces above.
+  - `village/campfire-out.png` (96x112, placed at 112,32): the scene around the fire with the flames and the
+    smoke column repainted as charred logs, ash and the trees behind. `inpaint_image` on that crop laid over
+    the sky (an opaque input, or the repainted pixels come back transparent and the flames show through), with
+    a mask made from every pixel `fire.png` touches plus the flame-coloured pixels of `campfire.png`; only the
+    masked pixels are kept, so everything else stays the scene's.
+  - `village/smoke.png` (16 frames of 20x44): a thin wisp drawn by hand in code, four small grey puffs that
+    rise, grow and fade on a 2.4 s loop.
 
 Motion stops for players who ask for reduced motion. Each piece that reacts to the pointer is cut out
 the same way (an exact copy of its pixels, so no repainting), with a hit shape that follows its outline;

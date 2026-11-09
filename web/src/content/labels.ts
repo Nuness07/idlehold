@@ -139,6 +139,15 @@ const recipeGroupSprites: Record<string, SpriteArt> = {
   'stone-furnace': { src: stoneFurnace, width: 32, height: 32 },
 }
 
+/** Each village building as it looks once built. */
+const buildingSprites: Record<string, SpriteArt> = {
+  campfire: { src: campfire, width: 41, height: 32 },
+}
+
+export function buildingSprite(buildingId: string): SpriteArt | undefined {
+  return buildingSprites[buildingId]
+}
+
 export function recipeGroupSprite(groupId: string): SpriteArt | undefined {
   return recipeGroupSprites[groupId]
 }

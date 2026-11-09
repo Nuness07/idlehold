@@ -53,7 +53,7 @@ An action can need a level in its trade before it starts, so a trade grows by op
 
 ### Cooking and the fire: Decided
 
-Cooking is a production trade with no tool, but every dish burns fuel. The player picks the fuel (for now a log: hazel lasts 2 dishes, pine 4, birch 6), and the fire takes a whole log from the stores each time the last one runs out. The fire only burns while a dish cooks, so nothing is wasted while the player does something else, and what is left of a burning log waits in the fire for the next dish. Cooking stops when the ingredients or the chosen fuel run out (`missing-fuel` when there is none to start with). Picking another fuel while cooking feeds it to the same fire without restarting the dish.
+Cooking is a production trade with no tool; it opens once the campfire is lit in the village (see "Village buildings"), and every dish burns fuel. The player picks the fuel (for now a log: hazel lasts 2 dishes, pine 4, birch 6), and the fire takes a whole log from the stores each time the last one runs out. The fire only burns while a dish cooks, so nothing is wasted while the player does something else, and what is left of a burning log waits in the fire for the next dish. Cooking stops when the ingredients or the chosen fuel run out (`missing-fuel` when there is none to start with). Picking another fuel while cooking feeds it to the same fire without restarting the dish.
 
 The first dishes, both on the campfire and open from the start: grilled berries (4 wild berries, 3 s, 8 XP) and berry soup (12 wild berries, 6 s, 20 XP). Nothing eats them yet; food feeds the village and villagers later. Cooking lists its dishes by station (see "Recipe groups"): the campfire now, and a stone furnace with better dishes later (how it is built, what it burns and what its dishes give are open).
 
@@ -112,6 +112,14 @@ Buildings cost goods and give something back: unlock a skill, unlock a villager,
 Decided: the village is a scene you look at and the home screen (the hub), seen in first person from the camp looking out to the horizon. It starts as a campfire among the ruins of the old village, with the forest behind. The village has a name ("Idle Road" for now; the player will choose it later); how it is shown is not decided. Its pieces will be animated over time.
 
 Open: how buildings appear in the scene, and whether it is also a list of buildings.
+
+### Village buildings: Decided
+
+A building is part of the village the player builds once. It costs items from the stores, taken at once (no waiting, no trade and no XP), and stays for good. A trade can wait for a building: it is locked, with its chains, until the building exists.
+
+The first one is the campfire. The game starts with it out: charred logs and a thin wisp of smoke, and a popup pinned over it ("Light the campfire") with what it takes and what it opens. Lighting it takes 10 twigs, 5 reeds and 8 pebbles, all from Foraging by hand (the pebbles ring the fire, the dry reeds catch the spark, the twigs feed it), and opens Cooking. The popup always shows until the campfire is lit, because it is the first goal and phones have no hover. Cooking's chains point to the village.
+
+Saves from before buildings start with the campfire out. Later: bigger buildings that take time, a tutorial that leads to the campfire, and buildings appearing in the scene as they are built.
 
 Idea: the Village's emblem (the stone tower on its entry) grows as the village is rebuilt, a new drawing per stage. The game's logo keeps the first tower.
 

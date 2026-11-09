@@ -4,9 +4,14 @@ import chainStrip from '../../assets/frames/lock-chain.png'
 import padlock from '../../assets/frames/lock-padlock.png'
 import { PixelSprite } from '../../components/PixelSprite'
 import { WoodButton } from '../../components/WoodButton'
-import { itemSprite } from '../../content/labels'
+import { buildingSprite, itemSprite, type SpriteArt } from '../../content/labels'
 import { useContentText } from '../../content/text'
 import { cn } from '../../lib/cn'
+
+function spriteOf(itemId: string): SpriteArt | undefined {
+  const src = itemSprite(itemId)
+  return src ? { src, width: 32, height: 32 } : undefined
+}
 
 /** Art pixels are drawn at this scale, like the rest of the board. */
 const SCALE = 3
@@ -26,24 +31,41 @@ export function LockedArea({ locked, children }: LockedAreaProps) {
 }
 
 interface TradeLockProps {
+  /** The village building that opens the trade, as the server says; it comes before a tool. */
+  buildingId?: string
+  onOpenVillage?: () => void
   /** The tool that opens the trade, as the server says. */
-  toolItemId: string
+  toolItemId?: string
   /** The trade whose recipe makes that tool, if any. */
-  makerSkillId: string | undefined
-  onOpenTrade: (skillId: string) => void
+  makerSkillId?: string
+  onOpenTrade?: (skillId: string) => void
 }
 
 /**
  * Laid over a locked trade's column: two iron chains crossed from corner to corner, a padlock where they
- * cross, and a plaque on it naming the tool that opens the trade. The parent must be `relative`.
+ * cross, and a plaque on it naming what opens the trade (a village building to build or a tool to make) with a
+ * button to where it is made. The parent must be `relative`.
  */
-export function TradeLock({ toolItemId, makerSkillId, onOpenTrade }: TradeLockProps) {
+export function TradeLock({ buildingId, onOpenVillage, toolItemId, makerSkillId, onOpenTrade }: TradeLockProps) {
   const { t } = useTranslation()
   const text = useContentText()
-  const sprite = itemSprite(toolItemId)
+  const opener = buildingId
+    ? {
+        label: t('village.build.lockLabel'),
+        name: text.buildingAction(buildingId),
+        art: buildingSprite(buildingId),
+        go: onOpenVillage && { text: t('village.build.goVillage'), onClick: onOpenVillage },
+      }
+    : {
+        label: t('tools.lockedUntil'),
+        name: toolItemId ? text.itemName(toolItemId) : '',
+        art: toolItemId ? spriteOf(toolItemId) : undefined,
+        go: makerSkillId &&
+          onOpenTrade && { text: t('tools.goMake', { trade: text.tradeName(makerSkillId) }), onClick: () => onOpenTrade(makerSkillId) },
+      }
 
   return (
-    <div role="region" aria-label={t('tools.lockedUntil')} className="pointer-events-none absolute inset-0 overflow-hidden">
+    <div role="region" aria-label={opener.label} className="pointer-events-none absolute inset-0 overflow-hidden">
       <ChainsX />
       {/* The padlock sits exactly where the chains cross; the plaque and the button hang below it. */}
       <div className="absolute inset-0 grid place-items-center">
@@ -51,15 +73,15 @@ export function TradeLock({ toolItemId, makerSkillId, onOpenTrade }: TradeLockPr
           <PixelSprite src={padlock} width={22} height={30} scale={SCALE} className="drop-shadow-[0_6px_0_rgb(0_0_0/0.45)]" />
           <div className="absolute top-full left-1/2 -mt-3 flex w-max -translate-x-1/2 flex-col items-center">
             <p className="lock-plaque flex flex-col items-center gap-1 drop-shadow-[0_4px_0_rgb(0_0_0/0.45)]">
-              <span className="text-xs font-extrabold tracking-[0.14em] uppercase opacity-75">{t('tools.lockedUntil')}</span>
+              <span className="text-xs font-extrabold tracking-[0.14em] uppercase opacity-75">{opener.label}</span>
               <span className="flex items-center gap-2 text-lg leading-tight font-extrabold">
-                {sprite && <PixelSprite src={sprite} width={32} height={32} />}
-                {text.itemName(toolItemId)}
+                {opener.art && <PixelSprite src={opener.art.src} width={opener.art.width} height={opener.art.height} />}
+                {opener.name}
               </span>
             </p>
-            {makerSkillId && (
-              <WoodButton className="pointer-events-auto mt-4 px-2" onClick={() => onOpenTrade(makerSkillId)}>
-                {t('tools.goMake', { trade: text.tradeName(makerSkillId) })}
+            {opener.go && (
+              <WoodButton className="pointer-events-auto mt-4 px-2" onClick={opener.go.onClick}>
+                {opener.go.text}
               </WoodButton>
             )}
           </div>

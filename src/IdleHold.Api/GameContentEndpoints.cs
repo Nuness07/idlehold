@@ -14,7 +14,7 @@ public static class GameContentEndpoints
 
     private static ContentResponse GetContent(GameContent content) => new(
         content.Skills
-            .Select(skill => new SkillDefinitionResponse(skill.Id, skill.Category))
+            .Select(skill => new SkillDefinitionResponse(skill.Id, skill.Category, skill.RequiredBuildingId))
             .ToList(),
         content.Actions
             .Select(action => new ActionResponse(
@@ -37,6 +37,11 @@ public static class GameContentEndpoints
             .ToList(),
         content.RecipeGroups
             .Select(group => new RecipeGroupResponse(group.Id, group.SkillId))
+            .ToList(),
+        content.Buildings
+            .Select(building => new BuildingResponse(
+                building.Id,
+                building.Cost.Select(item => new ItemAmountResponse(item.ItemId, item.Quantity)).ToList()))
             .ToList());
 }
 
@@ -45,12 +50,20 @@ public sealed record ContentResponse(
     IReadOnlyList<ActionResponse> Actions,
     IReadOnlyList<ToolResponse> Tools,
     IReadOnlyList<FuelResponse> Fuels,
-    IReadOnlyList<RecipeGroupResponse> RecipeGroups);
+    IReadOnlyList<RecipeGroupResponse> RecipeGroups,
+    IReadOnlyList<BuildingResponse> Buildings);
 
-/// <summary>A trade, in the order the game lists them, with the group it belongs to.</summary>
+/// <summary>
+/// A trade, in the order the game lists them, with the group it belongs to and the village building it waits for
+/// (<c>null</c> when none).
+/// </summary>
 public sealed record SkillDefinitionResponse(
     string Id,
-    [property: JsonConverter(typeof(CamelCaseEnumConverter<SkillCategory>))] SkillCategory Category);
+    [property: JsonConverter(typeof(CamelCaseEnumConverter<SkillCategory>))] SkillCategory Category,
+    string? RequiredBuildingId = null);
+
+/// <summary>A village building, built once with <c>POST /me/player/buildings/{id}</c>, and what it costs from the stores.</summary>
+public sealed record BuildingResponse(string Id, IReadOnlyList<ItemAmountResponse> Cost);
 
 /// <summary>Writes an enum as its camelCase name ("gathering"), so the OpenAPI document lists the names.</summary>
 public sealed class CamelCaseEnumConverter<TEnum>() : JsonStringEnumConverter<TEnum>(JsonNamingPolicy.CamelCase)

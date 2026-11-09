@@ -20,6 +20,9 @@ export function contentText(t: TFunction) {
     tradeName: (skillId: string) => lookup(`content.trades.${skillId}`, humanize(skillId)),
     actionName: (actionId: string) => lookup(`content.actions.${actionId}.name`, humanize(actionId)),
     actionVerb: (actionId: string) => lookup(`content.actions.${actionId}.verb`, humanize(actionId)),
+    buildingName: (buildingId: string) => lookup(`content.buildings.${buildingId}.name`, humanize(buildingId)),
+    /** What the player does to build it, as a call to action: "Light the campfire". */
+    buildingAction: (buildingId: string) => lookup(`content.buildings.${buildingId}.action`, humanize(buildingId)),
     recipeGroupName: (groupId: string) => lookup(`content.recipeGroups.${groupId}`, humanize(groupId)),
     /** What a trade's recipe groups are, as a heading: "Station" in Cooking, "Material" in Crafting. */
     recipeGroupLegend: (skillId: string) => lookup(`recipeGroups.legend.${skillId}`, ''),

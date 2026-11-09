@@ -19,6 +19,17 @@ describe('TradeLock', () => {
 
     expect(onOpenTrade).toHaveBeenCalledWith('crafting')
   })
+
+  it('names the village building that opens the trade and leads to the village', async () => {
+    const onOpenVillage = vi.fn()
+    render(<TradeLock buildingId="campfire" onOpenVillage={onOpenVillage} />)
+
+    expect(screen.getByRole('region', { name: 'Opens in the village' })).toBeInTheDocument()
+    expect(screen.getByText('Light the campfire')).toBeInTheDocument()
+    await userEvent.click(screen.getByRole('button', { name: 'Go to the village' }))
+
+    expect(onOpenVillage).toHaveBeenCalled()
+  })
 })
 
 describe('LockedArea', () => {

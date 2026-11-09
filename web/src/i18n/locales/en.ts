@@ -12,6 +12,8 @@ export const en = {
     actionBlocked: {
       'missing-tool': 'This trade is locked until you have its tool.',
       'level-too-low': 'Your level in this trade is too low for that yet.',
+      'missing-building': 'This trade opens once its village building is built.',
+      'already-built': 'That is already part of the village.',
       'missing-fuel': 'There is no fuel of that kind for the fire. Pick another or gather more.',
       'missing-inputs': 'Not enough materials for that yet.',
       'tool-already-owned': 'You already have this tool or a better one.',
@@ -65,6 +67,14 @@ export const en = {
     rail: 'Village',
     defaultName: 'Idle Road',
     sceneLabel: 'A campfire in a forest clearing at sunset, among the ruins of the old village: a half-standing cottage, a collapsed house and crumbled stone walls, with a pine forest and hills on the horizon.',
+    unlitLabel: 'The campfire is out: only a thin smoke rises from the charred logs.',
+    build: {
+      opens: 'Opens {{trade}}',
+      light: 'Light it',
+      lighting: 'Lighting…',
+      lockLabel: 'Opens in the village',
+      goVillage: 'Go to the village',
+    },
   },
   trades: {
     heading: 'Village and trades',
@@ -215,6 +225,9 @@ export const en = {
       crafting: 'Crafting',
       carpentry: 'Carpentry',
       cooking: 'Cooking',
+    },
+    buildings: {
+      campfire: { name: 'Campfire', action: 'Light the campfire' },
     },
     recipeGroups: {
       'chipped-stone': 'Chipped stone',

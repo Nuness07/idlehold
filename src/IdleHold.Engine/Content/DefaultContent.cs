@@ -9,7 +9,7 @@ namespace IdleHold.Engine.Content;
 /// Crafting turns what the trades gather into tools, and each tool opens the next step: twigs and pebbles make the
 /// axe, the axe cuts the young hazel, a hazel log handles the knife, the knife whittles hazel sticks in Carpentry,
 /// and the sticks handle the pickaxe. Tools are unique and upgraded by tier, so each tool recipe can be made once
-/// (see <see cref="ToolDefinition"/>). Cooking needs no tool but burns logs: the player picks which, and each kind
+/// (see <see cref="ToolDefinition"/>). Cooking opens once the campfire is lit in the village (see <see cref="BuildingDefinition"/>); it needs no tool but burns logs: the player picks which, and each kind
 /// lasts a number of dishes (see <see cref="FuelDefinition"/>).
 /// Crafting sorts its recipes by material and Cooking by station (see <see cref="RecipeGroupDefinition"/>).
 /// </summary>
@@ -23,7 +23,7 @@ public static class DefaultContent
         new SkillDefinition("mining", SkillCategory.Gathering),
         new SkillDefinition("crafting", SkillCategory.Production),
         new SkillDefinition("carpentry", SkillCategory.Production),
-        new SkillDefinition("cooking", SkillCategory.Production),
+        new SkillDefinition("cooking", SkillCategory.Production) { RequiredBuildingId = "campfire" },
     ],
     [
         // Foraging: the bare-hand trade, and the only one open from the start besides Crafting.
@@ -74,7 +74,7 @@ public static class DefaultContent
             Inputs = [new ItemAmount("hazel-log", 1)],
         },
 
-        // Cooking: open from the start, but every dish burns fuel, and logs need the axe.
+        // Cooking: opens once the campfire is lit; every dish burns fuel, and logs need the axe.
         new ActionDefinition("cook-grilled-berries", "cooking", TimeSpan.FromSeconds(3), XpPerCompletion: 8, OutputItemId: "grilled-berries")
         {
             GroupId = "campfire",
@@ -110,6 +110,11 @@ public static class DefaultContent
         // Cooking by station: the campfire now, the stone furnace (better dishes) later.
         new RecipeGroupDefinition("campfire", "cooking"),
         new RecipeGroupDefinition("stone-furnace", "cooking"),
+    ],
+    [
+        // The first thing the village needs: a ring of pebbles, dry reeds to catch the spark and twigs to feed it.
+        // Lighting it opens Cooking.
+        new BuildingDefinition("campfire", [new ItemAmount("twig", 10), new ItemAmount("reed", 5), new ItemAmount("pebble", 8)]),
     ]);
 
     /// <summary>

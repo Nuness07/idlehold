@@ -11,6 +11,8 @@ export const ptBR = {
     actionBlocked: {
       'missing-tool': 'Este ofício está trancado até você ter a ferramenta dele.',
       'level-too-low': 'Seu nível neste ofício ainda é baixo para isso.',
+      'missing-building': 'Este ofício abre quando a construção dele na vila estiver pronta.',
+      'already-built': 'Isso já faz parte da vila.',
       'missing-fuel': 'Não há lenha desse tipo para o fogo. Escolha outra ou junte mais.',
       'missing-inputs': 'Ainda faltam materiais para isso.',
       'tool-already-owned': 'Você já tem essa ferramenta ou uma melhor.',
@@ -64,6 +66,14 @@ export const ptBR = {
     rail: 'Vila',
     defaultName: 'Idle Road',
     sceneLabel: 'Uma fogueira numa clareira da floresta ao pôr do sol, entre as ruínas da antiga vila: uma casa meio de pé, uma casa desabada e muros de pedra caídos, com a floresta de pinheiros e os morros no horizonte.',
+    unlitLabel: 'A fogueira está apagada: só uma fumacinha sobe das toras queimadas.',
+    build: {
+      opens: 'Libera {{trade}}',
+      light: 'Acender',
+      lighting: 'Acendendo…',
+      lockLabel: 'Abre na vila',
+      goVillage: 'Ir para a vila',
+    },
   },
   trades: {
     heading: 'Vila e ofícios',
@@ -214,6 +224,9 @@ export const ptBR = {
       crafting: 'Artesanato',
       carpentry: 'Carpintaria',
       cooking: 'Culinária',
+    },
+    buildings: {
+      campfire: { name: 'Fogueira', action: 'Acenda a fogueira' },
     },
     recipeGroups: {
       'chipped-stone': 'Pedra lascada',

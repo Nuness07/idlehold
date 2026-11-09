@@ -354,6 +354,59 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/me/player/buildings/{buildingId}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path: {
+                    buildingId: string;
+                };
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description OK */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["PlayerResponse"];
+                    };
+                };
+                /** @description Bad Request */
+                400: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/problem+json": components["schemas"]["HttpValidationProblemDetails"];
+                    };
+                };
+                /** @description Not Found */
+                404: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content?: never;
+                };
+            };
+        };
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/dev/player/skills/{skillId}": {
         parameters: {
             query?: never;
@@ -610,12 +663,17 @@ export interface components {
             /** Format: int32 */
             minutes: number;
         };
+        BuildingResponse: {
+            id: string;
+            cost: components["schemas"]["ItemAmountResponse"][];
+        };
         ContentResponse: {
             skills: components["schemas"]["SkillDefinitionResponse"][];
             actions: components["schemas"]["ActionResponse"][];
             tools: components["schemas"]["ToolResponse"][];
             fuels: components["schemas"]["FuelResponse"][];
             recipeGroups: components["schemas"]["RecipeGroupResponse"][];
+            buildings: components["schemas"]["BuildingResponse"][];
         };
         FuelResponse: {
             itemId: string;
@@ -657,6 +715,7 @@ export interface components {
             storage: components["schemas"]["StorageResponse"];
             /** Format: int64 */
             fireCyclesLeft: number;
+            buildings: string[];
             /** Format: date-time */
             updatedAt: string;
         };
@@ -681,6 +740,7 @@ export interface components {
         SkillDefinitionResponse: {
             id: string;
             category: components["schemas"]["SkillCategory"];
+            requiredBuildingId?: null | string;
         };
         SkillResponse: {
             /** Format: int64 */
@@ -717,7 +777,8 @@ export interface components {
         };
         TradeLockResponse: {
             skillId: string;
-            toolItemId: string;
+            toolItemId: null | string;
+            buildingId: null | string;
         };
     };
     responses: never;

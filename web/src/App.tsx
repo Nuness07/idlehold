@@ -20,7 +20,7 @@ import {
   useContent,
   usePlayer,
   useStartAction,
-  useStopAction,
+  useBuild, useStopAction,
 } from './features/player/queries'
 import { SinceYouLeft } from './features/player/SinceYouLeft'
 import { rememberLastSeen, summarizeAway, type AwaySummary } from './features/player/awaySummary'
@@ -65,11 +65,14 @@ export default function App() {
 
   const startAction = useStartAction(player?.id)
   const stopAction = useStopAction(player?.id)
-  const commandError = startAction.error ?? stopAction.error
+  const build = useBuild(player?.id)
+  const commandError = startAction.error ?? stopAction.error ?? build.error
 
   /** A refusal from the game (409) says why; anything else is a connection or server problem. */
   const commandErrorText = (error: Error) => {
     const reason = isApiError(error, 409) ? error.problem.reason : undefined
+    if (reason === 'missing-building') return t('app.actionBlocked.missing-building')
+    if (reason === 'already-built') return t('app.actionBlocked.already-built')
     if (reason === 'missing-tool') return t('app.actionBlocked.missing-tool')
     if (reason === 'level-too-low') return t('app.actionBlocked.level-too-low')
     if (reason === 'missing-fuel') return t('app.actionBlocked.missing-fuel')
@@ -155,8 +158,8 @@ export default function App() {
 
   // The session ended while playing (expired, or signed out in another tab). The browser starts over
   // as a new guest; someone who had an account is offered the sign-in form to get back to it.
-  const sessionEnded =
-    isSessionEnded(playerQuery.error) || isSessionEnded(startAction.error) || isSessionEnded(stopAction.error)
+  // Any read or command can be the one that finds the session gone (a 401).
+  const sessionEnded = [playerQuery.error, startAction.error, stopAction.error, build.error].some(isSessionEnded)
   const hadAccount = account?.isGuest === false
   useEffect(() => {
     if (!sessionEnded) return
@@ -221,9 +224,14 @@ export default function App() {
     inShownGroup(card.recipe ?? actions.find((action) => action.outputItemId === card.itemId)),
   )
   const toolInUse = toolInUseFor(selectedSkillId, content.data.tools, player.tools)
-  const lockedTools = new Map(player.lockedTrades.map((lock) => [lock.skillId, lock.toolItemId]))
-  const lockTool = lockedTools.get(selectedSkillId)
+  const tradeLock = player.lockedTrades.find((lock) => lock.skillId === selectedSkillId)
+  const locked = tradeLock !== undefined
+  const lockTool = tradeLock?.toolItemId ?? undefined
   const lockMakerSkillId = lockTool ? actions.find((action) => action.outputItemId === lockTool)?.skillId : undefined
+  // The village's first goal: the campfire, until it is lit. The trade it opens is named on its popup.
+  const campfire = content.data.buildings.find((building) => building.id === 'campfire')
+  const campfireLit = player.buildings.includes('campfire')
+  const campfireOpens = content.data.skills.find((skill) => skill.requiredBuildingId === 'campfire')?.id
   const pendingActionId = startAction.isPending ? startAction.variables.actionId : undefined
   const fuels = content.data.fuels
   const usesFire = tradeActions.some((action) => action.usesFuel)
@@ -331,7 +339,7 @@ export default function App() {
               category,
               skill: skillOf(skillId),
               working: skillId === activeDefinition?.skillId,
-              locked: lockedTools.has(skillId),
+              locked: player.lockedTrades.some((lock) => lock.skillId === skillId),
             }))}
           />
         </aside>
@@ -340,7 +348,19 @@ export default function App() {
           // The village fills the middle column. Notices and the worked action float over its foot on wide
           // screens and sit below it on phones, only while there is something to show.
           <main className="relative flex min-w-0 flex-col">
-            <VillageView />
+            <VillageView
+              campfire={
+                campfire && !campfireLit
+                  ? {
+                      cost: campfire.cost,
+                      opensSkillId: campfireOpens,
+                      inventory: player.inventory,
+                      lighting: build.isPending,
+                      onLight: () => build.mutate('campfire'),
+                    }
+                  : undefined
+              }
+            />
             {(away || showNudge || activeAction || commandError) && (
               <div className="flex w-full flex-col gap-3 p-4 lg:absolute lg:inset-x-0 lg:bottom-0 lg:mx-auto lg:max-w-3xl lg:p-6">
                 {away && <SinceYouLeft summary={away} onDismiss={() => setAway(null)} />}
@@ -367,9 +387,9 @@ export default function App() {
           menuScreen(screen)
         ) : (
           // A locked trade's chains cross this whole cell, corner to corner, over its dimmed sign and actions.
-          <div className={cn('relative flex min-w-0 justify-center', lockTool && 'min-h-[560px]')}>
+          <div className={cn('relative flex min-w-0 justify-center', locked && 'min-h-[560px]')}>
             <main className="flex w-full max-w-[880px] min-w-0 flex-col gap-7 px-4 pb-10 sm:px-8 lg:px-10">
-              <LockedArea locked={!!lockTool}>
+              <LockedArea locked={locked}>
                 <TradeSign
                   skillId={selectedSkillId}
                   skill={skillOf(selectedSkillId)}
@@ -384,7 +404,7 @@ export default function App() {
               {showNudge && <SaveNudge onCreateAccount={() => setDialog('register')} onDismiss={dismissNudge} />}
 
               {/* A locked trade has nothing to start, so the "choose an action" card only shows work elsewhere. */}
-              {(!lockTool || activeAction) && (
+              {(!locked || activeAction) && (
                 <WorkingAction
                   active={activeAction}
                   action={activeDefinition}
@@ -401,9 +421,13 @@ export default function App() {
                 </p>
               )}
 
-              <LockedArea locked={!!lockTool}>{tradeBody}</LockedArea>
+              <LockedArea locked={locked}>{tradeBody}</LockedArea>
             </main>
-            {lockTool && <TradeLock toolItemId={lockTool} makerSkillId={lockMakerSkillId} onOpenTrade={openTrade} />}
+            {tradeLock?.buildingId ? (
+              <TradeLock buildingId={tradeLock.buildingId} onOpenVillage={() => setScreen('village')} />
+            ) : (
+              lockTool && <TradeLock toolItemId={lockTool} makerSkillId={lockMakerSkillId} onOpenTrade={openTrade} />
+            )}
           </div>
         )}
 
