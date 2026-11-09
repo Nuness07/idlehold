@@ -158,8 +158,8 @@ export default function App() {
 
   // The session ended while playing (expired, or signed out in another tab). The browser starts over
   // as a new guest; someone who had an account is offered the sign-in form to get back to it.
-  const sessionEnded =
-    isSessionEnded(playerQuery.error) || isSessionEnded(startAction.error) || isSessionEnded(stopAction.error)
+  // Any read or command can be the one that finds the session gone (a 401).
+  const sessionEnded = [playerQuery.error, startAction.error, stopAction.error, build.error].some(isSessionEnded)
   const hadAccount = account?.isGuest === false
   useEffect(() => {
     if (!sessionEnded) return
