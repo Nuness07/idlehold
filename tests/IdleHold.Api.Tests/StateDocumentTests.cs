@@ -30,7 +30,7 @@ public class StateDocumentTests
     {
         var json = StateDocument.From(GameState.New).Serialize();
 
-        Assert.Equal("""{"schemaVersion":1,"inventory":{},"skillXp":{},"activeAction":null,"fireCyclesLeft":0}""", json);
+        Assert.Equal("""{"schemaVersion":2,"inventory":{},"skillXp":{},"activeAction":null,"fireCyclesLeft":0}""", json);
     }
 
     [Fact]
@@ -41,14 +41,16 @@ public class StateDocumentTests
     }
 
     [Fact]
-    public void Deserialize_ASaveFromBeforeTheFire_ReadsAnEmptyFireAndNoFuel()
+    public void Deserialize_Version1Save_UpgradesToAnEmptyFireAndNoFuel()
     {
         const string json = """
             {"schemaVersion":1,"inventory":{"reed":3},"skillXp":{"foraging":24},"activeAction":{"actionId":"pull-reeds","progressTicks":10000000}}
             """;
 
-        var state = StateDocument.Deserialize(json).ToState();
+        var document = StateDocument.Deserialize(json);
+        var state = document.ToState();
 
+        Assert.Equal(StateDocument.CurrentSchemaVersion, document.SchemaVersion);
         Assert.Equal(0, state.FireCyclesLeft);
         Assert.Null(state.ActiveAction!.FuelItemId);
         Assert.Equal(3, state.ItemCount("reed"));

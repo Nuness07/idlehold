@@ -7,8 +7,12 @@ namespace IdleHold.Api.Persistence;
 /// <summary>
 /// The saved shape of a <see cref="GameState"/>. It is kept separate from the engine type so the
 /// engine can change internally without breaking saves already in the database; when the shape
-/// itself has to change, <see cref="SchemaVersion"/> tells old saves apart. A field added with a default (the fire,
-/// the chosen fuel) reads an older save as that default, so it needs no new version.
+/// itself has to change, <see cref="SchemaVersion"/> tells old saves apart and <see cref="Deserialize"/> upgrades
+/// each older version it still reads.
+/// <list type="bullet">
+/// <item>Version 1: stores, XP and the active action.</item>
+/// <item>Version 2: adds the fire (<see cref="FireCyclesLeft"/>) and the active action's chosen fuel.</item>
+/// </list>
 /// </summary>
 public sealed record StateDocument(
     int SchemaVersion,
@@ -17,7 +21,7 @@ public sealed record StateDocument(
     ActiveActionDocument? ActiveAction,
     long FireCyclesLeft = 0)
 {
-    public const int CurrentSchemaVersion = 1;
+    public const int CurrentSchemaVersion = 2;
 
     private static readonly JsonSerializerOptions Json = new(JsonSerializerDefaults.Web);
 
@@ -47,14 +51,22 @@ public sealed record StateDocument(
         var document = JsonSerializer.Deserialize<StateDocument>(json, Json)
             ?? throw new InvalidOperationException("A saved game state was empty.");
 
-        if (document.SchemaVersion != CurrentSchemaVersion)
+        return document.SchemaVersion switch
         {
-            throw new InvalidOperationException(
-                $"Saved state schema {document.SchemaVersion} is not supported (expected {CurrentSchemaVersion}).");
-        }
-
-        return document;
+            CurrentSchemaVersion => document,
+            1 => FromVersion1(document),
+            _ => throw new InvalidOperationException(
+                $"Saved state schema {document.SchemaVersion} is not supported (expected {CurrentSchemaVersion})."),
+        };
     }
+
+    /// <summary>A version 1 save predates the fire: it has no fuel in the fire and no fuel chosen.</summary>
+    private static StateDocument FromVersion1(StateDocument document) => document with
+    {
+        SchemaVersion = CurrentSchemaVersion,
+        ActiveAction = document.ActiveAction is { } active ? active with { FuelItemId = null } : null,
+        FireCyclesLeft = 0,
+    };
 }
 
 /// <summary>Progress is stored in ticks so no fraction of a cycle is lost between saves.</summary>
