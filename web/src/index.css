@@ -51,6 +51,7 @@
   /* Village scene: the sky drifts one loop width (384 art pixels); the campfire steps through 8 frames. */
   --animate-village-sky: village-sky 128s steps(384) infinite;
   --animate-village-fire: village-fire 880ms steps(8) infinite;
+  --animate-village-smoke: village-smoke 2400ms steps(16) infinite;
 
   @keyframes village-sky {
     to { background-position-x: calc(-384 * var(--px)); }
@@ -58,6 +59,10 @@
 
   @keyframes village-fire {
     to { background-position-x: calc(-512 * var(--px)); }
+  }
+
+  @keyframes village-smoke {
+    to { background-position-x: calc(-320 * var(--px)); }
   }
 }
 
@@ -131,6 +136,14 @@
       border-width: 36px;
       border-image-width: 36px;
     }
+  }
+
+  /* The same wooden frame at 1x on every screen, for a small popup in the village such as a goal. */
+  .popup-frame {
+    border-style: solid;
+    border-width: 18px;
+    border-image: url('./assets/board/frame.png') 18 / 18px round;
+    image-rendering: pixelated;
   }
 
   /* Wrought-iron frame around a tool (9-slice, 8-pixel corners at 2x): the corners never stretch. The well

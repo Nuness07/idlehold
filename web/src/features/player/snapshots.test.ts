@@ -12,6 +12,7 @@ function snap(updatedAt: string, actionId: string | null, id = 'p1'): PlayerSnap
     lockedTrades: [],
   storage: { slotCount: 48, stackSize: 10_000, slots: [] },
   fireCyclesLeft: 0,
+  buildings: [],
     updatedAt,
   }
   return { player, receivedAt: 0 }

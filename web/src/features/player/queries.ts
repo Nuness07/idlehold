@@ -70,6 +70,18 @@ export function useStartAction(holdId: string | undefined) {
   })
 }
 
+/** Builds a village building at once, such as lighting the campfire. */
+export function useBuild(holdId: string | undefined) {
+  const queryClient = useQueryClient()
+  return useMutation({
+    mutationKey: ['command', 'build', holdId],
+    onMutate: () => queryClient.cancelQueries({ queryKey: playerQueryKey }),
+    mutationFn: async (buildingId: string) =>
+      (await api.POST('/me/player/buildings/{buildingId}', { params: { path: { buildingId } } })).data!,
+    onSuccess: (player) => applyServerState(queryClient, player),
+  })
+}
+
 export function useStopAction(holdId: string | undefined) {
   const queryClient = useQueryClient()
   return useMutation({

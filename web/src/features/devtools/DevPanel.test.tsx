@@ -22,6 +22,7 @@ const player: Player = {
   lockedTrades: [],
   storage: { slotCount: 48, stackSize: 10_000, slots: [] },
   fireCyclesLeft: 0,
+  buildings: [],
   updatedAt: '2100-01-01T12:00:00Z',
 }
 
@@ -48,6 +49,7 @@ const content: Content = {
   tools: [{ itemId: 'chipped-stone-axe', family: 'axe', tier: 1, skillId: 'woodcutting' }],
   fuels: [],
   recipeGroups: [],
+  buildings: [],
 }
 
 function renderPanel() {

@@ -12,6 +12,7 @@ function player(logs: number, level: number): Player {
     lockedTrades: [],
   storage: { slotCount: 48, stackSize: 10_000, slots: [] },
   fireCyclesLeft: 0,
+  buildings: [],
     updatedAt: '2026-11-05T12:00:00Z',
   }
 }

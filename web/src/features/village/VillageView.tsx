@@ -1,8 +1,14 @@
 import { useTranslation } from 'react-i18next'
+import type { CampfireGoal } from './CampfirePopup'
 import { VillageScene } from './VillageScene'
 
+interface VillageViewProps {
+  /** The goal to light the campfire, while it is still out. */
+  campfire?: CampfireGoal
+}
+
 /** The village screen, the game's hub: the scene filling the middle column. */
-export function VillageView() {
+export function VillageView({ campfire }: VillageViewProps = {}) {
   const { t } = useTranslation()
 
   return (
@@ -11,7 +17,7 @@ export function VillageView() {
       <h1 id="village-name" className="sr-only">
         {t('village.defaultName')}
       </h1>
-      <VillageScene />
+      <VillageScene campfire={campfire} />
     </section>
   )
 }

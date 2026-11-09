@@ -10,7 +10,7 @@ function phoneSized(box: HTMLElement) {
 }
 
 function sceneBox() {
-  return screen.getByRole('img', { name: /campfire/ }).parentElement!
+  return screen.getByRole('img', { name: /campfire/ }).parentElement!.parentElement!
 }
 
 describe('VillageScene', () => {
@@ -34,5 +34,19 @@ describe('VillageScene', () => {
     act(() => resize(false))
 
     expect(box.scrollLeft).toBe((700 - 375) / 2)
+  })
+
+  it('shows the campfire out with its goal until it is lit', () => {
+    stubMatchMedia(true)
+    const goal = { cost: [{ itemId: 'twig', quantity: 10 }], opensSkillId: 'cooking', inventory: {}, lighting: false, onLight: () => {} }
+    const { rerender } = render(<VillageScene campfire={goal} />)
+
+    expect(screen.getByRole('img', { name: /campfire is out/ })).toBeInTheDocument()
+    expect(screen.getByRole('heading', { name: 'Light the campfire' })).toBeInTheDocument()
+
+    rerender(<VillageScene />)
+
+    expect(screen.queryByRole('heading', { name: 'Light the campfire' })).not.toBeInTheDocument()
+    expect(screen.queryByRole('img', { name: /campfire is out/ })).not.toBeInTheDocument()
   })
 })
