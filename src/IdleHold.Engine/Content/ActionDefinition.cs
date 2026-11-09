@@ -15,6 +15,15 @@ public sealed record ActionDefinition(
 {
     /// <summary>Items taken from the stores at the end of each completion.</summary>
     public IReadOnlyList<ItemAmount> Inputs { get; init; } = [];
+
+    /// <summary>The level the player needs in the action's trade to start it.</summary>
+    public int RequiredLevel { get; init; } = 1;
+
+    /// <summary>
+    /// Whether each completion burns a cycle of fire. The player picks the fuel when starting; see
+    /// <see cref="FuelDefinition"/>.
+    /// </summary>
+    public bool UsesFuel { get; init; }
 }
 
 /// <summary>A quantity of one item, such as "3 twigs".</summary>

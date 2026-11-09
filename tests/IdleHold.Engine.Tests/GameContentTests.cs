@@ -92,7 +92,7 @@ public class GameContentTests
             .ToDictionary(group => group.Key, group => group.Count());
 
         Assert.Equal(
-            new Dictionary<string, int> { ["foraging"] = 4, ["woodcutting"] = 3, ["fishing"] = 2, ["mining"] = 2, ["crafting"] = 4, ["carpentry"] = 1 },
+            new Dictionary<string, int> { ["foraging"] = 4, ["woodcutting"] = 3, ["fishing"] = 2, ["mining"] = 2, ["crafting"] = 4, ["carpentry"] = 1, ["cooking"] = 2 },
             bySkill);
     }
 
@@ -165,7 +165,32 @@ public class GameContentTests
 
         state = Work("craft-chipped-stone-pickaxe", 1);
         Assert.Null(engine.MissingToolFor(state, "mining"));
-        Assert.Equal(["fishing"], engine.LockedTradesOf(state).Select(locked => locked.SkillId));
+
+        // The rod is handled with hazel sticks too.
+        state = Work("cut-young-hazel", 2);
+        state = Work("whittle-hazel-sticks", 2);
+        state = Work("pull-reeds", 4);
+        state = Work("craft-reed-fishing-rod", 1);
+        Assert.Empty(engine.LockedTradesOf(state));
+    }
+
+    [Theory]
+    [InlineData("cut-young-hazel", 1)]
+    [InlineData("cut-pine", 15)]
+    [InlineData("cut-birch", 30)]
+    public void DefaultContent_TreesOpenWithWoodcuttingLevels(string actionId, int level)
+    {
+        Assert.Equal(level, DefaultContent.Create().GetAction(actionId).RequiredLevel);
+    }
+
+    [Fact]
+    public void DefaultContent_CookingBurnsLogs_AndALogFromALaterTreeBurnsLonger()
+    {
+        var content = DefaultContent.Create();
+
+        Assert.All(content.Actions.Where(action => action.SkillId == "cooking"), action => Assert.True(action.UsesFuel));
+        Assert.Equal(["hazel-log", "pine-log", "birch-log"], content.Fuels.Select(fuel => fuel.ItemId));
+        Assert.Equal(content.Fuels.Select(fuel => fuel.Cycles).Order(), content.Fuels.Select(fuel => fuel.Cycles));
     }
 
     [Fact]
