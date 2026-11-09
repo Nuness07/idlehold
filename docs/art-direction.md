@@ -185,6 +185,7 @@ it becomes a button once clicking it does something, and changes art as it is re
 | `items/grilled-berries.png` | a few grilled dark purple-red wild berries skewered on a short thin wooden stick, lightly charred, lying diagonally | Candidate 0; `items/wild-berry.png` for the berries. Also the recipe's action sprite |
 | `items/berry-soup.png` | a small round wooden bowl of thick dark purple-red berry soup with a few whole berries on top, slight three-quarter angle | Candidate 6; `items/wild-berry.png` for the berries. Also the recipe's action sprite |
 | `emblems/cooking.png` | a small round black iron cooking pot with a little steam on a tiny campfire of two crossed logs, nothing behind them | Candidate 60 of a second run; `emblems/mining.png` for scale. The first run, with the Carpentry emblem as reference, put a brown and green shape behind the pot |
+| `stations/stone-furnace.png` | a single small squat rustic stone furnace built of rough grey stones with a dark arched opening at the front showing a warm orange glow inside, a short stone chimney on top, slight three-quarter angle, not too detailed | Candidate 20; `items/stone.png` for the stones. Drawn as a black silhouette while the station has no recipes |
 
 
 ## Open points

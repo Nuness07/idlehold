@@ -10,6 +10,7 @@ export type Account = components['schemas']['AccountResponse']
 export type ToolProgress = components['schemas']['ToolProgressResponse']
 export type ToolDefinition = components['schemas']['ToolResponse']
 export type Fuel = components['schemas']['FuelResponse']
+export type RecipeGroup = components['schemas']['RecipeGroupResponse']
 export type SkillCategory = components['schemas']['SkillCategory']
 export type Storage = components['schemas']['StorageResponse']
 

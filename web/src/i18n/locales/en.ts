@@ -109,7 +109,6 @@ export const en = {
     start: 'Start',
     switch: 'Switch',
     starting: 'Starting…',
-    uses: 'Uses {{items}}',
     level: 'Level {{level}}',
   },
   fire: {
@@ -122,14 +121,23 @@ export const en = {
     fuelMeta_one: '{{owned}} stored · {{count}} dish each',
     fuelMeta_other: '{{owned}} stored · {{count}} dishes each',
   },
+  materials: {
+    label: 'Materials',
+    slot: '{{have}} of {{need}} {{item}}',
+    showMore: 'Show {{count}} more materials',
+    showFewer: 'Show fewer materials',
+  },
+  recipeGroups: {
+    comingSoon: 'Coming later',
+    legend: {
+      crafting: 'Material',
+      cooking: 'Station',
+    },
+  },
   tools: {
     heading: 'Tools',
     meta: '{{time}} · {{xp}} XP',
     best: 'Your best so far',
-    materials: 'Materials',
-    slot: '{{have}} of {{need}} {{item}}',
-    showMore: 'Show {{count}} more materials',
-    showFewer: 'Show fewer materials',
     build: 'Build',
     building: 'Building',
     tradeTool: 'Tool for this trade',
@@ -207,6 +215,13 @@ export const en = {
       crafting: 'Crafting',
       carpentry: 'Carpentry',
       cooking: 'Cooking',
+    },
+    recipeGroups: {
+      'chipped-stone': 'Chipped stone',
+      stone: 'Stone',
+      copper: 'Copper',
+      campfire: 'Campfire',
+      'stone-furnace': 'Stone furnace',
     },
     actions: {
       'gather-twigs': { name: 'Twigs', verb: 'Gathering twigs' },

@@ -26,13 +26,17 @@ public static class GameContentEndpoints
                 action.OutputQuantity,
                 action.Inputs.Select(input => new ItemAmountResponse(input.ItemId, input.Quantity)).ToList(),
                 action.RequiredLevel,
-                action.UsesFuel))
+                action.UsesFuel,
+                action.GroupId))
             .ToList(),
         content.Tools
             .Select(tool => new ToolResponse(tool.ItemId, tool.Family, tool.Tier, tool.SkillId))
             .ToList(),
         content.Fuels
             .Select(fuel => new FuelResponse(fuel.ItemId, fuel.Cycles))
+            .ToList(),
+        content.RecipeGroups
+            .Select(group => new RecipeGroupResponse(group.Id, group.SkillId))
             .ToList());
 }
 
@@ -40,7 +44,8 @@ public sealed record ContentResponse(
     IReadOnlyList<SkillDefinitionResponse> Skills,
     IReadOnlyList<ActionResponse> Actions,
     IReadOnlyList<ToolResponse> Tools,
-    IReadOnlyList<FuelResponse> Fuels);
+    IReadOnlyList<FuelResponse> Fuels,
+    IReadOnlyList<RecipeGroupResponse> RecipeGroups);
 
 /// <summary>A trade, in the order the game lists them, with the group it belongs to.</summary>
 public sealed record SkillDefinitionResponse(
@@ -60,7 +65,14 @@ public sealed record ActionResponse(
     long OutputQuantity,
     IReadOnlyList<ItemAmountResponse> Inputs,
     int RequiredLevel,
-    bool UsesFuel);
+    bool UsesFuel,
+    string? GroupId);
+
+/// <summary>
+/// A heading a trade lists its recipes under (a station, a material), in the game's order. A group can have no
+/// recipes yet: it shows what is coming. When a trade has groups, each of its actions names one in <c>groupId</c>.
+/// </summary>
+public sealed record RecipeGroupResponse(string Id, string SkillId);
 
 /// <summary>An item that can feed the fire of an action that burns fuel, and how many completions one of it lasts.</summary>
 public sealed record FuelResponse(string ItemId, int Cycles);

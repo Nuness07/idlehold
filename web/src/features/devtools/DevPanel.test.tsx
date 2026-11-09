@@ -31,7 +31,7 @@ const content: Content = {
     { id: 'crafting', category: 'production' },
   ],
   actions: [
-    { id: 'cut-pine', skillId: 'woodcutting', durationMs: 3000, xpPerCompletion: 10, outputItemId: 'pine-log', outputQuantity: 1, inputs: [], requiredLevel: 1, usesFuel: false },
+    { id: 'cut-pine', skillId: 'woodcutting', durationMs: 3000, xpPerCompletion: 10, outputItemId: 'pine-log', outputQuantity: 1, inputs: [], requiredLevel: 1, usesFuel: false, groupId: null },
     {
       id: 'craft-chipped-stone-axe',
       skillId: 'crafting',
@@ -42,10 +42,12 @@ const content: Content = {
       inputs: [{ itemId: 'pine-log', quantity: 2 }],
       requiredLevel: 1,
       usesFuel: false,
+      groupId: null,
     },
   ],
   tools: [{ itemId: 'chipped-stone-axe', family: 'axe', tier: 1, skillId: 'woodcutting' }],
   fuels: [],
+  recipeGroups: [],
 }
 
 function renderPanel() {

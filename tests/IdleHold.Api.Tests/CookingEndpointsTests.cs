@@ -6,7 +6,7 @@ using IdleHold.Api.Players;
 
 namespace IdleHold.Api.Tests;
 
-// Uses the real content: grilled berries take 2 berries and 3 s, and a hazel log lasts 2 dishes. The GM routes set
+// Uses the real content: grilled berries take 4 berries and 3 s, and a hazel log lasts 2 dishes. The GM routes set
 // the stores and levels.
 public sealed class CookingEndpointsTests(PostgresFixture database) : IClassFixture<PostgresFixture>, IAsyncLifetime
 {
@@ -67,11 +67,11 @@ public sealed class CookingEndpointsTests(PostgresFixture database) : IClassFixt
     [Fact]
     public async Task Cooking_BurnsTheChosenLogs_AndTheFireKeepsWhatIsLeft()
     {
-        await SetItemCountAsync("wild-berry", 6);
+        await SetItemCountAsync("wild-berry", 12);
         await SetItemCountAsync("hazel-log", 5);
         (await StartAsync(new StartActionRequest("cook-grilled-berries", "hazel-log"))).EnsureSuccessStatusCode();
 
-        // 6 berries make 3 dishes; 2 logs burn, and the second has a dish left in it.
+        // 12 berries make 3 dishes; 2 logs burn, and the second has a dish left in it.
         _factory.Clock.Advance(TimeSpan.FromMinutes(1));
         var player = (await _client.GetFromJsonAsync<PlayerResponse>("/me/player"))!;
 

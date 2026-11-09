@@ -11,6 +11,7 @@ namespace IdleHold.Engine.Content;
 /// and the sticks handle the pickaxe. Tools are unique and upgraded by tier, so each tool recipe can be made once
 /// (see <see cref="ToolDefinition"/>). Cooking needs no tool but burns logs: the player picks which, and each kind
 /// lasts a number of dishes (see <see cref="FuelDefinition"/>).
+/// Crafting sorts its recipes by material and Cooking by station (see <see cref="RecipeGroupDefinition"/>).
 /// </summary>
 public static class DefaultContent
 {
@@ -47,19 +48,23 @@ public static class DefaultContent
         // Crafting: the first tools. Each takes a while and pays well, because it is made only once.
         new ActionDefinition("craft-chipped-stone-axe", "crafting", TimeSpan.FromSeconds(30), XpPerCompletion: 40, OutputItemId: "chipped-stone-axe")
         {
+            GroupId = "chipped-stone",
             Inputs = [new ItemAmount("twig", 3), new ItemAmount("pebble", 2)],
         },
         new ActionDefinition("craft-chipped-stone-knife", "crafting", TimeSpan.FromSeconds(20), XpPerCompletion: 26, OutputItemId: "chipped-stone-knife")
         {
+            GroupId = "chipped-stone",
             Inputs = [new ItemAmount("hazel-log", 1), new ItemAmount("pebble", 3)],
         },
         new ActionDefinition("craft-chipped-stone-pickaxe", "crafting", TimeSpan.FromSeconds(35), XpPerCompletion: 47, OutputItemId: "chipped-stone-pickaxe")
         {
+            GroupId = "chipped-stone",
             // The reeds lash the stone head to the handle.
             Inputs = [new ItemAmount("hazel-stick", 4), new ItemAmount("pebble", 5), new ItemAmount("reed", 3)],
         },
         new ActionDefinition("craft-reed-fishing-rod", "crafting", TimeSpan.FromSeconds(40), XpPerCompletion: 55, OutputItemId: "reed-fishing-rod")
         {
+            GroupId = "chipped-stone",
             Inputs = [new ItemAmount("hazel-stick", 3), new ItemAmount("reed", 4)],
         },
 
@@ -72,14 +77,14 @@ public static class DefaultContent
         // Cooking: open from the start, but every dish burns fuel, and logs need the axe.
         new ActionDefinition("cook-grilled-berries", "cooking", TimeSpan.FromSeconds(3), XpPerCompletion: 8, OutputItemId: "grilled-berries")
         {
-            Inputs = [new ItemAmount("wild-berry", 2)],
+            GroupId = "campfire",
+            Inputs = [new ItemAmount("wild-berry", 4)],
             UsesFuel = true,
         },
         new ActionDefinition("cook-berry-soup", "cooking", TimeSpan.FromSeconds(6), XpPerCompletion: 20, OutputItemId: "berry-soup")
         {
-            // The reeds thicken the pot.
-            Inputs = [new ItemAmount("wild-berry", 5), new ItemAmount("reed", 2)],
-            RequiredLevel = 15,
+            GroupId = "campfire",
+            Inputs = [new ItemAmount("wild-berry", 12)],
             UsesFuel = true,
         },
     ],
@@ -95,6 +100,16 @@ public static class DefaultContent
         new FuelDefinition("hazel-log", Cycles: 2),
         new FuelDefinition("pine-log", Cycles: 4),
         new FuelDefinition("birch-log", Cycles: 6),
+    ],
+    [
+        // Crafting by material, each a step up. Only chipped stone has recipes yet; the rest show what is coming.
+        new RecipeGroupDefinition("chipped-stone", "crafting"),
+        new RecipeGroupDefinition("stone", "crafting"),
+        new RecipeGroupDefinition("copper", "crafting"),
+
+        // Cooking by station: the campfire now, the stone furnace (better dishes) later.
+        new RecipeGroupDefinition("campfire", "cooking"),
+        new RecipeGroupDefinition("stone-furnace", "cooking"),
     ]);
 
     /// <summary>

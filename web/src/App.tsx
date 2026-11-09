@@ -1,7 +1,7 @@
 import { useQueryClient } from '@tanstack/react-query'
 import { lazy, Suspense, useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { useTranslation } from 'react-i18next'
-import { isApiError, type Skill } from './api/client'
+import { isApiError, type GameAction, type Skill } from './api/client'
 import { Button } from './components/Button'
 import { PixelSprite } from './components/PixelSprite'
 import { towerSprite } from './content/labels'
@@ -31,6 +31,8 @@ import { Settings } from './features/settings/Settings'
 import { Statistics } from './features/statistics/Statistics'
 import { Stores } from './features/stores/Stores'
 import { ToolCards } from './features/tools/ToolCards'
+import { RecipeGroupPicker } from './features/recipes/RecipeGroupPicker'
+import { recipeGroupsFor, shownRecipeGroup } from './features/recipes/recipeGroups'
 import { LockedArea, TradeLock } from './features/tools/TradeLock'
 import { toolCardsFor, toolInUseFor } from './features/tools/tools'
 import { TradeToolNotice } from './features/tools/TradeToolNotice'
@@ -88,6 +90,8 @@ export default function App() {
   const [viewedSkillId, setViewedSkillId] = useState<string>()
   /** The fuel the player picked for the fire; until they pick, the fire burns what it burned last, or what is in stock. */
   const [chosenFuel, setChosenFuel] = useState<string>()
+  /** The recipe group the player picked in each trade that has groups. */
+  const [chosenGroups, setChosenGroups] = useState<Record<string, string>>({})
   /** What the middle shows. The village is the home screen; the rail opens trades, the hold menu its screens. */
   const [screen, setScreen] = useState<Screen>('village')
   const summarized = useRef(false)
@@ -207,10 +211,15 @@ export default function App() {
   const totalLevel = skillIds.reduce((sum, skillId) => sum + skillOf(skillId).level, 0)
   // Recipes that make a tool show as tool cards (always the next tier), not as rows of the action list.
   const toolItemIds = new Set(content.data.tools.map((tool) => tool.itemId))
+  const recipeGroups = recipeGroupsFor(selectedSkillId, content.data.recipeGroups, actions)
+  const shownGroup = shownRecipeGroup(recipeGroups, chosenGroups[selectedSkillId], activeDefinition?.groupId)
+  const inShownGroup = (action: GameAction | undefined) => recipeGroups.length === 0 || action?.groupId === shownGroup
   const tradeActions = actions.filter(
-    (action) => action.skillId === selectedSkillId && !toolItemIds.has(action.outputItemId),
+    (action) => action.skillId === selectedSkillId && !toolItemIds.has(action.outputItemId) && inShownGroup(action),
   )
-  const toolCards = toolCardsFor(selectedSkillId, player.tools, actions)
+  const toolCards = toolCardsFor(selectedSkillId, player.tools, actions).filter((card) =>
+    inShownGroup(card.recipe ?? actions.find((action) => action.outputItemId === card.itemId)),
+  )
   const toolInUse = toolInUseFor(selectedSkillId, content.data.tools, player.tools)
   const lockedTools = new Map(player.lockedTrades.map((lock) => [lock.skillId, lock.toolItemId]))
   const lockTool = lockedTools.get(selectedSkillId)
@@ -246,6 +255,13 @@ export default function App() {
   /** The trade's tools and actions; a locked trade shows them behind its chains. */
   const tradeBody = (
     <div className="flex flex-col gap-7">
+      <RecipeGroupPicker
+        skillId={selectedSkillId}
+        groups={recipeGroups}
+        selected={shownGroup}
+        onSelect={(groupId) => setChosenGroups((chosen) => ({ ...chosen, [selectedSkillId]: groupId }))}
+      />
+
       <ToolCards
         cards={toolCards}
         inventory={player.inventory}
@@ -271,6 +287,7 @@ export default function App() {
           activeActionId={activeAction?.actionId}
           pendingActionId={pendingActionId}
           level={skillOf(selectedSkillId).level}
+          inventory={player.inventory}
           onStart={start}
         />
       )}

@@ -108,7 +108,6 @@ export const ptBR = {
     start: 'Começar',
     switch: 'Trocar',
     starting: 'Começando…',
-    uses: 'Usa {{items}}',
     level: 'Nível {{level}}',
   },
   fire: {
@@ -121,14 +120,23 @@ export const ptBR = {
     fuelMeta_one: '{{owned}} no armazém · {{count}} prato cada',
     fuelMeta_other: '{{owned}} no armazém · {{count}} pratos cada',
   },
+  materials: {
+    label: 'Materiais',
+    slot: '{{have}} de {{need}} {{item}}',
+    showMore: 'Mostrar mais {{count}} materiais',
+    showFewer: 'Mostrar menos materiais',
+  },
+  recipeGroups: {
+    comingSoon: 'Em breve',
+    legend: {
+      crafting: 'Material',
+      cooking: 'Estação',
+    },
+  },
   tools: {
     heading: 'Ferramentas',
     meta: '{{time}} · {{xp}} XP',
     best: 'A melhor por enquanto',
-    materials: 'Materiais',
-    slot: '{{have}} de {{need}} {{item}}',
-    showMore: 'Mostrar mais {{count}} materiais',
-    showFewer: 'Mostrar menos materiais',
     build: 'Construir',
     building: 'Construindo',
     tradeTool: 'Ferramenta deste ofício',
@@ -206,6 +214,13 @@ export const ptBR = {
       crafting: 'Artesanato',
       carpentry: 'Carpintaria',
       cooking: 'Culinária',
+    },
+    recipeGroups: {
+      'chipped-stone': 'Pedra lascada',
+      stone: 'Pedra',
+      copper: 'Cobre',
+      campfire: 'Fogueira',
+      'stone-furnace': 'Fornalha de pedra',
     },
     actions: {
       'gather-twigs': { name: 'Gravetos', verb: 'Juntando gravetos' },

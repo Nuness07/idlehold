@@ -43,6 +43,26 @@ public sealed class ContentEndpointsTests(PostgresFixture database) : IClassFixt
     }
 
     [Fact]
+    public async Task GetContent_ListsTheRecipeGroupsInOrder_AndTheGroupOfEachAction()
+    {
+        using var client = _factory.CreateClient();
+
+        var content = (await client.GetFromJsonAsync<ContentResponse>("/content"))!;
+
+        Assert.Equal(
+            [
+                new RecipeGroupResponse("chipped-stone", "crafting"),
+                new RecipeGroupResponse("stone", "crafting"),
+                new RecipeGroupResponse("copper", "crafting"),
+                new RecipeGroupResponse("campfire", "cooking"),
+                new RecipeGroupResponse("stone-furnace", "cooking"),
+            ],
+            content.RecipeGroups);
+        Assert.Equal("campfire", Assert.Single(content.Actions, action => action.Id == "cook-berry-soup").GroupId);
+        Assert.Null(Assert.Single(content.Actions, action => action.Id == "cut-pine").GroupId);
+    }
+
+    [Fact]
     public async Task GetContent_WritesCategoriesAsNames()
     {
         using var client = _factory.CreateClient();
