@@ -1,7 +1,7 @@
 namespace IdleHold.Engine.Content;
 
 /// <summary>
-/// The static catalog of the game: skills, actions, tools, fuels and recipe groups (and later items).
+/// The static catalog of the game: skills, actions, tools, fuels, recipe groups and village buildings (and later items).
 /// It is validated once at construction so the engine can trust it afterwards.
 /// </summary>
 public sealed class GameContent
@@ -11,6 +11,7 @@ public sealed class GameContent
     private readonly Dictionary<string, ToolDefinition> _tools = new(StringComparer.Ordinal);
     private readonly Dictionary<string, FuelDefinition> _fuels = new(StringComparer.Ordinal);
     private readonly List<RecipeGroupDefinition> _recipeGroups = [];
+    private readonly Dictionary<string, BuildingDefinition> _buildings = new(StringComparer.Ordinal);
 
     public GameContent(
         IEnumerable<SkillDefinition> skills,
@@ -18,7 +19,8 @@ public sealed class GameContent
         IEnumerable<ToolDefinition>? tools = null,
         StorageRules? storage = null,
         IEnumerable<FuelDefinition>? fuels = null,
-        IEnumerable<RecipeGroupDefinition>? recipeGroups = null)
+        IEnumerable<RecipeGroupDefinition>? recipeGroups = null,
+        IEnumerable<BuildingDefinition>? buildings = null)
     {
         Storage = storage ?? StorageRules.Unlimited;
         if (Storage.SlotCount < 1 || Storage.StackSize < 1)
@@ -61,6 +63,16 @@ public sealed class GameContent
         {
             AddFuel(fuel);
         }
+
+        foreach (var building in buildings ?? [])
+        {
+            AddBuilding(building);
+        }
+
+        if (_skills.FirstOrDefault(skill => skill.RequiredBuildingId is { } id && !_buildings.ContainsKey(id)) is { } waiting)
+        {
+            throw new ArgumentException($"Skill '{waiting.Id}' waits for the unknown building '{waiting.RequiredBuildingId}'.", nameof(skills));
+        }
     }
 
     /// <summary>How the storehouse holds items: its slots and how much one slot holds.</summary>
@@ -81,6 +93,13 @@ public sealed class GameContent
 
     /// <summary>Every fuel, in the order the game lists them.</summary>
     public IReadOnlyCollection<FuelDefinition> Fuels => _fuels.Values;
+
+    /// <summary>Every village building, in the order the game lists them.</summary>
+    public IReadOnlyCollection<BuildingDefinition> Buildings => _buildings.Values;
+
+    /// <summary>Returns the building with this id, or <c>null</c> if it does not exist.</summary>
+    public BuildingDefinition? FindBuilding(string id) =>
+        _buildings.GetValueOrDefault(id);
 
     /// <summary>Every recipe group, in the order the game lists them; see <see cref="RecipeGroupDefinition"/>.</summary>
     public IReadOnlyList<RecipeGroupDefinition> RecipeGroups => _recipeGroups;
@@ -163,6 +182,29 @@ public sealed class GameContent
         }
 
         _recipeGroups.Add(group);
+    }
+
+    private void AddBuilding(BuildingDefinition building)
+    {
+        if (building.Cost.Count == 0 || building.Cost.Any(item => item.Quantity <= 0))
+        {
+            throw new ArgumentException($"Building '{building.Id}' must cost a positive quantity of at least one item.", "buildings");
+        }
+
+        if (building.Cost.DistinctBy(item => item.ItemId).Count() != building.Cost.Count)
+        {
+            throw new ArgumentException($"Building '{building.Id}' lists an item twice.", "buildings");
+        }
+
+        if (building.Cost.FirstOrDefault(item => !ItemIds.Contains(item.ItemId)) is { } unknown)
+        {
+            throw new ArgumentException($"Building '{building.Id}' costs '{unknown.ItemId}', which no action makes or uses.", "buildings");
+        }
+
+        if (!_buildings.TryAdd(building.Id, building))
+        {
+            throw new ArgumentException($"Duplicate building '{building.Id}'.", "buildings");
+        }
     }
 
     private void AddFuel(FuelDefinition fuel)

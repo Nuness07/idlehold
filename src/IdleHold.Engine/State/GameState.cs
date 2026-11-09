@@ -22,6 +22,9 @@ public sealed record GameState
     /// </summary>
     public long FireCyclesLeft { get; init; }
 
+    /// <summary>The village buildings the player has built, such as the lit campfire. Built once, kept for good.</summary>
+    public ImmutableHashSet<string> Buildings { get; init; } = ImmutableHashSet<string>.Empty;
+
     public long ItemCount(string itemId) => Inventory.GetValueOrDefault(itemId);
 
     public long XpOf(string skillId) => SkillXp.GetValueOrDefault(skillId);

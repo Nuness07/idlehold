@@ -171,6 +171,13 @@ public class GameContentTests
         state = Work("whittle-hazel-sticks", 2);
         state = Work("pull-reeds", 4);
         state = Work("craft-reed-fishing-rod", 1);
+        Assert.Equal([new TradeLock("cooking", null, "campfire")], engine.LockedTradesOf(state));
+
+        // Lighting the campfire, from Foraging alone, opens the last trade.
+        state = Work("gather-twigs", 10);
+        state = Work("pull-reeds", 5);
+        state = Work("pick-pebbles", 8);
+        state = engine.Build(state, "campfire");
         Assert.Empty(engine.LockedTradesOf(state));
     }
 

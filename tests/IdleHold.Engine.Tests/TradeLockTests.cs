@@ -58,7 +58,7 @@ public class TradeLockTests
     [Fact]
     public void LockedTradesOf_ListsLockedTradesWithTheirTool()
     {
-        Assert.Equal([new TradeLock("woodcutting", "axe")], _engine.LockedTradesOf(GameState.New));
+        Assert.Equal([new TradeLock("woodcutting", "axe", null)], _engine.LockedTradesOf(GameState.New));
         Assert.Empty(_engine.LockedTradesOf(With(("axe", 1))));
     }
 

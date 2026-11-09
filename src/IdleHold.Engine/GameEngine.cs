@@ -22,6 +22,11 @@ public sealed class GameEngine(GameContent content)
             ?? throw new ArgumentException($"Unknown action '{actionId}'.", nameof(actionId));
         var fuel = FuelFor(action, fuelItemId);
 
+        if (MissingBuildingFor(state, action.SkillId) is not null)
+        {
+            return ActionBlock.MissingBuilding;
+        }
+
         if (MissingToolFor(state, action.SkillId) is not null)
         {
             return ActionBlock.MissingTool;
@@ -129,13 +134,63 @@ public sealed class GameEngine(GameContent content)
             .Select(family => family.MinBy(tool => tool.Tier)!.ItemId)
             .FirstOrDefault();
 
-    /// <summary>The trades the player cannot work yet, in the game's trade order, with the tool that opens each.</summary>
+    /// <summary>
+    /// The village building <paramref name="skillId"/> still waits for, or <c>null</c> when it waits for none or it
+    /// is built.
+    /// </summary>
+    public string? MissingBuildingFor(GameState state, string skillId) =>
+        content.Skills.FirstOrDefault(skill => skill.Id == skillId)?.RequiredBuildingId is { } building
+        && !state.Buildings.Contains(building)
+            ? building
+            : null;
+
+    /// <summary>
+    /// The trades the player cannot work yet, in the game's trade order, each with what opens it: a village building
+    /// to build, else the tool to make.
+    /// </summary>
     public IReadOnlyList<TradeLock> LockedTradesOf(GameState state) =>
         content.Skills
-            .Select(skill => (skill.Id, Tool: MissingToolFor(state, skill.Id)))
-            .Where(trade => trade.Tool is not null)
-            .Select(trade => new TradeLock(trade.Id, trade.Tool!))
+            .Select(skill => new TradeLock(skill.Id, MissingToolFor(state, skill.Id), MissingBuildingFor(state, skill.Id)))
+            .Where(trade => trade.ToolItemId is not null || trade.BuildingId is not null)
             .ToList();
+
+    /// <summary>
+    /// Why a village building cannot be built right now, or <c>null</c> if it can. Throws for an unknown building:
+    /// that is a bad request, not a game situation.
+    /// </summary>
+    public BuildBlock? CheckBuild(GameState state, string buildingId)
+    {
+        var building = content.FindBuilding(buildingId)
+            ?? throw new ArgumentException($"Unknown building '{buildingId}'.", nameof(buildingId));
+
+        if (state.Buildings.Contains(building.Id))
+        {
+            return BuildBlock.AlreadyBuilt;
+        }
+
+        if (building.Cost.Any(item => state.ItemCount(item.ItemId) < item.Quantity))
+        {
+            return BuildBlock.MissingInputs;
+        }
+
+        return null;
+    }
+
+    /// <summary>
+    /// Builds a village building at once: its cost leaves the stores and it joins the village. The worked action
+    /// goes on; call <see cref="Tick"/> first so the stores are up to date.
+    /// </summary>
+    public GameState Build(GameState state, string buildingId)
+    {
+        if (CheckBuild(state, buildingId) is { } block)
+        {
+            throw new InvalidOperationException($"Building '{buildingId}' cannot be built: {block}.");
+        }
+
+        var building = content.FindBuilding(buildingId)!;
+        var inventory = building.Cost.Aggregate(state.Inventory, (stores, item) => AddTo(stores, item.ItemId, -item.Quantity));
+        return state with { Inventory = inventory, Buildings = state.Buildings.Add(building.Id) };
+    }
 
     /// <summary>
     /// Every tool family, in catalog order, with the best tool the player owns and the recipe for the
@@ -252,7 +307,9 @@ public sealed class GameEngine(GameContent content)
     {
         // A locked trade or an action above the player's level does no work. Starting is refused, so only a save
         // from before the lock or the level gate gets here.
-        if (MissingToolFor(state, action.SkillId) is not null || state.LevelOf(action.SkillId) < action.RequiredLevel)
+        if (MissingBuildingFor(state, action.SkillId) is not null
+            || MissingToolFor(state, action.SkillId) is not null
+            || state.LevelOf(action.SkillId) < action.RequiredLevel)
         {
             return 0;
         }
@@ -389,6 +446,9 @@ public sealed class GameEngine(GameContent content)
 /// <summary>Why an action cannot start.</summary>
 public enum ActionBlock
 {
+    /// <summary>The action's trade is locked: it waits for a village building that is not built yet.</summary>
+    MissingBuilding,
+
     /// <summary>The action's trade is locked: the player owns no tool of the family that serves it.</summary>
     MissingTool,
 
@@ -420,5 +480,18 @@ public sealed record StorageView(int SlotCount, long StackSize, IReadOnlyList<It
 /// </summary>
 public sealed record ToolProgress(string Family, string? OwnedItemId, string? NextActionId);
 
-/// <summary>A trade the player cannot work yet, and the tool (its first tier) that opens it.</summary>
-public sealed record TradeLock(string SkillId, string ToolItemId);
+/// <summary>
+/// A trade the player cannot work yet, and what opens it: the tool to make (its first tier) and the village building
+/// to build. At least one is set.
+/// </summary>
+public sealed record TradeLock(string SkillId, string? ToolItemId, string? BuildingId = null);
+
+/// <summary>Why a village building cannot be built.</summary>
+public enum BuildBlock
+{
+    /// <summary>It is already part of the village.</summary>
+    AlreadyBuilt,
+
+    /// <summary>The stores do not hold enough of every item it costs.</summary>
+    MissingInputs,
+}
