@@ -70,7 +70,7 @@ public sealed class PlayerEndpointsTests(PostgresFixture database) : IClassFixtu
         // pull-reeds takes 3s: 10s = 3 completions with 1s left on the bar.
         Assert.Equal(3, state.Inventory["reed"]);
         Assert.Equal(new SkillResponse(Xp: 24, Level: 1, LevelStartXp: 0, NextLevelXp: 100), state.Skills["foraging"]);
-        Assert.Equal(new ActiveActionResponse("pull-reeds", ProgressMs: 1000, DurationMs: 3000), state.ActiveAction);
+        Assert.Equal(new ActiveActionResponse("pull-reeds", ProgressMs: 1000, DurationMs: 3000, FuelItemId: null), state.ActiveAction);
     }
 
     [Fact]

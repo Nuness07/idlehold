@@ -140,7 +140,7 @@ public sealed class CraftingEndpointsTests(PostgresFixture database) : IClassFix
         (await StartAsync("craft-chipped-stone-axe")).EnsureSuccessStatusCode();
         _factory.Clock.Advance(TimeSpan.FromSeconds(30));
 
-        var response = await StartAsync("cut-pine");
+        var response = await StartAsync("cut-young-hazel");
         var player = await GetPlayerAsync();
 
         Assert.Equal(HttpStatusCode.OK, response.StatusCode);

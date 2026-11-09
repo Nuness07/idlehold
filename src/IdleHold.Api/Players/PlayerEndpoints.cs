@@ -40,7 +40,7 @@ public static class PlayerEndpoints
             return invalid;
         }
 
-        return ToResponse(await players.StartActionAsync(AccountId(user), request.ActionId, cancellationToken), engine, content);
+        return ToResponse(await players.StartActionAsync(AccountId(user), request.ActionId, request.FuelItemId, cancellationToken), engine, content);
     }
 
     private static async Task<Results<Ok<PlayerResponse>, NotFound, ValidationProblem, ProblemHttpResult>> StopMyAction(
@@ -64,6 +64,8 @@ public static class PlayerEndpoints
         title: block switch
         {
             ActionBlock.MissingTool => "This trade is locked until you own its tool.",
+            ActionBlock.LevelTooLow => "Your level in this trade is too low for this action.",
+            ActionBlock.MissingFuel => "There is no fuel of the chosen kind for the fire.",
             ActionBlock.MissingInputs => "Not enough materials to start this action.",
             ActionBlock.ToolAlreadyOwned => "You already own this tool or a better one.",
             ActionBlock.StorageFull => "The storehouse has no room for what this action makes.",
@@ -74,6 +76,8 @@ public static class PlayerEndpoints
     private static string ReasonCode(ActionBlock block) => block switch
     {
         ActionBlock.MissingTool => "missing-tool",
+        ActionBlock.LevelTooLow => "level-too-low",
+        ActionBlock.MissingFuel => "missing-fuel",
         ActionBlock.MissingInputs => "missing-inputs",
         ActionBlock.ToolAlreadyOwned => "tool-already-owned",
         ActionBlock.StorageFull => "storage-full",
@@ -81,13 +85,27 @@ public static class PlayerEndpoints
     };
 
     /// <summary>The body comes from the browser, so never trust it: validate before touching the engine.</summary>
-    private static ValidationProblem? InvalidAction(StartActionRequest request, GameContent content) =>
-        string.IsNullOrWhiteSpace(request.ActionId) || content.FindAction(request.ActionId) is null
-            ? TypedResults.ValidationProblem(new Dictionary<string, string[]>
+    private static ValidationProblem? InvalidAction(StartActionRequest request, GameContent content)
+    {
+        if (string.IsNullOrWhiteSpace(request.ActionId) || content.FindAction(request.ActionId) is not { } action)
+        {
+            return TypedResults.ValidationProblem(new Dictionary<string, string[]>
             {
                 ["actionId"] = [$"Unknown action '{request.ActionId}'."],
-            })
-            : null;
+            });
+        }
+
+        // An action that burns fuel needs one; the fuel is ignored for any other action.
+        if (action.UsesFuel && (request.FuelItemId is null || content.FindFuel(request.FuelItemId) is null))
+        {
+            return TypedResults.ValidationProblem(new Dictionary<string, string[]>
+            {
+                ["fuelItemId"] = [$"'{request.ActionId}' needs a fuel, and '{request.FuelItemId}' is not one."],
+            });
+        }
+
+        return null;
+    }
 
     /// <summary>Identity stores the account id in the NameIdentifier claim of the session cookie.</summary>
     private static Guid AccountId(ClaimsPrincipal user) =>
