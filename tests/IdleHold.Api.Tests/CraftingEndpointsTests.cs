@@ -108,7 +108,12 @@ public sealed class CraftingEndpointsTests(PostgresFixture database) : IClassFix
         var player = await GetPlayerAsync();
 
         Assert.Equal(
-            [new TradeLockResponse("woodcutting", "chipped-stone-axe"), new TradeLockResponse("fishing", "reed-fishing-rod")],
+            [
+                new TradeLockResponse("woodcutting", "chipped-stone-axe"),
+                new TradeLockResponse("fishing", "reed-fishing-rod"),
+                new TradeLockResponse("mining", "chipped-stone-pickaxe"),
+                new TradeLockResponse("carpentry", "chipped-stone-knife"),
+            ],
             player.LockedTrades);
     }
 
@@ -139,7 +144,7 @@ public sealed class CraftingEndpointsTests(PostgresFixture database) : IClassFix
         var player = await GetPlayerAsync();
 
         Assert.Equal(HttpStatusCode.OK, response.StatusCode);
-        Assert.Equal([new TradeLockResponse("fishing", "reed-fishing-rod")], player.LockedTrades);
+        Assert.DoesNotContain(player.LockedTrades, locked => locked.SkillId == "woodcutting");
     }
 
     /// <summary>3 twigs (2 s each) and 2 pebbles (2 s each), read back so the save holds them.</summary>

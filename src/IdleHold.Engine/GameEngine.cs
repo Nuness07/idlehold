@@ -221,9 +221,11 @@ public sealed class GameEngine(GameContent content)
     }
 
     /// <summary>
-    /// The most completions, up to <paramref name="upTo"/>, whose results still fit in the storehouse. Each
-    /// completion takes its inputs out and puts its output in, so a recipe can free the slot its output needs.
-    /// A binary search over the slot count after k completions: constant time for any stretch of time.
+    /// The most completions, up to <paramref name="upTo"/>, whose results still fit in the storehouse, one after
+    /// another. Each completion takes its inputs out and puts its output in, so a recipe can free the slot its
+    /// output needs, and the slot count can rise and fall as completions go on. It only changes where a touched
+    /// item crosses a stack boundary, so checking those completions in order finds the first that does not fit.
+    /// There are at most a slot count's worth of them per item: constant time for any stretch of time.
     /// </summary>
     private long StorageLimit(GameState state, ActionDefinition action, long upTo)
     {
@@ -248,30 +250,68 @@ public sealed class GameEngine(GameContent content)
             return slots <= rules.SlotCount;
         }
 
-        // The search assumes the slot count never falls and then rises again as k grows. That holds for gathering
-        // (it only adds) and for today's recipes, which each make a tool once. A recipe that frees slots of its
-        // inputs while it fills its output's could stop a completion early or late; revisit with the first one.
         if (!Fits(0))
         {
             return 0;
         }
 
-        long low = 0, high = upTo;
-        while (low < high)
+        var changes = new SortedSet<long>();
+        AddStackBoundaries(changes, rules, state.ItemCount(action.OutputItemId), action.OutputQuantity, upTo);
+        foreach (var input in action.Inputs)
         {
-            var mid = low + (high - low + 1) / 2;
-            if (Fits(mid))
+            AddStackBoundaries(changes, rules, state.ItemCount(input.ItemId), -input.Quantity, upTo);
+        }
+
+        foreach (var k in changes)
+        {
+            if (!Fits(k))
             {
-                low = mid;
-            }
-            else
-            {
-                high = mid - 1;
+                return k - 1;
             }
         }
 
-        return low;
+        return upTo;
     }
+
+    /// <summary>
+    /// Adds every completion k in (0, <paramref name="upTo"/>] at which an item counting
+    /// <paramref name="start"/> + <paramref name="step"/> × k takes a different number of slots.
+    /// </summary>
+    private static void AddStackBoundaries(SortedSet<long> into, StorageRules rules, long start, long step, long upTo)
+    {
+        var stacks = rules.SlotsFor(start);
+        if (step > 0)
+        {
+            // A new stack opens once the count passes a full one. Past the slot count the item alone overflows,
+            // so later boundaries can never be reached.
+            for (var stack = stacks; stack <= stacks + rules.SlotCount; stack++)
+            {
+                var k = CeilDiv(stack * rules.StackSize + 1 - start, step);
+                if (k > upTo)
+                {
+                    return;
+                }
+
+                into.Add(k);
+            }
+        }
+        else
+        {
+            // A stack frees once the count falls to the one below it. The stores fit, so there are few stacks.
+            for (var stack = stacks; stack >= 1; stack--)
+            {
+                var k = CeilDiv(start - (stack - 1) * rules.StackSize, -step);
+                if (k > upTo)
+                {
+                    return;
+                }
+
+                into.Add(k);
+            }
+        }
+    }
+
+    private static long CeilDiv(long value, long divisor) => (value + divisor - 1) / divisor;
 
     /// <summary>Adds (or, with a negative amount, removes) and drops entries that reach zero.</summary>
     private static ImmutableDictionary<string, long> AddTo(ImmutableDictionary<string, long> totals, string key, long amount)

@@ -92,7 +92,7 @@ public class GameContentTests
             .ToDictionary(group => group.Key, group => group.Count());
 
         Assert.Equal(
-            new Dictionary<string, int> { ["foraging"] = 4, ["woodcutting"] = 2, ["fishing"] = 2, ["mining"] = 2, ["crafting"] = 2 },
+            new Dictionary<string, int> { ["foraging"] = 4, ["woodcutting"] = 3, ["fishing"] = 2, ["mining"] = 2, ["crafting"] = 4, ["carpentry"] = 1 },
             bySkill);
     }
 
@@ -133,6 +133,39 @@ public class GameContentTests
         }
 
         Assert.Equal(content.Skills.Select(skill => skill.Id).ToHashSet(), open);
+    }
+
+    [Fact]
+    public void DefaultContent_BareHandsReachMiningThroughEachTool()
+    {
+        // The first minutes, played on the real content: each step uses what the one before it made.
+        var content = DefaultContent.Create();
+        var engine = new GameEngine(content);
+        var state = GameState.New;
+
+        GameState Work(string actionId, int times)
+        {
+            var started = engine.StartAction(state, actionId);
+            return engine.StopAction(engine.Tick(started, content.GetAction(actionId).Duration * times));
+        }
+
+        state = Work("gather-twigs", 3);
+        state = Work("pick-pebbles", 10);
+        state = Work("pull-reeds", 3);
+        Assert.Equal("chipped-stone-axe", engine.MissingToolFor(state, "woodcutting"));
+
+        state = Work("craft-chipped-stone-axe", 1);
+        state = Work("cut-young-hazel", 3);
+        Assert.Equal("chipped-stone-knife", engine.MissingToolFor(state, "carpentry"));
+
+        state = Work("craft-chipped-stone-knife", 1);
+        state = Work("whittle-hazel-sticks", 2);
+        Assert.Equal(4, state.ItemCount("hazel-stick"));
+        Assert.Equal("chipped-stone-pickaxe", engine.MissingToolFor(state, "mining"));
+
+        state = Work("craft-chipped-stone-pickaxe", 1);
+        Assert.Null(engine.MissingToolFor(state, "mining"));
+        Assert.Equal(["fishing"], engine.LockedTradesOf(state).Select(locked => locked.SkillId));
     }
 
     [Fact]

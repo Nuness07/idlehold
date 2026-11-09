@@ -176,6 +176,12 @@ it becomes a button once clicking it does something, and changes art as it is re
 | `emblems/foraging.png` | a small woven wicker basket full of wild berries, a leafy sprig leaning diagonally against it | Candidate 24 (realigned); `emblems/mining.png` as composition reference |
 | `frames/iron.png` | a plain square medieval frame of dark grey wrought iron, a thin flat band with small rivets, slightly ornate corner pieces, empty hollow middle | Candidate 11 at 48x48, cropped to 38x38; `board/frame.png` as shape reference |
 | `frames/wood-button.png` | a wide flat rectangular wooden button, one horizontal warm brown plank, a small iron nail at each end, plain empty face | Candidate 10 at 64x24, cropped to 54x13; `frames/wood.png` for wood and nails |
+| `actions/young-hazel.png` | a whole young hazel tree, a small thin sapling with a few slender straight grey-brown stems and a light rounded crown of soft green leaves | Candidate 49 (several stems, like a hazel); `actions/birch-tree.png` as composition reference. It came without an outline, so a one-pixel dark outline was added around the silhouette |
+| `items/hazel-log.png` | a single thin short hazel log lying on its side, smooth grey-brown bark with pale speckles, cut end with pale rings facing the viewer | Candidate 2; `items/birch-log.png` for pose and orientation |
+| `items/hazel-stick.png` | a small bundle of three straight whittled hazel sticks, pale wood with the bark shaved off, tied with a plant fibre band | Candidate 14; `items/twig.png` for the bundle. Also the Carpentry recipe's action sprite |
+| `items/chipped-stone-knife.png` | a single chipped stone knife: a short wooden handle with a knapped grey flint blade lashed on with plant fibre cord | Candidate 29; `items/chipped-stone-axe.png` as sibling tool. Also the recipe's action sprite |
+| `items/chipped-stone-pickaxe.png` | a single chipped stone pickaxe: a wooden stick handle with a long pointed knapped grey stone head lashed on with pale reed cord | Candidate 13; `items/chipped-stone-axe.png` as sibling tool. Also the recipe's action sprite |
+| `emblems/carpentry.png` | a medieval small whittling knife and a few pale wood shavings leaning diagonally against a short split wooden log on a carpenter's block | Candidate 6; `emblems/crafting.png` as composition reference |
 
 
 ## Open points

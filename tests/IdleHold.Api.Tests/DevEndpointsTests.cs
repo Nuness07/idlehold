@@ -166,6 +166,7 @@ public sealed class DevEndpointsTests(PostgresFixture database) : IClassFixture<
     public async Task Reset_EmptiesTheHoldButKeepsIt()
     {
         var before = await SetItemCountAsync("pebble", 5);
+        await SetItemCountAsync("chipped-stone-pickaxe", 1);
         await SetLevelAsync("mining", 20);
         (await _client.PostAsJsonAsync("/me/player/action", new StartActionRequest("mine-stone"))).EnsureSuccessStatusCode();
 
