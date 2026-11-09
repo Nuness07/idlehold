@@ -55,7 +55,7 @@ An action can need a level in its trade before it starts, so a trade grows by op
 
 Cooking is a production trade with no tool, but every dish burns fuel. The player picks the fuel (for now a log: hazel lasts 2 dishes, pine 4, birch 6), and the fire takes a whole log from the stores each time the last one runs out. The fire only burns while a dish cooks, so nothing is wasted while the player does something else, and what is left of a burning log waits in the fire for the next dish. Cooking stops when the ingredients or the chosen fuel run out (`missing-fuel` when there is none to start with). Picking another fuel while cooking feeds it to the same fire without restarting the dish.
 
-The first dishes: grilled berries (2 wild berries, 3 s, 8 XP) and, at Cooking 15, berry soup (5 wild berries and 2 reeds, 6 s, 20 XP). Nothing eats them yet; food feeds the village and villagers later.
+The first dishes, both on the campfire and open from the start: grilled berries (4 wild berries, 3 s, 8 XP) and berry soup (12 wild berries, 6 s, 20 XP). Nothing eats them yet; food feeds the village and villagers later. Cooking lists its dishes by station (see "Recipe groups"): the campfire now, and a stone furnace with better dishes later (how it is built, what it burns and what its dishes give are open).
 
 ### Bare hands and tools: Decided
 
@@ -87,7 +87,13 @@ Tool recipes take a while and pay well because each is made once. Reasons to kee
 
 On screen, each tool family is one card in its trade, always showing the next tier: the tool in an iron frame, its name, a slot per material with what the player has and what it takes, and a wooden Build button below. Building starts the recipe like any action (it takes its time and occupies the worker). Once the family is at its best tool, the card shows it with nothing to build. A recipe with more than six materials shows five and a "+N" slot that expands the card. The server says which tier comes next. Each tool serves one trade (the axe Woodcutting, the rod Fishing), and that trade shows the tool in use, or is locked until it exists.
 
-Not in yet: the next tiers (stone axe, then copper), recipe categories (by material and by use: tool, weapon), a "make N" queue, an inventory of owned tools, and the crafting table screen (the inputs filling the recipe, then the tool appearing).
+Crafting lists its recipes by material (see "Recipe groups"): chipped stone now, then stone and copper.
+
+Not in yet: the next tiers (stone axe, then copper), recipe categories by use (tool, weapon), a "make N" queue, an inventory of owned tools, and the crafting table screen (the inputs filling the recipe, then the tool appearing).
+
+### Recipe groups: Decided
+
+A trade can split its recipes under headings: a station in Cooking (campfire, stone furnace), a material in Crafting (chipped stone, stone, copper). The trade shows one group at a time, picked from a row of tiles above its tools and recipes; it opens on the group of the action being worked, else the first with recipes. A group can be listed before it has any recipe: it shows as a black silhouette marked "Coming later", so the player sees what is ahead. Groups only sort the screen and change no rule. Each recipe shows its materials as slots (sprite and have/need), the same as the tool cards.
 
 ### Trade groups: Decided
 
