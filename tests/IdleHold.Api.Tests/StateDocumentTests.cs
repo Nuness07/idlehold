@@ -15,6 +15,7 @@ public class StateDocumentTests
             SkillXp = ImmutableDictionary<string, long>.Empty.Add("fishing", 84),
             ActiveAction = new ActiveAction("cook-grilled-berries", TimeSpan.FromTicks(1), "pine-log"),
             FireCyclesLeft = 3,
+            Buildings = ["campfire"],
         };
 
         var restored = StateDocument.Deserialize(StateDocument.From(state).Serialize()).ToState();
@@ -23,6 +24,7 @@ public class StateDocumentTests
         Assert.Equal(84, restored.XpOf("fishing"));
         Assert.Equal(state.ActiveAction, restored.ActiveAction);
         Assert.Equal(3, restored.FireCyclesLeft);
+        Assert.Equal(["campfire"], restored.Buildings);
     }
 
     [Fact]
@@ -30,7 +32,7 @@ public class StateDocumentTests
     {
         var json = StateDocument.From(GameState.New).Serialize();
 
-        Assert.Equal("""{"schemaVersion":2,"inventory":{},"skillXp":{},"activeAction":null,"fireCyclesLeft":0}""", json);
+        Assert.Equal("""{"schemaVersion":3,"inventory":{},"skillXp":{},"activeAction":null,"fireCyclesLeft":0,"buildings":[]}""", json);
     }
 
     [Fact]
@@ -54,5 +56,21 @@ public class StateDocumentTests
         Assert.Equal(0, state.FireCyclesLeft);
         Assert.Null(state.ActiveAction!.FuelItemId);
         Assert.Equal(3, state.ItemCount("reed"));
+    }
+
+    [Fact]
+    public void Deserialize_Version2Save_UpgradesToNothingBuilt()
+    {
+        const string json = """
+            {"schemaVersion":2,"inventory":{"twig":4},"skillXp":{},"activeAction":null,"fireCyclesLeft":1}
+            """;
+
+        var document = StateDocument.Deserialize(json);
+        var state = document.ToState();
+
+        Assert.Equal(StateDocument.CurrentSchemaVersion, document.SchemaVersion);
+        Assert.Empty(state.Buildings);
+        Assert.Equal(1, state.FireCyclesLeft);
+        Assert.Equal(4, state.ItemCount("twig"));
     }
 }

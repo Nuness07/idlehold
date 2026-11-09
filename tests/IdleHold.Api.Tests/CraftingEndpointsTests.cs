@@ -103,16 +103,17 @@ public sealed class CraftingEndpointsTests(PostgresFixture database) : IClassFix
     }
 
     [Fact]
-    public async Task NewPlayer_SeesTheTradesLockedUntilTheirTool()
+    public async Task NewPlayer_SeesTheTradesLockedUntilTheirToolOrBuilding()
     {
         var player = await GetPlayerAsync();
 
         Assert.Equal(
             [
-                new TradeLockResponse("woodcutting", "chipped-stone-axe"),
-                new TradeLockResponse("fishing", "reed-fishing-rod"),
-                new TradeLockResponse("mining", "chipped-stone-pickaxe"),
-                new TradeLockResponse("carpentry", "chipped-stone-knife"),
+                new TradeLockResponse("woodcutting", "chipped-stone-axe", null),
+                new TradeLockResponse("fishing", "reed-fishing-rod", null),
+                new TradeLockResponse("mining", "chipped-stone-pickaxe", null),
+                new TradeLockResponse("carpentry", "chipped-stone-knife", null),
+                new TradeLockResponse("cooking", null, "campfire"),
             ],
             player.LockedTrades);
     }

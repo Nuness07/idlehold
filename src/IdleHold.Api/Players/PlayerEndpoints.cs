@@ -18,6 +18,7 @@ public static class PlayerEndpoints
         mine.MapGet("/", GetMyPlayer);
         mine.MapPost("/action", StartMyAction);
         mine.MapDelete("/action", StopMyAction);
+        mine.MapPost("/buildings/{buildingId}", BuildMine);
 
         return app;
     }
@@ -47,11 +48,26 @@ public static class PlayerEndpoints
         ClaimsPrincipal user, PlayerService players, GameEngine engine, GameContent content, CancellationToken cancellationToken) =>
         ToResponse(await players.StopActionAsync(AccountId(user), cancellationToken), engine, content);
 
+    /// <summary>Builds a village building at once, paid from the stores; 409 <c>already-built</c> or <c>missing-inputs</c>.</summary>
+    private static async Task<Results<Ok<PlayerResponse>, NotFound, ValidationProblem, ProblemHttpResult>> BuildMine(
+        ClaimsPrincipal user, string buildingId, PlayerService players, GameEngine engine, GameContent content, CancellationToken cancellationToken)
+    {
+        if (content.FindBuilding(buildingId) is null)
+        {
+            return TypedResults.ValidationProblem(new Dictionary<string, string[]>
+            {
+                ["buildingId"] = [$"Unknown building '{buildingId}'."],
+            });
+        }
+
+        return ToResponse(await players.BuildAsync(AccountId(user), buildingId, cancellationToken), engine, content);
+    }
+
     private static Results<Ok<PlayerResponse>, NotFound, ValidationProblem, ProblemHttpResult> ToResponse(
         CommandResult result, GameEngine engine, GameContent content) => result.Status switch
         {
             CommandStatus.Done => TypedResults.Ok(PlayerResponse.From(result.Player!, engine, content)),
-            CommandStatus.Blocked => Blocked(result.Block!.Value),
+            CommandStatus.Blocked => Blocked(result.Reason!),
             _ => TypedResults.NotFound(),
         };
 
@@ -59,30 +75,10 @@ public static class PlayerEndpoints
     /// 409: the request was fine, but the game state does not allow it now. <c>reason</c> is a stable code
     /// the client can translate; the title is for people reading the raw response.
     /// </summary>
-    private static ProblemHttpResult Blocked(ActionBlock block) => TypedResults.Problem(
+    private static ProblemHttpResult Blocked(string reason) => TypedResults.Problem(
         statusCode: StatusCodes.Status409Conflict,
-        title: block switch
-        {
-            ActionBlock.MissingTool => "This trade is locked until you own its tool.",
-            ActionBlock.LevelTooLow => "Your level in this trade is too low for this action.",
-            ActionBlock.MissingFuel => "There is no fuel of the chosen kind for the fire.",
-            ActionBlock.MissingInputs => "Not enough materials to start this action.",
-            ActionBlock.ToolAlreadyOwned => "You already own this tool or a better one.",
-            ActionBlock.StorageFull => "The storehouse has no room for what this action makes.",
-            _ => "This action cannot start now.",
-        },
-        extensions: new Dictionary<string, object?> { ["reason"] = ReasonCode(block) });
-
-    private static string ReasonCode(ActionBlock block) => block switch
-    {
-        ActionBlock.MissingTool => "missing-tool",
-        ActionBlock.LevelTooLow => "level-too-low",
-        ActionBlock.MissingFuel => "missing-fuel",
-        ActionBlock.MissingInputs => "missing-inputs",
-        ActionBlock.ToolAlreadyOwned => "tool-already-owned",
-        ActionBlock.StorageFull => "storage-full",
-        _ => "blocked",
-    };
+        title: Reasons.TitleOf(reason),
+        extensions: new Dictionary<string, object?> { ["reason"] = reason });
 
     /// <summary>The body comes from the browser, so never trust it: validate before touching the engine.</summary>
     private static ValidationProblem? InvalidAction(StartActionRequest request, GameContent content)

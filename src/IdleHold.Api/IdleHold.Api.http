@@ -31,6 +31,9 @@ Content-Type: application/json
 ### Stop the current action
 DELETE {{host}}/me/player/action
 
+### Light the campfire (10 twigs, 5 reeds, 8 pebbles): opens Cooking
+POST {{host}}/me/player/buildings/campfire
+
 ### Sign up: a guest keeps its hold
 POST {{host}}/account/register
 Content-Type: application/json
