@@ -596,6 +596,7 @@ export interface components {
             /** Format: int32 */
             requiredLevel: number;
             usesFuel: boolean;
+            groupId: null | string;
         };
         ActiveActionResponse: {
             actionId: string;
@@ -614,6 +615,7 @@ export interface components {
             actions: components["schemas"]["ActionResponse"][];
             tools: components["schemas"]["ToolResponse"][];
             fuels: components["schemas"]["FuelResponse"][];
+            recipeGroups: components["schemas"]["RecipeGroupResponse"][];
         };
         FuelResponse: {
             itemId: string;
@@ -657,6 +659,10 @@ export interface components {
             fireCyclesLeft: number;
             /** Format: date-time */
             updatedAt: string;
+        };
+        RecipeGroupResponse: {
+            id: string;
+            skillId: string;
         };
         RegisterRequest: {
             email: string;
